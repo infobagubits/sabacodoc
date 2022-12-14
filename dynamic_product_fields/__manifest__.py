@@ -22,7 +22,7 @@
 
 {
     'name': 'Product Custom Fields',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'summary': """Ability To Add Custom Fields in Products From User Level""",
     'description': """Ability To Add Custom Fields in Products From User Level,Product Custom Fields,
                       Product Dynamic Fields, odoo15, Dynamic Product Fields, Dynamic Fields, Create Dynamic Fields, Community odoo Studio""",
