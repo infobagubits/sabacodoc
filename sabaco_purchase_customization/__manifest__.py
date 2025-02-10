@@ -9,7 +9,7 @@
     'maintainer': 'Bagubits Srls',
     'website': 'https://bagubits.it',
     'depends': ['purchase'],
-    'data': [],
+    'data': ['views/purchase_order_views.xml'],
     'images': [],
     'license': 'AGPL-3',
     'installable': True,
