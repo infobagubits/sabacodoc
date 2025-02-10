@@ -1,0 +1,18 @@
+{
+    'name': "Sabaco purchase customization",
+    'version': '18.0.0.0.0',
+    'category': 'Purchases',
+    'summary': 'This module contains the customization for purchase order',
+    'description': 'This module contains the customization for purchase order',
+    'author': 'Bagubits Srls',
+    'company': 'Bagubits Srls',
+    'maintainer': 'Bagubits Srls',
+    'website': 'https://bagubits.it',
+    'depends': ['purchase'],
+    'data': [],
+    'images': [],
+    'license': 'AGPL-3',
+    'installable': True,
+    'auto_install': False,
+    'application': False,
+}
