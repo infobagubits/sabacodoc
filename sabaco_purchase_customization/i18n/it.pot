@@ -1,0 +1,46 @@
+it# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* sabaco_purchase_customization
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-02-10 11:28+0000\n"
+"PO-Revision-Date: 2025-02-10 11:28+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: sabaco_purchase_customization
+#: model:ir.model.fields.selection,name:sabaco_purchase_customization.selection__purchase_order__purchase_order_for__famù_-_bistrot
+msgid "Famù - bistrot"
+msgstr ""
+
+#. module: sabaco_purchase_customization
+#: model:ir.model.fields.selection,name:sabaco_purchase_customization.selection__purchase_order__purchase_order_for__famù_-_magazzino_centrale
+msgid "Famù - magazzino centrale"
+msgstr ""
+
+#. module: sabaco_purchase_customization
+#: model:ir.model.fields.selection,name:sabaco_purchase_customization.selection__purchase_order__purchase_order_for__famù_-_negozio
+msgid "Famù - negozio"
+msgstr ""
+
+#. module: sabaco_purchase_customization
+#: model:ir.model.fields.selection,name:sabaco_purchase_customization.selection__purchase_order__purchase_order_for__famù_-_parco
+msgid "Famù - parco"
+msgstr ""
+
+#. module: sabaco_purchase_customization
+#: model:ir.model,name:sabaco_purchase_customization.model_purchase_order
+msgid "Purchase Order"
+msgstr "Ordine di acquisto"
+
+#. module: sabaco_purchase_customization
+#: model:ir.model.fields,field_description:sabaco_purchase_customization.field_purchase_order__purchase_order_for
+msgid "Purchase Order For"
+msgstr "Ordine effettuato per"
