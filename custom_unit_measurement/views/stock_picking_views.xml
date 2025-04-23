@@ -1,0 +1,46 @@
+<odoo>
+    <record id="view_picking_form_secondary_uom" model="ir.ui.view">
+        <!-- Nome interno della view -->
+        <field name="name">stock.picking.form.secondary.uom</field>
+        <!-- Modello a cui si applica la view -->
+        <field name="model">stock.picking</field>
+        <!-- Eredita dalla view standard di stock.picking -->
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Inietta il contesto nel campo one2many per definire hide_secondary e default_location_id -->
+<!--             <xpath expr="//field[@name='move_ids_without_package']" position="attributes">
+                <attribute name="context">
+                    {'hide_secondary': not has_secondary, 'default_location_id': location_id}
+                </attribute>
+            </xpath> -->
+
+            <!-- Imposta la list view in modalità editabile (bottom) -->
+            <xpath expr="//field[@name='move_ids_without_package']/list" position="attributes">
+                <attribute name="editable">bottom</attribute>
+            </xpath>
+
+            <!-- Inserisce i campi personalizzati dopo il campo 'product_uom' -->
+            <xpath expr="//field[@name='move_ids_without_package']/list/field[@name='product_uom']" position="after">
+                <!-- Campo Quantità Secondaria -->
+                <!-- Mostra "Quantità Secondaria" e applica la decorazione se la quantità supera lo stock -->
+                <field name="x_secondary_qty"
+                    string="Quantità Secondaria"
+                    decoration-danger="x_secondary_qty_exceeds_stock"
+
+                    invisible="not x_secondary_active"
+                    attrs="{'readonly': [('state', '!=', 'draft'), ('x_secondary_active', '=', False)]}"
+                />
+                <!-- Campo Unità di Misura Secondaria -->
+                <!-- Mostra "Unità di Misura Secondaria" con le stesse condizioni di visualizzazione -->
+                <field name="x_secondary_uom_id"
+                    string="Unità di Misura Secondaria"
+
+                    invisible="not x_secondary_active"
+                    attrs="{'readonly': [('state', '!=', 'draft'), ('x_secondary_active', '=', False)]}"
+                />
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

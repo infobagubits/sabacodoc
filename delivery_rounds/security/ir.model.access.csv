@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_giri_ordine_user,giri.ordine.user,model_giri_ordine,,1,1,1,1
+access_giri_ordine_riga_user,giri.ordine.riga.user,model_giri_ordine_riga,,1,1,1,1

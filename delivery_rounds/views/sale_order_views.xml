@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_order_form_giro" model="ir.ui.view">
+        <field name="name">sale.order.form.giro</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Inserindo os campos antes do campo validity_date -->
+            <xpath expr="//group[@name='order_details']/field[@name='validity_date']" position="before">
+                <field name="giro_id" options="{'no_create': True}" placeholder="Seleziona un giro"/>
+                <field name="sequenza_consegna"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- FORM VIEW ORIGINAL -->
+    <record id="view_giri_ordine_form" model="ir.ui.view">
+        <field name="name">giri.ordine.form</field>
+        <field name="model">giri.ordine</field>
+        <field name="arch" type="xml">
+            <form string="Giro Ordine">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Es. Lunedì Pomeriggio Alessandro" nolabel="1" class="oe_inline" style="font-size: 32px; font-weight: bold;"/>
+                        </h1>
+                    </div>
+
+                    <div class="mt16"/>
+
+                    <group>
+                        <field name="giorno_consegna"/>
+                    </group>
+
+                    <div class="mt32"/>
+
+                    <div>
+                        <field name="note" placeholder="Scrivi le tue note qui..." nolabel="1"/>
+                    </div>
+
+                    <!-- Aba com list moderno -->
+                    <notebook>
+                        <page string="Clienti sul giro">
+                            <field name="riga_ids" mode="list,form" on_change="1">
+                                <list string="Clienti" editable="bottom">
+                                    <field name="sequence" widget="handle" on_change="1"/>
+                                    <field name="partner_id"/>
+                                    <field name="telefono"/>
+                                    <field name="stato"/>
+                                    <field name="note"/>
+                                    <field name="ordini_aperti" widget="statinfo" string=" Ordini aperti"/>
+                                    <button name="action_criar_ordini_giro"
+                                            string="ORDINE"
+                                            type="object"
+                                            class="btn-primary"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Ordini del giro">
+                            <field name="order_ids" mode="list,form" context="{'default_giro_id': id}">
+                                <list string="Ordini" decoration-muted="state=='cancel'">
+                                    <field name="name"/>
+                                    <field name="create_date"/>
+                                    <field name="partner_id"/>
+                                    <field name="stato_preparazione"/>
+                                    <field name="amount_total" widget="monetary"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer" style="margin-top: 20px;">
+                                <field name="currency_id" invisible="1"/>
+                                <label for="total_ordini"/>
+                                <div class="o_td_label">
+                                    <field name="total_ordini" widget="monetary" options="{'currency_field': 'currency_id'}" class="oe_subtotal_footer_separator"/>
+                                </div>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- TREE VIEW PARA CONSULTA -->
+    <record id="view_giri_ordine_list" model="ir.ui.view">
+        <field name="name">giri.ordine.list</field>
+        <field name="model">giri.ordine</field>
+        <field name="arch" type="xml">
+            <list string="Giri Ordini">
+                <field name="name"/>
+                <field name="giorno_consegna"/>
+                <field name="note"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- AÇÃO DE CONSULTA COM LISTAGEM -->
+    <record id="action_giri_ordine_list" model="ir.actions.act_window">
+        <field name="name">Consulta Giri Ordini</field>
+        <field name="res_model">giri.ordine</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_giri_ordine_list"/>
+    </record>
+
+    <!-- MENUS -->
+    <menuitem id="menu_giri_root" name="Giri Ordini" sequence="10"/>
+    <menuitem id="menu_giri_ordine_consulta" name="Consulta Giri" parent="menu_giri_root" action="action_giri_ordine_list" sequence="10"/>
+
+    <!-- Herdar a view do pedido de venda -->
+    <record id="view_order_form_inherit_giri_ordini" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.giri.ordini</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='sequenza_consegna']" position="after">
+                <field name="stato_preparazione"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Herdar a view de pesquisa do pedido de venda -->
+    <record id="view_sales_order_filter_inherit_giri_ordini" model="ir.ui.view">
+        <field name="name">sale.order.list.select.inherit.giri.ordini</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+            <filter name="my_sale_orders_filter" position="after">
+                <separator/>
+                <filter string="Da preparare" name="da_preparare" domain="[('stato_preparazione', '=', 'da_preparare')]"/>
+                <filter string="Preparato" name="preparato" domain="[('stato_preparazione', '=', 'preparato')]"/>
+                <filter string="Stampato" name="stampato" domain="[('stato_preparazione', '=', 'stampato')]"/>
+                <separator/>
+            </filter>
+            <filter name="customer" position="after">
+                <filter string="Stato preparazione" name="stato_preparazione" context="{'group_by': 'stato_preparazione'}"/>
+            </filter>
+        </field>
+    </record>
+
+    <!-- Herdar a view de lista do pedido de venda -->
+    <record id="view_order_tree_inherit_giri_ordini" model="ir.ui.view">
+        <field name="name">sale.order.tree.inherit.giri.ordini</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree"/>
+        <field name="arch" type="xml">
+            <field name="state" position="before">
+                <field name="stato_preparazione"/>
+            </field>
+        </field>
+    </record>
+</odoo>
