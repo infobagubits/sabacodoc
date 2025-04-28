@@ -1,0 +1,23 @@
+{
+    'name': 'Partner Customer Supplier Extension',
+    'version': '18.0.1.0.0',
+    'category': 'Uncategorized',
+    'summary': 'Modulo che aggiunge funzionalità relative ai contatti, vendite (customer) e acquisti (supplier)',
+    'sequence': '0',
+    'author': 'Bagubits SRLS',
+    'maintainer': 'Bagubits SRLS',
+    'website': 'https://bagubits.it',
+    'license': 'LGPL-3',
+    'depends': ['base', 'contacts', 'product', 'sale', 'purchase'],
+    'data': [
+        'views/res_partner_view.xml',
+        'views/res_partner_search_view_inherit.xml',
+        'views/sale_order_partner_domain.xml',
+        'views/purchase_order_partner_domain.xml',
+        'views/res_config_settings_views.xml',
+    ],
+    'post_init_hook': 'post_init_hook',
+    'installable': True,
+    'application': True,
+    'auto_install': False,
+}

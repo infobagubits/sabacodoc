@@ -1,0 +1,17 @@
+<odoo>
+    <record id="view_partner_form_inherit" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form" />
+        <field name="arch" type="xml">
+
+            <xpath expr="//span[@name='address_name']" position="before">
+                
+                <field name="is_customer" widget="boolean_toggle"/>
+                <field name="is_supplier" widget="boolean_toggle"/>
+
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

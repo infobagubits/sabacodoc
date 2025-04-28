@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Herdando a view padrão do formulário de pedido de venda -->
+    <record id="sale_order_form_inherit_customer_filter" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.customer.filter</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            
+            <!-- Campo cliente (partner_id) terá filtro específico por is_customer -->
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="domain">[('is_customer', '=', True)]</attribute>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
