@@ -3,14 +3,12 @@
     <record id="purchase_order_line_tree_view_inherit_uom" model="ir.ui.view">
         <field name="name">purchase.order.line.tree.inherit.uom</field>
         <field name="model">purchase.order.line</field>
-        <field name="inherit_id" ref="purchase.purchase_order_line_tree"/>
+        <field name="inherit_id" ref="purchase.purchase_order_line_tree" />
         <field name="arch" type="xml">
             <!-- Substitui o bloco para garantir a ordem correta dos campos -->
             <xpath expr="//field[@name='product_qty']" position="replace">
-                <field name="product_qty"/>
-                <field name="purchase_uom_id" string="UdM acquisto" widget="many2one"/>
-                <field name="purchase_uom_free" string="UdM acquisto libera"/>
-                <field name="product_uom" string="UdM fattura"/>
+                <field name="product_qty" />
+                <field name="purchase_uom_free" string="UdM acquisto libera" />
             </xpath>
         </field>
     </record>
@@ -19,14 +17,13 @@
     <record id="purchase_order_form_view_inherit_uom" model="ir.ui.view">
         <field name="name">purchase.order.form.inherit.uom</field>
         <field name="model">purchase.order</field>
-        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="inherit_id" ref="purchase.purchase_order_form" />
         <field name="arch" type="xml">
             <!-- Substitui o bloco para garantir a ordem correta dos campos na tree inline -->
-            <xpath expr="//field[@name='order_line']/list/field[@name='product_qty']" position="replace">
-                <field name="product_qty"/>
-                <field name="purchase_uom_id" string="UdM acquisto" widget="many2one"/>
-                <field name="purchase_uom_free" string="UdM acquisto libera"/>
-                <field name="product_uom" string="UdM fattura"/>
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_qty']"
+                position="replace">
+                <field name="product_qty" />
+                <field name="purchase_uom_free" string="UdM acquisto libera" />
             </xpath>
         </field>
     </record>
