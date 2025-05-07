@@ -7,7 +7,7 @@
         Este módulo adiciona condicionais para os campos de cliente e fornecedor
         baseado no módulo partner_customer_supplier_extension.
     """,
-    'author': 'Seu Nome',
+    'author': 'Bagubits Srls',
     'website': 'https://www.seusite.com',
     'depends': ['base', 'contacts', 'partner_customer_supplier_extension'],
     'data': [
