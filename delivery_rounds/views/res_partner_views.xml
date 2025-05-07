@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_inherit_giri_ordini" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.giri.ordini</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <field name="vat" position="after">
+                <field name="is_customer" invisible="1"/>
+            </field>
+
+            <xpath expr="//page[@name='internal_notes']" position="after">
+                <page string="Giri" name="giri" invisible="not is_customer">
+                    <field name="giri_ordine_ids" nolabel="1" readonly="1">
+                        <list>
+                            <field name="giro_id" string="Giro" widget="many2one" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="stato" string="Stato"/>
+                            <field name="note" string="Note"/>
+                            <field name="ordini_aperti" string="Ordini Aperti"/>
+                        </list>
+                    </field>
+                </page>
+                <page string="Ordini Aperti" name="ordini_aperti" invisible="not is_customer">
+                    <field name="ordini_aperti_ids" nolabel="1" readonly="1">
+                        <list>
+                            <field name="name" string="Numero"/>
+                            <field name="date_order" string="Data"/>
+                            <field name="amount_total" string="Totale"/>
+                            <field name="stato_preparazione" string="Stato Preparazione"/>
+                            <field name="giro_id" string="Giro"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo> 

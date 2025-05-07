@@ -1,0 +1,14 @@
+<odoo>
+    <record id="view_product_supplier_list" model="ir.ui.view">
+        <field name="name">product.supplier.list</field>
+        <field name="model">product.supplierinfo</field>
+        <field name="arch" type="xml">
+            <list string="Prodotti del Fornitore">
+                <field name="product_tmpl_id" string="Prodotto"/>
+                <field name="price" string="Prezzo"/>
+                <field name="delay" string="Tempo di Consegna (giorni)"/>
+                <field name="min_qty" string="Quantità Minima"/>
+            </list>
+        </field>
+    </record>
+</odoo> 

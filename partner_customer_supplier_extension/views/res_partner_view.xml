@@ -12,6 +12,17 @@
 
             </xpath>
 
+            <xpath expr="//page[@name='internal_notes']" position="after">
+                <page string="Prodotti" name="prodotti" invisible="not is_supplier">
+                    <field name="supplier_product_ids" nolabel="1">
+                        <list>
+                            <field name="product_tmpl_id" string="Prodotto"/>
+                            <field name="price" string="Prezzo"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+
         </field>
     </record>
 </odoo>

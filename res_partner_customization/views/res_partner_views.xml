@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_partner_form_inherit_custom_contacts" model="ir.ui.view">
+            <field name="name">res.partner.form.inherit.custom.contacts</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='function']" position="before">
+                    <field name="codice_cliente" invisible="not is_customer"/>
+                    <field name="stato_cliente" invisible="not is_customer"/>
+                    <field name="tipo_cliente" invisible="not is_customer"/>
+                    <field name="codice_fornitore" invisible="not is_supplier"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo> 

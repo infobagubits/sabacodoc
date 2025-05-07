@@ -30,7 +30,7 @@
                         <page string="Clienti sul giro">
                             <field name="riga_ids" mode="list,form" on_change="1">
                                 <list string="Clienti" editable="bottom">
-                                    <field name="sequence" widget="handle" options="{'widget': 'handle'}" on_change="1"/>
+                                    <field name="sequence" widget="handle" on_change="1"/>
                                     <field name="partner_id"/>
                                     <field name="telefono"/>
                                     <field name="stato"/>
@@ -94,7 +94,7 @@
     <menuitem id="menu_giri_root" name="Giri Ordini" sequence="10"/>
     <menuitem id="menu_giri_ordine_consulta" name="Consulta Giri" parent="menu_giri_root" action="action_giri_ordine_list" sequence="10"/>
 
-    <!-- Eredita la vista dell'ordine di vendita -->
+    <!-- Herdar a view do pedido de venda -->
     <record id="view_order_form_inherit_giri_ordini" model="ir.ui.view">
         <field name="name">sale.order.form.inherit.giri.ordini</field>
         <field name="model">sale.order</field>
@@ -104,11 +104,11 @@
                 <field name="stato_preparazione"/>
             </xpath>
             
-            <!-- Rimuove il campo commitment_date dalla posizione originale -->
+            <!-- Remove o campo commitment_date da posição original -->
             <xpath expr="//label[@for='commitment_date']" position="replace"/>
             <xpath expr="//field[@name='commitment_date']" position="replace"/>
             
-            <!-- Aggiunge il campo commitment_date dopo partner_id -->
+            <!-- Adiciona o campo commitment_date depois do partner_id -->
             <field name="partner_id" position="after">
                 <field name="commitment_date"/>
             </field>

@@ -9,7 +9,7 @@ class GiroOrdine(models.Model):
     name = fields.Char(string='Nome', required=True)
     currency_id = fields.Many2one(
         'res.currency',
-        string='Valuta',
+        string='Currency',
         readonly=True,
         default=lambda self: self.env.company.currency_id
     )
@@ -29,10 +29,10 @@ class GiroOrdine(models.Model):
 
     note = fields.Text(string='Note')
     
-    # Campo obbligatorio per il funzionamento della vista
+    # CAMPO OBRIGATÓRIO PARA FUNCIONAR A VIEW
     riga_ids = fields.One2many('giri.ordine.riga', 'giro_id', string='Clienti sul giro')
     
-    # Lista degli ordini collegati al giro
+    # NOVO: lista de pedidos vinculados ao giro
     order_ids = fields.One2many(
         'sale.order',
         'giro_id',
@@ -40,7 +40,7 @@ class GiroOrdine(models.Model):
         domain=[('stato_preparazione', '!=', 'stampato')]
     )
 
-    # Campo calcolato per il totale degli ordini
+    # Campo computado para o total dos pedidos
     total_ordini = fields.Monetary(
         string='Totale',
         compute='_compute_total_ordini',
@@ -65,10 +65,10 @@ class GiroOrdineRiga(models.Model):
          'Non è possibile aggiungere lo stesso cliente due volte nello stesso giro!')
     ]
 
-    sequence = fields.Integer(string='Sequenza', default=10)
+    sequence = fields.Integer(string='Sequence', default=10)
     giro_id = fields.Many2one('giri.ordine', string='Giro Ordine', required=True, ondelete='cascade')
     partner_id = fields.Many2one('res.partner', string='Cliente', required=True)
-    telefono = fields.Char(string='Telefono', related='partner_id.phone', store=True)
+    telefono = fields.Char(string='Telefona', related='partner_id.phone', store=True)
     stato = fields.Selection([
         ('da_chiamare', 'Da chiamare'),
         ('sospeso', 'Sospeso'),
@@ -92,7 +92,7 @@ class GiroOrdineRiga(models.Model):
                     raise ValidationError('Non è possibile aggiungere lo stesso cliente due volte nello stesso giro!')
 
     def _update_order_sequence(self):
-        """Aggiorna la sequenza degli ordini"""
+        """Atualiza a sequência dos pedidos"""
         if self.giro_id and self.partner_id:
             orders = self.env['sale.order'].search([
                 ('giro_id', '=', self.giro_id.id),
@@ -104,36 +104,31 @@ class GiroOrdineRiga(models.Model):
     def write(self, vals):
         result = super().write(vals)
         if 'sequence' in vals:
-            # Riordina tutte le righe del giro
+            # Reordena todas as linhas do giro
             all_lines = self.env['giri.ordine.riga'].search([
                 ('giro_id', '=', self.giro_id.id)
             ], order='sequence')
             
-            # Aggiorna le sequenze per garantire l'ordine corretto
+            # Atualiza as sequências para garantir ordem correta
             sequence = 1
             for line in all_lines:
                 if line.sequence != sequence:
-                    super(GiroOrdineRiga, line).write({'sequence': sequence})
-                    # Aggiorna immediatamente gli ordini associati
-                    orders = self.env['sale.order'].search([
-                        ('giro_id', '=', line.giro_id.id),
-                        ('partner_id', '=', line.partner_id.id)
-                    ])
-                    if orders:
-                        orders.write({'sequenza_consegna': sequence})
+                    line.sequence = sequence
                 sequence += 1
-            
+                
+            # Atualiza a sequência dos pedidos
+            self._update_order_sequence()
             self.env.cr.commit()
         return result
 
     @api.model
     def create(self, vals):
         if vals.get('giro_id'):
-            # Conta quanti record esistono già in questo giro
+            # Conta quantos registros já existem neste giro
             existing_count = self.env['giri.ordine.riga'].search_count([
                 ('giro_id', '=', vals['giro_id'])
             ])
-            # Imposta la sequenza come numero successivo
+            # Define a sequência como o próximo número
             vals['sequence'] = existing_count + 1
         
         riga = super().create(vals)
@@ -164,8 +159,7 @@ class GiroOrdineRiga(models.Model):
     
     def action_criar_ordini_giro(self):
         self.ensure_one()
-        
-        # Ottiene il listino prezzi predefinito dell'azienda corrente
+        # Obtém a lista de preços padrão da empresa atual
         pricelist = self.env['product.pricelist'].search(
             [('company_id', '=', self.env.company.id)], limit=1)
         
@@ -197,37 +191,37 @@ class SaleOrder(models.Model):
     @api.onchange('giro_id')
     def _onchange_giro_id(self):
         if self.giro_id and self.giro_id.giorno_consegna:
-            # Mappatura dei giorni della settimana Odoo in numeri (0-6, dove 0 è lunedì)
+            # Mapeamento dos dias da semana do Odoo para números (0-6, onde 0 é segunda-feira)
             giorni_mapping = {
-                'lunedi': 0,    # Lunedì
-                'martedi': 1,   # Martedì
-                'mercoledi': 2, # Mercoledì
-                'giovedi': 3,   # Giovedì
-                'venerdi': 4,   # Venerdì
-                'sabato': 5,    # Sabato
-                'domenica': 6,  # Domenica
+                'lunedi': 0,    # Segunda-feira
+                'martedi': 1,   # Terça-feira
+                'mercoledi': 2, # Quarta-feira
+                'giovedi': 3,   # Quinta-feira
+                'venerdi': 4,   # Sexta-feira
+                'sabato': 5,    # Sábado
+                'domenica': 6,  # Domingo
             }
             
             from datetime import datetime, timedelta
             import pytz
             
-            # Ottiene la data attuale nel fuso orario dell'utente
+            # Obtém a data atual no timezone do usuário
             user_tz = pytz.timezone(self.env.user.tz or 'UTC')
             today = datetime.now(user_tz).date()
             
-            # Giorno della settimana attuale (0-6)
+            # Dia da semana atual (0-6)
             current_weekday = today.weekday()
             
-            # Giorno della settimana desiderato del giro
+            # Dia da semana desejado do giro
             target_weekday = giorni_mapping[self.giro_id.giorno_consegna]
             
-            # Calcola quanti giorni mancano al prossimo giorno della settimana desiderato
+            # Calcula quantos dias faltam para o próximo dia da semana desejado
             days_ahead = target_weekday - current_weekday
-            if days_ahead <= 0:  # Se è oggi o è già passato questa settimana
+            if days_ahead <= 0:  # Se for hoje ou já passou na semana
                 days_ahead += 7
             
-            # Calcola la prossima data
+            # Calcula a próxima data
             delivery_date = today + timedelta(days=days_ahead)
             
-            # Aggiorna il campo commitment_date con la data calcolata
+            # Atualiza o campo commitment_date com a data calculada
             self.commitment_date = datetime.combine(delivery_date, datetime.min.time())

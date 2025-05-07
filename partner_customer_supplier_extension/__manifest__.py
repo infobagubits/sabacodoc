@@ -15,6 +15,8 @@
         'views/sale_order_partner_domain.xml',
         'views/purchase_order_partner_domain.xml',
         'views/res_config_settings_views.xml',
+        'views/product_view.xml',
+        'views/product_supplier_view.xml',
     ],
     'post_init_hook': 'post_init_hook',
     'installable': True,
