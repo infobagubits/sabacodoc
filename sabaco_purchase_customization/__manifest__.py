@@ -1,6 +1,6 @@
 {
     'name': "Sabaco purchase customization",
-    'version': '18.0.0.0.0',
+    'version': '1.0',
     'category': 'Purchases',
     'summary': 'This module contains the customization for purchase order',
     'description': 'This module contains the customization for purchase order',
