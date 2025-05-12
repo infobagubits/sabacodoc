@@ -42,21 +42,10 @@ class ResPartner(models.Model):
         ('grossista', 'GROSSISTA'),
     ], string='Tipo Cliente', help='Tipologia del cliente')
 
-    street_company_label = fields.Char(
-        string="Indirizzo sede legale",
-        compute="_compute_street_company_label",
-        readonly=True
-    )
-
-    giorno_di_chiusura = fields.Char(
+    """  giorno_di_chiusura = fields.Char(
         string="Giorno di chiusura",
         help="Inserisci il giorno di chiusura dell'azienda, se applicabile."
-    )
-
-    @api.depends('street')
-    def _compute_street_company_label(self):
-        for rec in self:
-            rec.street_company_label = rec.street
+    ) """
 
     # Qui possiamo aggiungere le condizioni per i campi esistenti
     # Ad esempio, possiamo aggiungere campi calcolati o restrizioni
