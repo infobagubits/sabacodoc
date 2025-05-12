@@ -9,7 +9,7 @@ class ResPartner(models.Model):
         help="Se questo partner è un fornitore, verrà mostrata la scheda Prodotti"
     )
 
-    # Campos para a aba Prodotti
+    # Campi per la scheda Prodotti
     supplier_product_ids = fields.One2many(
         'product.supplierinfo',
         'partner_id',
@@ -42,5 +42,21 @@ class ResPartner(models.Model):
         ('grossista', 'GROSSISTA'),
     ], string='Tipo Cliente', help='Tipologia del cliente')
 
-    # Aqui podemos adicionar as condicionais para os campos existentes
-    # Por exemplo, podemos adicionar campos computados ou restrições
+    street_company_label = fields.Char(
+        string="Indirizzo sede legale",
+        compute="_compute_street_company_label",
+        readonly=True
+    )
+
+    giorno_di_chiusura = fields.Char(
+        string="Giorno di chiusura",
+        help="Inserisci il giorno di chiusura dell'azienda, se applicabile."
+    )
+
+    @api.depends('street')
+    def _compute_street_company_label(self):
+        for rec in self:
+            rec.street_company_label = rec.street
+
+    # Qui possiamo aggiungere le condizioni per i campi esistenti
+    # Ad esempio, possiamo aggiungere campi calcolati o restrizioni

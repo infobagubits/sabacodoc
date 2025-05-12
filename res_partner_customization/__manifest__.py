@@ -1,13 +1,13 @@
 {
-    'name': 'Contact Customization',
+    'name': 'Personalizzazione Contatti',
     'version': '1.0',
     'category': 'Sales/CRM',
-    'summary': 'Condicionais para campos de cliente e fornecedor',
+    'summary': 'Condizionali per i campi cliente e fornitore',
     'description': """
-        Este módulo adiciona condicionais para os campos de cliente e fornecedor
-        baseado no módulo partner_customer_supplier_extension.
+        Questo modulo aggiunge condizionali per i campi cliente e fornitore
+        basato sul modulo partner_customer_supplier_extension.
     """,
-    'author': 'Bagubits Srls',
+    'author': 'Il tuo nome',
     'website': 'https://www.seusite.com',
     'depends': ['base', 'contacts', 'partner_customer_supplier_extension'],
     'data': [

@@ -6,13 +6,35 @@
             <field name="model">res.partner</field>
             <field name="inherit_id" ref="base.view_partner_form"/>
             <field name="arch" type="xml">
+                <!-- Campo indirizzo per aziende -->
+
+                <!-- Modifica il label Address in Indirizzo sede legale solo per aziende -->
+                <xpath expr="//span[@name='address_name']/span" position="replace">
+                    <span invisible="company_type != 'company'">Indirizzo sede legale</span>
+                </xpath>
+                <!-- Campi esistenti -->
                 <xpath expr="//field[@name='function']" position="before">
                     <field name="codice_cliente" invisible="not is_customer"/>
                     <field name="stato_cliente" invisible="not is_customer"/>
                     <field name="tipo_cliente" invisible="not is_customer"/>
                     <field name="codice_fornitore" invisible="not is_supplier"/>
                 </xpath>
+
+                <!-- Inserisci Giorno di chiusura come primo campo del secondo gruppo del form -->
+                <xpath expr="//sheet/group/group[2]/field[@name='function']" position="before">
+                    <field name="giorno_di_chiusura"/>
+                </xpath>
+
+                <!-- Il gruppo Vendite è visibile solo se Cliente è selezionato -->
+                <xpath expr="//page[@name='sales_purchases']//group[@name='sale']" position="attributes">
+                    <attribute name="invisible">not is_customer</attribute>
+                </xpath>
+
+                <!-- Il gruppo Acquisti è visibile solo se Fornitore è selezionato -->
+                <xpath expr="//page[@name='sales_purchases']//group[@name='purchase']" position="attributes">
+                    <attribute name="invisible">not is_supplier</attribute>
+                </xpath>
             </field>
         </record>
     </data>
-</odoo> 
+</odoo>
