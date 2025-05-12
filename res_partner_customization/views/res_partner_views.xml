@@ -20,11 +20,6 @@
                     <field name="codice_fornitore" invisible="not is_supplier" />
                 </xpath>
 
-                <!-- Inserisci Giorno di chiusura come primo campo del secondo gruppo del form -->
-                <!-- <xpath expr="//sheet/group/group[2]/field[@name='function']" position="before">
-                    <field name="giorno_di_chiusura"/>
-                </xpath> -->
-
                 <!-- Il gruppo Vendite è visibile solo se Cliente è selezionato -->
                 <xpath expr="//page[@name='sales_purchases']//group[@name='sale']"
                     position="attributes">
