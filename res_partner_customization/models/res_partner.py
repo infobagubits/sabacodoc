@@ -42,10 +42,10 @@ class ResPartner(models.Model):
         ('grossista', 'GROSSISTA'),
     ], string='Tipo Cliente', help='Tipologia del cliente')
 
-    """  giorno_di_chiusura = fields.Char(
+    giorno_di_chiusura = fields.Char(
         string="Giorno di chiusura",
         help="Inserisci il giorno di chiusura dell'azienda, se applicabile."
-    ) """
+    )
 
     # Qui possiamo aggiungere le condizioni per i campi esistenti
     # Ad esempio, possiamo aggiungere campi calcolati o restrizioni
