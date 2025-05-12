@@ -9,8 +9,12 @@
                 <!-- Campo indirizzo per aziende -->
 
                 <!-- Modifica il label Address in Indirizzo sede legale solo per aziende -->
-                <xpath expr="//span[@name='address_name']/span" position="replace">
-                    <span invisible="company_type != 'company'">Indirizzo sede legale</span>
+                <xpath expr="//span[@name='address_name']" position="replace">
+                    <span class="o_form_label o_td_label o_address_type" name="address_name">
+                        <field name="type" invisible="is_company" readonly="user_ids"
+                            required="not is_company" class="fw-bold" />
+                        <span invisible="not is_company">Indirizzo sede legale</span>
+                    </span>
                 </xpath>
                 <!-- Campi esistenti -->
                 <xpath expr="//field[@name='function']" position="before">
@@ -21,9 +25,9 @@
                 </xpath>
 
                 <!-- Inserisci Giorno di chiusura come primo campo del secondo gruppo del form -->
-                <!-- <xpath expr="//sheet/group/group[2]/field[@name='function']" position="before">
-                    <field name="giorno_di_chiusura"/>
-                </xpath> -->
+                <xpath expr="//sheet/group/group[2]/field[@name='function']" position="before">
+                    <field name="giorno_di_chiusura" />
+                </xpath>
 
                 <!-- Il gruppo Vendite è visibile solo se Cliente è selezionato -->
                 <xpath expr="//page[@name='sales_purchases']//group[@name='sale']"
