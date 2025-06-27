@@ -37,9 +37,10 @@ class ProductCategory(models.Model):
         """Aggiorna codici quando parent_id cambia"""
         
         for record in self:
-            procuct_category = self.env['product.category'].search([('codice', '=', record["codice"]),('parent_id', '=', record["parent_id"])], limit=1)
-            if(procuct_category):
-                raise ValidationError("Il codice {} è già utilizzato in un'altra categoria con lo stesso genitore.".format(record["codice"]))
+            if(record["codice"] and record["codice"].strip() != ''):
+                procuct_category = self.env['product.category'].search([('codice', '=', record["codice"]),('parent_id', '=', record["parent_id"]["id"] if record["parent_id"] else False)], limit=1)
+                if(procuct_category):
+                    raise ValidationError("Il codice {} è già utilizzato in un'altra categoria con lo stesso genitore.".format(record["codice"]))
         
         
         if 'parent_id' in vals:
