@@ -32,15 +32,8 @@
     'license': 'LGPL-3',
     'depends': ['product'],
     'data': [
-        'views/product_category_views.xml',
-        # 'data/product_category_data.xml',  # Removido - dados de exemplo
-        # 'data/migration_data.xml',         # Removido - migração automática
+        'views/product_category_views.xml'
     ],
-    'assets': {
-        'web.assets_backend': [
-            'product_category_code_extension/static/src/css/product_category.css',
-        ],
-    },
     'installable': True,
     'auto_install': False,
     'application': False,
