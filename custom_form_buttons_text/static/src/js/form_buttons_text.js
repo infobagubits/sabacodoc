@@ -5,7 +5,7 @@ import { patch } from "@web/core/utils/patch";
 
 // Patch del FormController per aggiungere testo ai pulsanti
 patch(FormController.prototype, {
-    
+
     setup() {
         super.setup();
         // Attende il rendering completo prima di aggiungere i testi
@@ -36,7 +36,7 @@ patch(FormController.prototype, {
         if (saveButton && !saveButton.querySelector('.button-text')) {
             const textSpan = document.createElement('span');
             textSpan.className = 'button-text ms-2';
-            textSpan.textContent = 'Salva manualmente';
+            textSpan.textContent = 'Salva';
             textSpan.style.fontSize = '12px';
             textSpan.style.fontWeight = '500';
             textSpan.style.color = '#6c757d';
@@ -53,7 +53,7 @@ patch(FormController.prototype, {
         if (discardButton && !discardButton.querySelector('.button-text')) {
             const textSpan = document.createElement('span');
             textSpan.className = 'button-text ms-2';
-            textSpan.textContent = 'Scarta tutte le modifiche';
+            textSpan.textContent = 'Annulla';
             textSpan.style.fontSize = '12px';
             textSpan.style.fontWeight = '500';
             textSpan.style.color = '#6c757d';

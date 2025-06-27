@@ -1,4 +1,4 @@
-/* Personalizzazione dei pulsanti del modulo per includere testo */
+/* /* Personalizzazione dei pulsanti del modulo per includere testo */
 
 /* Pulsante Salva manualmente */
 .o_form_status_indicator_buttons .o_form_button_save::after {
@@ -32,6 +32,7 @@
 
 /* Regolazioni per un layout migliore con bordi */
 .o_form_status_indicator_buttons {
+
     .o_form_button_save,
     .o_form_button_cancel {
         display: inline-flex;
@@ -42,34 +43,34 @@
         border-radius: 4px;
         background-color: #f8f9fa;
         transition: all 0.2s ease;
-        
+
         &:hover {
             border-color: #adb5bd !important;
             background-color: #e9ecef;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-        
+
         &:active {
             transform: translateY(1px);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
     }
-    
+
     .o_form_button_save {
         border-color: #28a745 !important;
         background-color: #d4edda;
         margin-right: 3px;
-        
+
         &:hover {
             border-color: #1e7e34 !important;
             background-color: #c3e6cb;
         }
     }
-    
+
     .o_form_button_cancel {
         border-color: #dc3545 !important;
         background-color: #f8d7da;
-        
+
         &:hover {
             border-color: #bd2130 !important;
             background-color: #f1b0b7;
@@ -88,39 +89,41 @@
     border-radius: 4px;
     background-color: #f8f9fa;
     transition: all 0.2s ease;
-    
+
     &:hover {
         border-color: #495057 !important;
         background-color: #e9ecef;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
-    
+
     &:active {
         transform: translateY(1px);
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 }
 
 /* Responsività - nascondere il testo su schermi piccoli */
 @media (max-width: 768px) {
+
     .o_form_status_indicator_buttons .o_form_button_save::after,
     .o_form_status_indicator_buttons .o_form_button_cancel::after,
     .o_cp_action_menus .btn::after {
         display: none;
     }
-    
+
     /* Mantenere i bordi anche su mobile */
     .o_form_status_indicator_buttons {
+
         .o_form_button_save,
         .o_form_button_cancel {
             padding: 2px 4px;
         }
-        
+
         .o_form_button_save {
             margin-right: 4px;
         }
     }
-    
+
     .o_cp_action_menus .btn {
         padding: 2px 4px;
         padding-right: 8px !important;
@@ -133,11 +136,11 @@
     border-color: #e9ecef !important;
     background-color: #f8f9fa;
     opacity: 0.6;
-    
+
     &::after {
         color: #adb5bd;
     }
-    
+
     &:hover {
         border-color: #e9ecef !important;
         background-color: #f8f9fa;
@@ -160,4 +163,6 @@
 .o_cp_action_menus .btn:focus {
     outline: 2px solid #007bff;
     outline-offset: 2px;
-} 
+}
+
+*/
