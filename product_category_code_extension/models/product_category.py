@@ -36,10 +36,10 @@ class ProductCategory(models.Model):
     def write(self, vals):
         """Aggiorna codici quando parent_id cambia"""
         
-        procuct_category = self.env['product.category'].search([('codice', '=', vals.codice),('parent_id', '=', vals.parent_id)], limit=1)
+        procuct_category = self.env['product.category'].search([('codice', '=', vals["codice"]),('parent_id', '=', vals["parent_id"])], limit=1)
         
         if(procuct_category):
-            raise ValidationError("Il codice {} è già utilizzato in un'altra categoria con lo stesso genitore.".format(vals.codice))
+            raise ValidationError("Il codice {} è già utilizzato in un'altra categoria con lo stesso genitore.".format(vals["codice"]))
         
         if 'parent_id' in vals:
             # Verifica se non sta creando loop infinito
