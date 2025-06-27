@@ -56,8 +56,8 @@ class ProductCategory(models.Model):
         
         result = super().write(vals)
         
-        if 'parent_id' in vals or 'name' in vals:
-            # Rigenera codici per record che hanno cambiato genitore o nome
+        if 'parent_id' in vals or 'codice' in vals:
+            # Rigenera codici per record che hanno cambiato genitore o codice
             for record in self:
                 record._update_codice_complessivo()
                 # Aggiorna figli ricorsivamente
@@ -73,7 +73,7 @@ class ProductCategory(models.Model):
                 record.codice_complessivo = record.codice
             else:
                 # Livello > 1: codice complessivo = codice del genitore + codice semplice
-                record.codice_complessivo = record.parent_id.codice_complessivo + record.codice
+                record.codice_complessivo = record.parent_id.codice_complessivo if record.parent_id.codice_complessivo else '' + record.codice if record.codice else ''
 
     def _update_children_codes(self):
         """Aggiorna codici dei figli ricorsivamente"""
