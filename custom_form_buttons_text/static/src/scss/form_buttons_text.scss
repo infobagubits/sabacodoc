@@ -2,7 +2,7 @@
 
 /* Pulsante Salva manualmente */
 .o_form_status_indicator_buttons .o_form_button_save::after {
-    content: "Salva manualmente";
+    content: "Salva";
     margin-left: 6px;
     font-size: 12px;
     font-weight: 500;
@@ -10,9 +10,9 @@
     white-space: nowrap;
 }
 
-/* Pulsante Scarta tutte le modifiche */
+/* Pulsante Annulla */
 .o_form_status_indicator_buttons .o_form_button_cancel::after {
-    content: "Scarta tutte le modifiche";
+    content: "Annulla";
     margin-left: 6px;
     font-size: 12px;
     font-weight: 500;
@@ -30,13 +30,12 @@
     white-space: nowrap;
 }
 
+
 /* Regolazioni per un layout migliore con bordi */
 .o_form_status_indicator_buttons {
 
     .o_form_button_save,
     .o_form_button_cancel {
-        display: inline-flex;
-        align-items: center;
         min-width: auto;
         padding: 4px 8px;
         border: 1px solid #dee2e6 !important;
@@ -164,5 +163,3 @@
     outline: 2px solid #007bff;
     outline-offset: 2px;
 }
-
-*/

@@ -25,11 +25,7 @@
     ],
     'assets': {
         'web.assets_backend': [
-            # Soluzione CSS (predefinita - più efficiente)
-            # 'custom_form_buttons_text/static/src/scss/form_buttons_text.scss',
-            
-            # Soluzione JavaScript (alternativa - decommentare se necessario)
-            # 'custom_form_buttons_text/static/src/js/form_buttons_text.js',
+            'custom_form_buttons_text/static/src/scss/form_buttons_text.scss',
         ],
     },
     'installable': True,
