@@ -177,6 +177,20 @@ class GiroOrdineRiga(models.Model):
             },
         }
 
+    def unlink(self):
+        giro_ids = self.mapped('giro_id')
+        result = super(GiroOrdineRiga, self).unlink()
+        for giro in giro_ids:
+            linhas = self.env['giri.ordine.riga'].search([
+                ('giro_id', '=', giro.id)
+            ], order='sequence')
+            sequence = 1
+            for linha in linhas:
+                if linha.sequence != sequence:
+                    linha.sequence = sequence
+                sequence += 1
+        return result
+
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
