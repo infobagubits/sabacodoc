@@ -33,19 +33,14 @@ class ProductCategory(models.Model):
                 parent = parent.parent_id
             record.livello = level
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        """Genera codici complessivi automaticamente alla creazione"""
-        
-        records = super().create(vals_list)
-        
-        for record in records:
-            record._update_codice_complessivo()
-        
-        return records
-
     def write(self, vals):
         """Aggiorna codici quando parent_id cambia"""
+        
+        procuct_category = self.env['product.category'].search([('codice', '=', vals.codice),('parent_id', '=', vals.parent_id)], limit=1)
+        
+        if(procuct_category):
+            raise ValidationError("Il codice {} è già utilizzato in un'altra categoria con lo stesso genitore.".format(vals.codice))
+        
         if 'parent_id' in vals:
             # Verifica se non sta creando loop infinito
             for record in self:
