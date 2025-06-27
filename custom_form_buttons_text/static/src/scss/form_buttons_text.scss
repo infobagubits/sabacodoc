@@ -3,7 +3,6 @@
 /* Pulsante Salva manualmente */
 .o_form_status_indicator_buttons .o_form_button_save::after {
     content: "Salva";
-    margin-left: 6px;
     font-size: 12px;
     font-weight: 500;
     color: #6c757d;
@@ -13,7 +12,6 @@
 /* Pulsante Annulla */
 .o_form_status_indicator_buttons .o_form_button_cancel::after {
     content: "Annulla";
-    margin-left: 6px;
     font-size: 12px;
     font-weight: 500;
     color: #6c757d;
@@ -23,7 +21,6 @@
 /* Pulsante Azioni */
 .o_cp_action_menus .btn::after {
     content: "Azioni";
-    margin-left: 6px;
     font-size: 12px;
     font-weight: 500;
     color: #6c757d;
