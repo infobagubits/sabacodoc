@@ -72,17 +72,8 @@ class ProductCategory(models.Model):
                 # Livello 1: codice complessivo = codice semplice
                 record.codice_complessivo = record.codice
             else:
-                # Livelli 2+: concatena codici dei genitori
-                parent_codes = []
-                current = record
-                
-                while current.parent_id:
-                    current = current.parent_id
-                    if current.codice:
-                        parent_codes.insert(0, current.codice)
-                
-                if parent_codes and record.codice:
-                    record.codice_complessivo = parent_codes[0] + record.codice
+                # Livello > 1: codice complessivo = codice del genitore + codice semplice
+                record.codice_complessivo = record.parent_id.codice_complessivo + record.codice
 
     def _update_children_codes(self):
         """Aggiorna codici dei figli ricorsivamente"""
