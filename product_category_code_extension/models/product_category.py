@@ -73,7 +73,7 @@ class ProductCategory(models.Model):
                 record.codice_complessivo = record.codice
             else:
                 # Livello > 1: codice complessivo = codice del genitore + codice semplice
-                record.codice_complessivo = record.parent_id.codice_complessivo if record.parent_id.codice_complessivo else '' + record.codice if record.codice else ''
+                record.codice_complessivo = (record.parent_id.codice_complessivo if record.parent_id.codice_complessivo else '') + (record.codice if record.codice else '')
 
     def _update_children_codes(self):
         """Aggiorna codici dei figli ricorsivamente"""
