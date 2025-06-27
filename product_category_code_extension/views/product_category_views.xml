@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        
+
         <!-- Ereditarietà della vista form di categoria prodotto -->
         <record id="product_category_form_view_inherit" model="ir.ui.view">
             <field name="name">product.category.form.inherit</field>
             <field name="model">product.category</field>
-            <field name="inherit_id" ref="product.product_category_form_view"/>
+            <field name="inherit_id" ref="product.product_category_form_view" />
             <field name="arch" type="xml">
                 <xpath expr="//group[@name='first']" position="after">
                     <group name="category_codes" string="Codici e Livelli" col="2">
-                        <field name="livello" readonly="1"/>
-                        <field name="codice" readonly="1"/>
-                        <field name="codice_complessivo" readonly="1"/>
+                        <field name="livello" readonly="1" />
+                        <field name="codice" />
+                        <field name="codice_complessivo" readonly="1" />
                     </group>
                 </xpath>
             </field>
@@ -22,14 +22,15 @@
         <record id="product_category_list_view_inherit" model="ir.ui.view">
             <field name="name">product.category.list.inherit</field>
             <field name="model">product.category</field>
-            <field name="inherit_id" ref="product.product_category_list_view"/>
+            <field name="inherit_id" ref="product.product_category_list_view" />
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='display_name']" position="before">
-                    <field name="livello" class="text-left o_list_number_th" widget="integer"/>
-                    <field name="codice_complessivo"/>
+                    <field name="livello" class="text-left o_list_number_th" widget="integer" />
+                    <field name="codice" />
+                    <field name="codice_complessivo" />
                 </xpath>
             </field>
         </record>
-        
+
     </data>
 </odoo> 
