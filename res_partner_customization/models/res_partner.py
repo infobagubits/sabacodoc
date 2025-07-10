@@ -22,11 +22,6 @@ class ResPartner(models.Model):
         help='Codice identificativo del fornitore',
         groups='base.group_user',
     )
-    codice_prodotti_fornitore = fields.Char(
-        string='Codice Prodotti Fornitore',
-        help='Codice identificativo dei prodotti forniti dal fornitore',
-        groups='base.group_user',
-    )
 
     codice_cliente = fields.Char(
         string='Codice Cliente',
@@ -52,4 +47,8 @@ class ResPartner(models.Model):
         help="Inserisci il giorno di chiusura dell'azienda, se applicabile."
     )
 
-    
+    codice_prodotti_fornitore = fields.Char(
+        string='Codice Prodotti Fornitore',
+        help='Codice identificativo dei prodotti forniti dal fornitore',
+        groups='base.group_user',
+    )
