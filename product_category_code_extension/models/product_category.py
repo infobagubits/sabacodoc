@@ -1,4 +1,6 @@
 from odoo import models, fields, api
+from odoo.exceptions import ValidationError
+
 
 class ProductCategory(models.Model):
     _inherit = 'product.category'
@@ -38,8 +40,8 @@ class ProductCategory(models.Model):
         
         for record in self:
             if(record["codice"] and record["codice"].strip() != ''):
-                procuct_category = self.env['product.category'].search([('codice', '=', record["codice"]),('parent_id', '=', record["parent_id"]["id"] if record["parent_id"] else False)], limit=1)
-                if(procuct_category):
+                procuct_category = self.env['product.category'].search([('codice', '=', record["codice"]),('parent_id', '=', record["parent_id"]["id"] if record["parent_id"] else False)])
+                if((len(procuct_category) > 0 and procuct_category[0].id != record.id) or len(procuct_category) > 1):
                     raise ValidationError("Il codice {} è già utilizzato in un'altra categoria con lo stesso genitore.".format(record["codice"]))
         
         
