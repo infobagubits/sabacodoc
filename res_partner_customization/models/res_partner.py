@@ -47,8 +47,8 @@ class ResPartner(models.Model):
         help="Inserisci il giorno di chiusura dell'azienda, se applicabile."
     )
 
-    codice_prodotti_fornitore = fields.Char(
+"""     codice_prodotti_fornitore = fields.Char(
         string='Codice Prodotti Fornitore',
         help='Codice identificativo dei prodotti forniti dal fornitore',
         groups='base.group_user',
-    )
+    ) """
