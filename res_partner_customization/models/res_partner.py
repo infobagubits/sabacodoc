@@ -1,4 +1,4 @@
-from odoo import models, fields, api
+from odoo import models, fields
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'
@@ -41,6 +41,12 @@ class ResPartner(models.Model):
         ('gdo', 'GDO'),
         ('grossista', 'GROSSISTA'),
     ], string='Tipo Cliente', help='Tipologia del cliente')
+    
+    codice_prodotti_fornitore = fields.Char(
+        string='Codice Prodotti Fornitore',
+        help='Codice identificativo dei prodotti forniti dal fornitore',
+        groups='base.group_user',
+    )
 
     giorno_di_chiusura = fields.Char(
         string="Giorno di chiusura",
