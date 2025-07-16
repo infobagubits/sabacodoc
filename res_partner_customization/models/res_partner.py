@@ -46,12 +46,6 @@ class ResPartner(models.Model):
         string="Giorno di chiusura",
         help="Inserisci il giorno di chiusura dell'azienda, se applicabile."
     )
-
-    codice_prodotti_fornitore = fields.Char(
-        string='Codice Prodotti Fornitore',
-        help='Codice identificativo dei prodotti forniti dal fornitore',
-        groups='base.group_user',
-    )
     etichetta_telefono = fields.Char(
         string='Etichetta Tel. Fisso',
         help='Etichetta per il numero di telefono fisso',
