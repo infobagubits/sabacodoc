@@ -17,22 +17,19 @@
                     </span>
                 </xpath>
                 <!-- Campi esistenti -->
-                <xpath expr="//field[@name='function']" position="before">
+                <xpath expr="//field[@name='vat']" position="after">
                     <field name="codice_cliente" invisible="not is_customer" />
                     <field name="stato_cliente" invisible="not is_customer" />
                     <field name="tipo_cliente" invisible="not is_customer" />
                     <field name="codice_fornitore" invisible="not is_supplier" />
                     <field name="codice_prodotti_fornitore" invisible="not is_supplier" />
-                </xpath>
-
-                <!-- Inserisci Giorno di chiusura come primo campo del secondo gruppo del form -->
-                <xpath expr="//sheet/group/group[2]/field[@name='function']" position="before">
                     <field name="giorno_di_chiusura" />
                 </xpath>
-                <xpath expr="//sheet/group/group[2]/field[@name='phone']" position="before">
+
+                <xpath expr="//field[@name='phone']" position="before">
                     <field name="etichetta_telefono" />
                 </xpath>
-                <xpath expr="//sheet/group/group[2]/field[@name='mobile']" position="before">
+                <xpath expr="//field[@name='mobile']" position="before">
                     <field name="etichetta_cellulare" />
                 </xpath>
 
