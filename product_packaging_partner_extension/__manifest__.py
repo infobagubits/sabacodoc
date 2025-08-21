@@ -1,0 +1,27 @@
+{
+    'name': 'Sabaco - Product Packaging Partner Extension',
+    'version': '18.0.1.0.0',
+    'category': 'Inventory',
+    'summary': 'Estensione del modulo imballaggi prodotti per collegare i partner',
+    'sequence': 1,
+    'author': 'Bagubits SRLS',
+    'maintainer': 'Bagubits SRLS',
+    'website': 'https://bagubits.it',
+    'license': 'LGPL-3',
+    'depends': [
+        'base',
+        'product',
+        'purchase',
+        'sale',
+        'partner_customer_supplier_extension',
+    ],
+    'data': [
+        'security/ir.model.access.csv',
+        'views/product_packaging_views.xml',
+        'views/purchase_order_views.xml',
+        'views/sale_order_views.xml',
+    ],
+    'installable': True,
+    'application': False,
+    'auto_install': False,
+} 

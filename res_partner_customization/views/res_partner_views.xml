@@ -17,7 +17,7 @@
                     </span>
                 </xpath>
                 <!-- Campi esistenti -->
-                <xpath expr="//field[@name='vat']" position="after">
+                <xpath expr="//sheet/group/group[1]" position="inside">
                     <field name="codice_cliente" invisible="not is_customer" />
                     <field name="stato_cliente" invisible="not is_customer" />
                     <field name="tipo_cliente" invisible="not is_customer" />
@@ -26,10 +26,10 @@
                     <field name="giorno_di_chiusura" />
                 </xpath>
 
-                <xpath expr="//field[@name='phone']" position="before">
+                <xpath expr="//sheet/group/group[2]/field[3]" position="before">
                     <field name="etichetta_telefono" />
                 </xpath>
-                <xpath expr="//field[@name='mobile']" position="before">
+                <xpath expr="//sheet/group/group[2]/field[5]" position="before">
                     <field name="etichetta_cellulare" />
                 </xpath>
 

@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_product_packaging_user,product.packaging.user,product.model_product_packaging,base.group_user,1,0,0,0
+access_product_packaging_manager,product.packaging.manager,product.model_product_packaging,product.group_product_manager,1,1,1,1
+access_product_packaging_partner_rel,product.packaging.partner.rel,model_product_packaging_partner_rel,base.group_user,1,1,1,1

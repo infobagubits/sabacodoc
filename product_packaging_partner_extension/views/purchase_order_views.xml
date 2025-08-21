@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Eredita la vista form dell'ordine di acquisto per filtrare gli imballaggi per fornitore -->
+    <record id="purchase_order_form_view_inherit_packaging_filter" model="ir.ui.view">
+        <field name="name">purchase.order.form.inherit.packaging.filter</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <!-- Aggiunge il campo calcolato invisibile -->
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_packaging_id']" position="before">
+                <field name="available_packaging_ids" column_invisible="True"/>
+            </xpath>
+            
+            <!-- Modifica il dominio del campo product_packaging_id nella lista delle righe -->
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_packaging_id']" position="attributes">
+                <attribute name="domain">[('id', 'in', available_packaging_ids)]</attribute>
+                <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+            </xpath>
+            
+            <!-- Aggiunge il campo calcolato invisibile nel modulo -->
+            <xpath expr="//field[@name='order_line']/form//field[@name='product_packaging_id']" position="before">
+                <field name="available_packaging_ids" invisible="1"/>
+            </xpath>
+            
+            <!-- Modifica il dominio del campo product_packaging_id nel modulo di riga -->
+            <xpath expr="//field[@name='order_line']/form//field[@name='product_packaging_id']" position="attributes">
+                <attribute name="domain">[('id', 'in', available_packaging_ids)]</attribute>
+                <attribute name="options">{'no_create': True, 'no_create_edit': True}</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo> 
