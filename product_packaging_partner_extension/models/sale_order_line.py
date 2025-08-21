@@ -30,15 +30,9 @@ class SaleOrderLine(models.Model):
             if line.order_id.partner_id:
                 # Cerca imballaggi collegati a questo cliente
                 partner_packagings = all_packagings.filtered(
-                    lambda p: line.order_id.partner_id.id in p.contact_line_ids.partner_id.ids
+                    lambda p: line.order_id.partner_id.id in p.contact_line_ids.partner_id.ids or not p.contact_line_ids.partner_id.ids
                 )
                 
                 if partner_packagings:
                     # Se esistono imballaggi collegati, mostra solo quelli
                     line.available_packaging_ids = [(6, 0, partner_packagings.ids)]
-                else:
-                    # Se non ci sono imballaggi collegati, mostra tutti
-                    line.available_packaging_ids = [(6, 0, all_packagings.ids)]
-            else:
-                # Se non c'è un cliente, mostra tutti
-                line.available_packaging_ids = [(6, 0, all_packagings.ids)] 
