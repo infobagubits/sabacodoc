@@ -1,29 +1,69 @@
 <odoo>
-    <!-- Herdar a tree view padrão -->
+    <!-- Eredita la vista tree standard -->
     <record id="purchase_order_line_tree_view_inherit_uom" model="ir.ui.view">
         <field name="name">purchase.order.line.tree.inherit.uom</field>
         <field name="model">purchase.order.line</field>
         <field name="inherit_id" ref="purchase.purchase_order_line_tree" />
         <field name="arch" type="xml">
-            <!-- Substitui o bloco para garantir a ordem correta dos campos -->
+            <!-- Modifica solo l\'ordine dei campi che esistono realmente nella tree principale -->
             <xpath expr="//field[@name='product_qty']" position="replace">
                 <field name="product_qty" />
                 <field name="purchase_uom_free" string="UdM acquisto libera" />
+                <field name="product_uom" string="UdM fattura" readonly="1" />
             </xpath>
         </field>
     </record>
 
-    <!-- Herdar o formulário do pedido de compra para alterar a tree inline -->
+    <!-- Eredita il form dell\'ordine di acquisto per modificare la tree inline, con modifica
+    completa -->
     <record id="purchase_order_form_view_inherit_uom" model="ir.ui.view">
         <field name="name">purchase.order.form.inherit.uom</field>
         <field name="model">purchase.order</field>
         <field name="inherit_id" ref="purchase.purchase_order_form" />
         <field name="arch" type="xml">
-            <!-- Substitui o bloco para garantir a ordem correta dos campos na tree inline -->
+            <!-- Rimuove i campi dalla posizione originale -->
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_packaging_qty']"
+                position="replace" />
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_packaging_id']"
+                position="replace" />
+            <!-- Aggiunge i campi prima di product_qty -->
             <xpath expr="//field[@name='order_line']/list/field[@name='product_qty']"
-                position="replace">
-                <field name="product_qty" />
+                position="before">
+                <field name="product_packaging_qty"
+                    invisible="not product_id or not product_packaging_id"
+                    groups="product.group_stock_packaging" />
+                <field name="product_packaging_id" invisible="not product_id"
+                    context="{'default_product_id': product_id, 'list_view_ref':'product.product_packaging_tree_view', 'form_view_ref':'product.product_packaging_form_view'}"
+                    groups="product.group_stock_packaging" />
+            </xpath>
+            <!-- Sostituisce il blocco delle UoM -->
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_qty']"
+                position="after">
                 <field name="purchase_uom_free" string="UdM acquisto libera" />
+                <field name="product_uom" string="UdM fattura" readonly="1" />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Eredita il form dell\'ordine di acquisto per nascondere i campi -->
+    <record id="purchase_order_form_view_inherit_hide_fields" model="ir.ui.view">
+        <field name="name">purchase.order.form.inherit.hide.fields</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form" />
+        <field name="arch" type="xml">
+            <!-- Nasconde il campo partner_ref -->
+            <xpath expr="//field[@name='partner_ref']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Nasconde il campo date_order -->
+            <xpath expr="//field[@name='date_order']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Nasconde il div reminder -->
+            <xpath expr="//div[@name='reminder']" position="attributes">
+                <attribute name="invisible">1</attribute>
             </xpath>
         </field>
     </record>
