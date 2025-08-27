@@ -4,47 +4,49 @@
     <record id="modulo_personalizzato_vendite_sale_order_form" model="ir.ui.view">
         <field name="name">modulo.personalizzato.vendite.sale.order.form</field>
         <field name="model">sale.order</field>
-        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="inherit_id" ref="sale.view_order_form" />
         <field name="arch" type="xml">
-            
+
             <!-- Rimuovere il campo scadenza (validity_date) -->
-            <xpath expr="//field[@name='validity_date']" position="replace"/>
-            
+            <xpath expr="//field[@name='validity_date']" position="replace" />
+
             <!-- Impostare listino prezzi in sola lettura -->
             <xpath expr="//field[@name='pricelist_id']" position="attributes">
                 <attribute name="readonly">1</attribute>
             </xpath>
-            
+
             <!-- Impostare termini di pagamento in sola lettura -->
             <xpath expr="//field[@name='payment_term_id']" position="attributes">
                 <attribute name="readonly">1</attribute>
             </xpath>
-            
+
             <!-- Sostituire il campo UoM con versione solo lettura -->
-            <xpath expr="//field[@name='order_line']//field[@name='product_uom']" position="replace">
-                <field name="product_uom" readonly="1" force_save="1" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
+            <xpath expr="//field[@name='order_line']//field[@name='product_uom']"
+                position="attributes">
+                <attribute name="readonly">1</attribute>
             </xpath>
-            
+
             <!-- Aggiungere campi di unità secondaria prima di product_packaging_qty -->
-            <xpath expr="//field[@name='order_line']/list/field[@name='product_packaging_qty']" position="before">
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_packaging_qty']"
+                position="before">
                 <!-- Campo Quantità Secondaria -->
                 <field name="x_secondary_qty"
-                       string="Qtà Secondaria"
-                       readonly="1"
-                       optional="show"/>
+                    string="Qtà Secondaria"
+                    optional="show" />
                 <!-- Campo Unità Secondaria -->
                 <field name="x_secondary_uom_id"
-                       string="U.M. Secondaria"
-                       readonly="1"
-                       optional="show"/>
+                    string="U.M. Secondaria"
+                    readonly="1"
+                    optional="show" />
             </xpath>
-            
-            <!-- Bloccare completamente la creazione e navigazione degli imballaggi -->
-            <xpath expr="//field[@name='order_line']/list//field[@name='product_packaging_id']" position="attributes">
-                <attribute name="readonly">1</attribute>
-                <attribute name="options">{'no_create': True, 'no_create_edit': True, 'no_open': True}</attribute>
+
+            <!-- Bloccare completamente la creazione degli imballaggi -->
+            <xpath expr="//field[@name='order_line']/list//field[@name='product_packaging_id']"
+                position="attributes">
+                <attribute name="options">{'no_create': True, 'no_create_edit': True, 'no_open':
+                    True}</attribute>
             </xpath>
-            
+
         </field>
     </record>
 </odoo> 
