@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="modulo_personalizzato_vendite_stock_quant_simple" model="ir.ui.view">
+        <field name="name">modulo.personalizzato.vendite.stock.quant.simple</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.view_stock_quant_tree_simple"/>
+        <field name="arch" type="xml">
+            <!-- Inserire dopo il campo available_quantity -->
+            <xpath expr="//field[@name='product_uom_id']" position="after">
+                <field name="x_secondary_qty" string="Qtà Secondaria"/>
+                <field name="x_secondary_uom_id" string="U.M. Secondaria"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
