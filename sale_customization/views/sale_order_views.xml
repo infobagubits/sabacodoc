@@ -21,7 +21,7 @@
             </xpath>
 
             <!-- Sostituire il campo UoM con versione solo lettura -->
-            <xpath expr="//field[@name='order_line']//field[@name='product_uom']"
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_uom']"
                 position="attributes">
                 <attribute name="readonly">1</attribute>
             </xpath>
@@ -41,7 +41,7 @@
             </xpath>
 
             <!-- Bloccare completamente la creazione degli imballaggi -->
-            <xpath expr="//field[@name='order_line']/list//field[@name='product_packaging_id']"
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_packaging_id']"
                 position="attributes">
                 <attribute name="options">{'no_create': True, 'no_create_edit': True, 'no_open':
                     True}</attribute>
