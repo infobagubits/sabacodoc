@@ -22,8 +22,9 @@
 
             <!-- Sostituire il campo UoM con versione solo lettura -->
             <xpath expr="//field[@name='order_line']/list/field[@name='product_uom']"
-                position="attributes">
-                <attribute name="readonly">1</attribute>
+                position="replace">
+                <field name="product_uom" groups="uom.group_uom" class="oe_no_button" readonly="1"
+                    required="not display_type and not is_downpayment" />
             </xpath>
 
             <!-- Aggiungere campi di unità secondaria prima di product_packaging_qty -->
