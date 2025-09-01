@@ -37,7 +37,7 @@
                                     <field name="note"/>
                                     <field name="ordini_aperti" widget="statinfo" string=" Ordini aperti"/>
                                     <button name="action_criar_ordini_giro"
-                                            string="ORDINE"
+                                            string="CREA ORDINE"
                                             type="object"
                                             class="btn-primary"/>
                                 </list>
