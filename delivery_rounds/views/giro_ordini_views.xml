@@ -44,7 +44,7 @@
                             </field>
                         </page>
                         <page string="Ordini del giro">
-                            <field name="order_ids" mode="list,form" context="{'default_giro_id': id}">
+                            <field name="order_ids" mode="list" context="{'default_giro_id': id}">
                                 <list string="Ordini" decoration-muted="state=='cancel'">
                                     <field name="name"/>
                                     <field name="create_date"/>
