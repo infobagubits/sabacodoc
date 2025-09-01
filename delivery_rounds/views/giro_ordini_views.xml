@@ -45,7 +45,7 @@
                         </page>
                         <page string="Ordini del giro">
                             <field name="order_ids" readonly="1" nolabel="1" 
-                                   context="{'tree_view_ref': 'delivery_rounds.view_sale_order_tree_giro_custom'}">
+                                   context="{'list_view_ref': 'delivery_rounds.view_sale_order_list_giro_custom'}">
                                 <list string="Ordini" create="false" edit="false">
                                     <field name="name"/>
                                     <field name="create_date"/>
@@ -147,19 +147,20 @@
         </field>
     </record>
 
-    <!-- Tree view customizada para sale.order com ação personalizada -->
-    <record id="view_sale_order_tree_giro_custom" model="ir.ui.view">
-        <field name="name">sale.order.tree.giro.custom</field>
+    <!-- List view customizada para sale.order com ação personalizada -->
+    <record id="view_sale_order_list_giro_custom" model="ir.ui.view">
+        <field name="name">sale.order.list.giro.custom</field>
         <field name="model">sale.order</field>
+        <field name="type">list</field>
         <field name="arch" type="xml">
-            <tree string="Ordini del Giro" create="false" edit="false" action="action_open_sale_order_form">
+            <list string="Ordini del Giro" create="false" edit="false" action="action_open_sale_order_form">
                 <field name="name"/>
                 <field name="create_date"/>
                 <field name="partner_id"/>
                 <field name="stato_preparazione"/>
                 <field name="amount_total" widget="monetary"/>
                 <field name="state"/>
-            </tree>
+            </list>
         </field>
     </record>
 </odoo>
