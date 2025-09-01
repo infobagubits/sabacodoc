@@ -44,7 +44,8 @@
                             </field>
                         </page>
                         <page string="Ordini del giro">
-                            <field name="order_ids" readonly="1" nolabel="1">
+                            <field name="order_ids" readonly="1" nolabel="1" 
+                                   context="{'tree_view_ref': 'delivery_rounds.view_sale_order_tree_giro_custom'}">
                                 <list string="Ordini" create="false" edit="false">
                                     <field name="name"/>
                                     <field name="create_date"/>
@@ -52,7 +53,6 @@
                                     <field name="stato_preparazione"/>
                                     <field name="amount_total" widget="monetary"/>
                                     <field name="state"/>
-                                    <button string="Apri Ordine" type="object" name="action_open_sale_order_form" icon="fa-external-link" class="btn-link"/>
                                 </list>
                             </field>
                             <group class="oe_subtotal_footer" style="margin-top: 20px;">
@@ -144,6 +144,22 @@
             <field name="state" position="before">
                 <field name="stato_preparazione"/>
             </field>
+        </field>
+    </record>
+
+    <!-- Tree view customizada para sale.order com ação personalizada -->
+    <record id="view_sale_order_tree_giro_custom" model="ir.ui.view">
+        <field name="name">sale.order.tree.giro.custom</field>
+        <field name="model">sale.order</field>
+        <field name="arch" type="xml">
+            <tree string="Ordini del Giro" create="false" edit="false" action="action_open_sale_order_form">
+                <field name="name"/>
+                <field name="create_date"/>
+                <field name="partner_id"/>
+                <field name="stato_preparazione"/>
+                <field name="amount_total" widget="monetary"/>
+                <field name="state"/>
+            </tree>
         </field>
     </record>
 </odoo>
