@@ -52,7 +52,10 @@
                                     <field name="stato_preparazione"/>
                                     <field name="amount_total" widget="monetary"/>
                                     <field name="state"/>
-                                    <button string="Apri Ordine" type="object" name="action_open_sale_order_form" icon="fa-external-link" class="btn-link"/>
+                                    <button name="action_open_sale_order_form"
+                                            string="ORDINE"
+                                            type="object"
+                                            class="btn-primary"/>
                                 </list>
                             </field>
                             <group class="oe_subtotal_footer" style="margin-top: 20px;">
