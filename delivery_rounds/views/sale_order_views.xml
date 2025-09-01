@@ -6,7 +6,7 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
 
-            <!-- Inserindo os campos antes do campo validity_date -->
+            <!-- Inserimento dei campi prima del campo validity_date -->
             <xpath expr="//group[@name='order_details']/field[@name='validity_date']" position="before">
                 <field name="giro_id" options="{'no_create': True}" placeholder="Seleziona un giro"/>
                 <field name="sequenza_consegna"/>

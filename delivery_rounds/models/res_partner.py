@@ -32,5 +32,5 @@ class ResPartner(models.Model):
 
     @api.onchange('is_customer')
     def _onchange_is_customer(self):
-        """Método para garantir que a interface atualize quando o campo is_customer mudar"""
+        """Metodo per garantire che l'interfaccia si aggiorni quando il campo is_customer cambia"""
         return 

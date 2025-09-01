@@ -17,12 +17,12 @@ class SaleOrder(models.Model):
     def default_get(self, fields_list):
         defaults = super(SaleOrder, self).default_get(fields_list)
 
-        # Pega o giro_id e partner_id do contexto
+        # Prende il giro_id e partner_id dal contesto
         giro_id = self.env.context.get('default_giro_id')
         partner_id = self.env.context.get('default_partner_id')
 
         if giro_id and partner_id:
-            # Busca a sequência do cliente no giro
+            # Cerca la sequenza del cliente nel giro
             riga = self.env['giri.ordine.riga'].search([
                 ('giro_id', '=', giro_id),
                 ('partner_id', '=', partner_id)
@@ -34,7 +34,7 @@ class SaleOrder(models.Model):
         return defaults
     
     def action_open_sale_order_form(self):
-        """Apre il sale order in tela cheia"""
+        """Apre il sale order a schermo intero"""
         self.ensure_one()
         return {
             'name': f'Ordine {self.name}',
@@ -42,5 +42,5 @@ class SaleOrder(models.Model):
             'res_model': 'sale.order',
             'view_mode': 'form',
             'res_id': self.id,
-            'target': 'current',  # Forza tela cheia
+            'target': 'current',  # Forza schermo intero
         }

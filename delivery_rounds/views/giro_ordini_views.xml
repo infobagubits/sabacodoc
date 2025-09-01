@@ -25,7 +25,7 @@
                         <field name="note" placeholder="Scrivi le tue note qui..." nolabel="1"/>
                     </div>
 
-                    <!-- Aba com list moderno -->
+                    <!-- Tab con lista moderna -->
                     <notebook>
                         <page string="Clienti sul giro">
                             <field name="riga_ids" mode="list,form" on_change="1">

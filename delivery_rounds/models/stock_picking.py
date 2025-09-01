@@ -3,7 +3,7 @@ from odoo import models, fields, api
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
-    # Campos relacionados ao giro di ordini
+    # Campi correlati al giro di ordini
     giro_id = fields.Many2one(
         'giri.ordine', 
         string="Giro di Consegna",
