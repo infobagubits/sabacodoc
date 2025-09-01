@@ -32,3 +32,15 @@ class SaleOrder(models.Model):
                 defaults['sequenza_consegna'] = riga.sequence
 
         return defaults
+    
+    def action_open_sale_order_form(self):
+        """Apre il sale order in tela cheia"""
+        self.ensure_one()
+        return {
+            'name': f'Ordine {self.name}',
+            'type': 'ir.actions.act_window',
+            'res_model': 'sale.order',
+            'view_mode': 'form',
+            'res_id': self.id,
+            'target': 'current',  # Forza tela cheia
+        }
