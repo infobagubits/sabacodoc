@@ -45,7 +45,7 @@
                         </page>
                         <page string="Ordini del giro">
                             <field name="order_ids" readonly="1" nolabel="1">
-                                <tree string="Ordini" decoration-muted="state=='cancel'" create="false" edit="false">
+                                <list string="Ordini" create="false" edit="false">
                                     <field name="name"/>
                                     <field name="create_date"/>
                                     <field name="partner_id"/>
@@ -53,7 +53,7 @@
                                     <field name="amount_total" widget="monetary"/>
                                     <field name="state"/>
                                     <button string="Apri Ordine" type="object" name="action_open_sale_order_form" icon="fa-external-link" class="btn-link"/>
-                                </tree>
+                                </list>
                             </field>
                             <group class="oe_subtotal_footer" style="margin-top: 20px;">
                                 <field name="currency_id" invisible="1"/>
