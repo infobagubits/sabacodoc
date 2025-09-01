@@ -2,7 +2,7 @@
     'name': 'Modulo Giri Ordini',
     'version': '18.0.1.0.3',
     'category': 'Uncategorized',
-    'summary': 'Avrai una schermata esattamente uguale a quella di Odoo, ma con l\'opzione di scegliere il giorno della settimana in cui l\'ordine verrà consegnato.',
+    'summary': "Avrai una schermata esattamente uguale a quella di Odoo, ma con l'opzione di scegliere il giorno della settimana in cui l'ordine verrà consegnato.",
     'sequence': '0',
     'author': 'Bagubits SRLS',
     'maintainer': 'Bagubits SRLS',
