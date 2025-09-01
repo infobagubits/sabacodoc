@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Herdar a view do stock.picking para adicionar campos do giro -->
+    <record id="view_picking_form_inherit_giri_ordini" model="ir.ui.view">
+        <field name="name">stock.picking.form.inherit.giri.ordini</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <!-- Adiciona campos após location_id -->
+            <xpath expr="//field[@name='location_id']" position="after">
+                <field name="giro_id" 
+                       readonly="1" 
+                       invisible="not sale_id or not sale_id.giro_id"
+                       string="Giro di Consegna"/>
+                <field name="sequenza_consegna" 
+                       readonly="1" 
+                       invisible="not sale_id or not sale_id.giro_id"
+                       string="Sequenza di Consegna"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
