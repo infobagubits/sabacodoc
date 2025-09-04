@@ -20,12 +20,20 @@
         </field>
     </record>
 
-    <!-- Ereditare la view di lista stock.picking per aggiungere nostri campi -->
+    <!-- Ereditare la view di lista stock.picking per nascondere campi studio e aggiungere nostri campi -->
     <record id="view_picking_list_inherit_giri_ordini" model="ir.ui.view">
         <field name="name">stock.picking.list.inherit.giri.ordini</field>
         <field name="model">stock.picking</field>
         <field name="inherit_id" ref="stock.vpicktree"/>
         <field name="arch" type="xml">
+            <!-- Nasconde campi studio identificados na tela -->
+            <field name="x_studio_giro" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="x_studio_ordine_di_consegna" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            
             <!-- Aggiunge i nostri campi dopo partner_id -->
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="giro_id" 
