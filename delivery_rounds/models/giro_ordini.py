@@ -231,7 +231,7 @@ class SaleOrder(models.Model):
             
             # Calcola quanti giorni mancano al prossimo giorno della settimana desiderato
             days_ahead = target_weekday - current_weekday
-            if days_ahead <= 0:  # Se è oggi o è già passato nella settimana
+            if days_ahead < 0:  # Se è già passato nella settimana
                 days_ahead += 7
             
             # Calcola la prossima data
