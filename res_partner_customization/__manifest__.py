@@ -1,6 +1,6 @@
 {
     'name': 'Personalizzazione Contatti',
-    'version': '18.0.1.0.0',
+    'version': '18.0.2.0.0',
     'category': 'Sales/CRM',
     'summary': 'Condizionali per i campi cliente e fornitore',
     'description': """
