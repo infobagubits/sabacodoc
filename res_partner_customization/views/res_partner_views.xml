@@ -22,8 +22,14 @@
                     <field name="stato_cliente" invisible="not is_customer" />
                     <field name="tipo_cliente" invisible="not is_customer" />
                     <field name="codice_fornitore" invisible="not is_supplier" />
-                    <field name="codice_prodotti_fornitore" invisible="not is_supplier" />
+                    <field name="codice_prodotti_fornitore" />
                     <field name="giorno_di_chiusura" />
+                    <field name="contact_method_ids" widget="many2many_tags"
+                        invisible="not is_customer" />
+                    <field name="note_consegna" invisible="not is_customer" />
+                    <field name="note_amministrative" invisible="not is_customer" />
+                    <field name="note_passaggi" invisible="not is_customer" />
+                    <field name="listini_consegnati" invisible="not is_customer" />
                 </xpath>
 
                 <xpath expr="//sheet/group/group[2]/field[3]" position="before">

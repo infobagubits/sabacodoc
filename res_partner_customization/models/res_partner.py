@@ -49,8 +49,7 @@ class ResPartner(models.Model):
     )
 
     giorno_di_chiusura = fields.Char(
-        string="Giorno di chiusura",
-        help="Inserisci il giorno di chiusura dell'azienda, se applicabile."
+        string="Giorno di chiusura"
     )
     etichetta_telefono = fields.Char(
         string='Etichetta Tel. Fisso',
@@ -62,3 +61,33 @@ class ResPartner(models.Model):
         help='Etichetta per il numero di cellulare',
         groups='base.group_user',
     )
+    contact_method_ids = fields.Many2many(
+        'res.partner.contact_method',
+        string='Metodi di contatto'
+    )
+    note_consegna = fields.Text(
+        string='Note di Consegna',
+        help='Note aggiuntive per la consegna',
+        groups='base.group_user',
+    )
+    note_amministrative = fields.Text(
+        string='Note Amministrative',
+        help='Note aggiuntive per le pratiche amministrative',
+        groups='base.group_user',
+    )
+    note_passaggi = fields.Text(
+        string='Note di Passaggi',
+        help='Note aggiuntive per i passaggi',
+        groups='base.group_user',
+    )
+    listini_consegnati = fields.Char(
+        string='Listini Consegnati',
+        groups='base.group_user',
+    )
+
+
+class ContactMethod(models.Model):
+    _name = 'res.partner.contact_method'
+    _description = 'Metodo di Contatto'
+
+    name = fields.Char(string='Nome', required=True)
