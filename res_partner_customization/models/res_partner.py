@@ -84,10 +84,3 @@ class ResPartner(models.Model):
         string='Listini Consegnati',
         groups='base.group_user',
     )
-
-
-class ContactMethod(models.Model):
-    _name = 'res.partner.contact_method'
-    _description = 'Metodo di Contatto'
-
-    name = fields.Char(string='Nome', required=True)
