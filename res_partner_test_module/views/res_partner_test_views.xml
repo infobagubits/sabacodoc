@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- View de herança para adicionar campos de teste -->
+        <record id="view_partner_form_inherit_test" model="ir.ui.view">
+            <field name="name">res.partner.form.inherit.test</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form" />
+            <field name="priority" eval="100"/>
+            <field name="active" eval="True"/>
+            <field name="arch" type="xml">
+                
+                <!-- Adicionar campos de teste após website -->
+                <xpath expr="//field[@name='website']" position="after">
+                    <field name="campo_teste_1" />
+                    <field name="campo_teste_2" />
+                    <field name="campo_teste_3" />
+                    <field name="campo_teste_4" />
+                    <field name="campo_teste_5" />
+                </xpath>
+
+                <!-- Adicionar campos de teste após mobile -->
+                <xpath expr="//field[@name='mobile']" position="after">
+                    <field name="campo_teste_1" string="Campo Teste 1 (Mobile)" />
+                    <field name="campo_teste_2" string="Campo Teste 2 (Mobile)" />
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
