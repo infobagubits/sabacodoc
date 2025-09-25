@@ -1,5 +1,5 @@
 {
-    'name': 'Sabaco - Product Packaging Partner Extension',
+    'name': 'Product Packaging Partner Extension',
     'version': '18.0.1.0.0',
     'category': 'Inventory',
     'summary': 'Estensione del modulo imballaggi prodotti per collegare i partner',

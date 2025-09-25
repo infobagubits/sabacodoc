@@ -1,7 +1,4 @@
 from odoo import models, fields, api
-import logging
-
-_logger = logging.getLogger(__name__)
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
@@ -18,46 +15,30 @@ class SaleOrderLine(models.Model):
         Calcola gli imballaggi disponibili basato sul cliente:
         - Se c'è un cliente e imballaggi collegati: solo imballaggi del cliente
         - Altrimenti: tutti gli imballaggi del prodotto
-        - Con trattamento di errore robusto per prodotti senza imballaggi
         """
         for line in self:
-            try:
-                if not line.product_id:
-                    line.available_packaging_ids = [(5, 0, 0)]  # Rimuove tutti
-                    continue
+            if not line.product_id:
+                line.available_packaging_ids = [(5, 0, 0)]  # Rimuove tutti
+                continue
+            
+            # Cerca tutti gli imballaggi del prodotto
+            all_packagings = self.env['product.packaging'].search([
+                ('product_id', '=', line.product_id.id)
+            ])
+            
+            # Se c'è un cliente selezionato
+            if line.order_id.partner_id:
+                # Cerca imballaggi collegati a questo cliente
+                partner_packagings = all_packagings.filtered(
+                    lambda p: line.order_id.partner_id.id in p.contact_line_ids.partner_id.ids
+                )
                 
-                # Cerca tutti gli imballaggi del prodotto
-                all_packagings = self.env['product.packaging'].search([
-                    ('product_id', '=', line.product_id.id)
-                ])
-                
-                # Se c'è un cliente selezionato
-                if line.order_id.partner_id:
-                    # Cerca imballaggi collegati a questo cliente
-                    partner_packagings = all_packagings.filtered(
-                        lambda p: line.order_id.partner_id.id in p.contact_line_ids.partner_id.ids or not p.contact_line_ids.partner_id.ids
-                    )
-                    
-                    if partner_packagings:
-                        # Se esistono imballaggi collegati, mostra solo quelli
-                        line.available_packaging_ids = [(6, 0, partner_packagings.ids)]
-                    else:
-                        # Se non ci sono imballaggi collegati al cliente, mostra tutti
-                        line.available_packaging_ids = [(6, 0, all_packagings.ids)]
+                if partner_packagings:
+                    # Se esistono imballaggi collegati, mostra solo quelli
+                    line.available_packaging_ids = [(6, 0, partner_packagings.ids)]
                 else:
-                    # Se non c'è cliente, mostra tutti gli imballaggi del prodotto
+                    # Se non ci sono imballaggi collegati, mostra tutti
                     line.available_packaging_ids = [(6, 0, all_packagings.ids)]
-                    
-            except ValueError as ve:
-                # Tratamento específico para ValueError (produtos sem embalagens)
-                line.available_packaging_ids = [(5, 0, 0)]
-                _logger.info(f"Produto {line.product_id.name if line.product_id else 'N/A'} sem embalagens - definindo lista vazia: {ve}")
-                
-            except Exception as e:
-                # Tratamento para outros erros inesperados
-                line.available_packaging_ids = [(5, 0, 0)]
-                _logger.warning(f"Erro inesperado ao computar embalagens para produto {line.product_id.name if line.product_id else 'N/A'}: {e}")
-                
-            # Garantir que sempre tenha um valor válido
-            if not line.available_packaging_ids:
-                line.available_packaging_ids = [(5, 0, 0)]
+            else:
+                # Se non c'è un cliente, mostra tutti
+                line.available_packaging_ids = [(6, 0, all_packagings.ids)] 
