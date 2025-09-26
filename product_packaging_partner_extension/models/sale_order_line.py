@@ -13,32 +13,37 @@ class SaleOrderLine(models.Model):
     def _compute_available_packaging_ids(self):
         """
         Calcola gli imballaggi disponibili basato sul cliente:
-        - Se c'è un cliente e imballaggi collegati: solo imballaggi del cliente
-        - Altrimenti: tutti gli imballaggi del prodotto
+        1. PRIMA: Verifica se embalagem tem flag sales = True
+        2. SEGUNDA: Se c'è un cliente e imballaggi collegati: solo imballaggi del cliente
+        3. TERZA: Altrimenti: tutti gli imballaggi di vendita del prodotto
         """
         for line in self:
             if not line.product_id:
                 line.available_packaging_ids = [(5, 0, 0)]  # Rimuove tutti
                 continue
             
-            # Cerca tutti gli imballaggi del prodotto
-            all_packagings = self.env['product.packaging'].search([
-                ('product_id', '=', line.product_id.id)
+            # Cerca tutti gli imballaggi del prodotto che sono per VENDITE
+            all_sales_packagings = self.env['product.packaging'].search([
+                ('product_id', '=', line.product_id.id),
+                ('sales', '=', True)  # SOLO embalagens de vendas
             ])
             
             # Se c'è un cliente selezionato
             if line.order_id.partner_id:
-                # Cerca imballaggi collegati a questo cliente
-                partner_packagings = all_packagings.filtered(
-                    lambda p: line.order_id.partner_id.id in p.contact_line_ids.partner_id.ids
+                # Cerca imballaggi collegati a questo cliente (che siano per vendite)
+                # IMPORTANTE: Considera apenas parceiros que são CLIENTES
+                partner_packagings = all_sales_packagings.filtered(
+                    lambda p: line.order_id.partner_id.id in p.contact_line_ids.filtered(
+                        lambda c: c.partner_id.is_customer
+                    ).partner_id.ids
                 )
                 
                 if partner_packagings:
-                    # Se esistono imballaggi collegati, mostra solo quelli
+                    # PRIORITÀ: Se esistono imballaggi collegati al cliente, mostra solo quelli
                     line.available_packaging_ids = [(6, 0, partner_packagings.ids)]
                 else:
-                    # Se non ci sono imballaggi collegati, mostra tutti
-                    line.available_packaging_ids = [(6, 0, all_packagings.ids)]
+                    # FALLBACK: Se non ci sono imballaggi collegati al cliente, mostra TUTTE le embalagens di vendita
+                    line.available_packaging_ids = [(6, 0, all_sales_packagings.ids)]
             else:
-                # Se non c'è un cliente, mostra tutti
-                line.available_packaging_ids = [(6, 0, all_packagings.ids)] 
+                # Se non c'è un cliente, mostra TUTTE le embalagens di vendita
+                line.available_packaging_ids = [(6, 0, all_sales_packagings.ids)] 

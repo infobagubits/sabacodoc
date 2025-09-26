@@ -31,13 +31,44 @@ class SaleOrderLine(models.Model):
         readonly=True
     )
 
-    @api.depends('product_id')
+    @api.depends('product_id', 'order_id.partner_id')
     def _compute_available_packaging_ids(self):
-        """Override do método padrão com tratamento de erro para produtos sem embalagens"""
+        """
+        Override do método padrão com tratamento de erro para produtos sem embalagens
+        e lógica personalizada para filtragem por cliente e flag de vendas
+        """
         for line in self:
             try:
-                # Chama o método original do Odoo
-                super(SaleOrderLine, line)._compute_available_packaging_ids()
+                if not line.product_id:
+                    line.available_packaging_ids = [(5, 0, 0)]  # Rimuove tutti
+                    continue
+                
+                # Cerca tutti gli imballaggi del prodotto che sono per VENDITE
+                all_sales_packagings = self.env['product.packaging'].search([
+                    ('product_id', '=', line.product_id.id),
+                    ('sales', '=', True)  # SOLO embalagens de vendas
+                ])
+                
+                # Se c'è un cliente selezionato
+                if line.order_id.partner_id:
+                    # Cerca imballaggi collegati a questo cliente (che siano per vendite)
+                    # IMPORTANTE: Considera apenas parceiros que são CLIENTES
+                    partner_packagings = all_sales_packagings.filtered(
+                        lambda p: line.order_id.partner_id.id in p.contact_line_ids.filtered(
+                            lambda c: c.partner_id.is_customer
+                        ).partner_id.ids
+                    )
+                    
+                    if partner_packagings:
+                        # PRIORITÀ: Se esistono imballaggi collegati al cliente, mostra solo quelli
+                        line.available_packaging_ids = [(6, 0, partner_packagings.ids)]
+                    else:
+                        # FALLBACK: Se non ci sono imballaggi collegati al cliente, mostra TUTTE le embalagens di vendita
+                        line.available_packaging_ids = [(6, 0, all_sales_packagings.ids)]
+                else:
+                    # Se non c'è un cliente, mostra TUTTE le embalagens di vendita
+                    line.available_packaging_ids = [(6, 0, all_sales_packagings.ids)]
+                    
             except ValueError:
                 # Se falhar com ValueError (produto sem embalagens), define lista vazia
                 line.available_packaging_ids = [(5, 0, 0)]

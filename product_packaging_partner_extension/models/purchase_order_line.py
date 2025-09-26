@@ -13,32 +13,37 @@ class PurchaseOrderLine(models.Model):
     def _compute_available_packaging_ids(self):
         """
         Calcola gli imballaggi disponibili basato sul fornitore:
-        - Se c'è un fornitore e imballaggi collegati: solo imballaggi del fornitore
-        - Altrimenti: tutti gli imballaggi del prodotto
+        1. PRIMA: Verifica se embalagem tem flag purchase = True
+        2. SEGUNDA: Se c'è un fornitore e imballaggi collegati: solo imballaggi del fornitore
+        3. TERZA: Altrimenti: tutti gli imballaggi di acquisto del prodotto
         """
         for line in self:
             if not line.product_id:
                 line.available_packaging_ids = [(5, 0, 0)]  # Rimuove tutti
                 continue
             
-            # Cerca tutti gli imballaggi del prodotto
-            all_packagings = self.env['product.packaging'].search([
-                ('product_id', '=', line.product_id.id)
+            # Cerca tutti gli imballaggi del prodotto che sono per ACQUISTI
+            all_purchase_packagings = self.env['product.packaging'].search([
+                ('product_id', '=', line.product_id.id),
+                ('purchase', '=', True)  # SOLO embalagens de compras
             ])
             
             # Se c'è un fornitore selezionato
             if line.order_id.partner_id:
-                # Cerca imballaggi collegati a questo fornitore
-                partner_packagings = all_packagings.filtered(
-                    lambda p: line.order_id.partner_id.id in p.contact_line_ids.partner_id.ids
+                # Cerca imballaggi collegati a questo fornitore (che siano per acquisti)
+                # IMPORTANTE: Considera apenas parceiros que são FORNECEDORES
+                partner_packagings = all_purchase_packagings.filtered(
+                    lambda p: line.order_id.partner_id.id in p.contact_line_ids.filtered(
+                        lambda c: c.partner_id.is_supplier
+                    ).partner_id.ids
                 )
                 
                 if partner_packagings:
-                    # Se esistono imballaggi collegati, mostra solo quelli
+                    # PRIORITÀ: Se esistono imballaggi collegati al fornitore, mostra solo quelli
                     line.available_packaging_ids = [(6, 0, partner_packagings.ids)]
                 else:
-                    # Se non ci sono imballaggi collegati, mostra tutti
-                    line.available_packaging_ids = [(6, 0, all_packagings.ids)]
+                    # FALLBACK: Se non ci sono imballaggi collegati al fornitore, mostra TUTTE le embalagens di compra
+                    line.available_packaging_ids = [(6, 0, all_purchase_packagings.ids)]
             else:
-                # Se non c'è un fornitore, mostra tutti
-                line.available_packaging_ids = [(6, 0, all_packagings.ids)] 
+                # Se non c'è un fornitore, mostra TUTTE le embalagens di compra
+                line.available_packaging_ids = [(6, 0, all_purchase_packagings.ids)] 
