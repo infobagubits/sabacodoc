@@ -42,14 +42,14 @@ class PurchaseOrderLine(models.Model):
                     # PRIORITÀ: Se esistono imballaggi collegati al fornitore, mostra solo quelli
                     line.available_packaging_ids = [(6, 0, partner_packagings.ids)]
                 else:
-                    # FALLBACK: Se non ci sono imballaggi collegati al fornitore, mostra solo quelli SENZA fornitore
-                    no_partner_packagings = all_purchase_packagings.filtered(
-                        lambda p: not p.contact_line_ids
+                    # FALLBACK: Se non ci sono imballaggi collegati al fornitore, mostra solo quelli SENZA FORNITORE
+                    no_supplier_packagings = all_purchase_packagings.filtered(
+                        lambda p: not p.contact_line_ids.filtered(lambda c: c.partner_id.is_supplier)
                     )
-                    line.available_packaging_ids = [(6, 0, no_partner_packagings.ids)]
+                    line.available_packaging_ids = [(6, 0, no_supplier_packagings.ids)]
             else:
                 # Se non c'è un fornitore, mostra solo gli imballaggi senza fornitore
-                no_partner_packagings = all_purchase_packagings.filtered(
-                    lambda p: not p.contact_line_ids
+                no_supplier_packagings = all_purchase_packagings.filtered(
+                    lambda p: not p.contact_line_ids.filtered(lambda c: c.partner_id.is_supplier)
                 )
-                line.available_packaging_ids = [(6, 0, no_partner_packagings.ids)] 
+                line.available_packaging_ids = [(6, 0, no_supplier_packagings.ids)] 

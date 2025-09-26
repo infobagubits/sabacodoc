@@ -42,14 +42,14 @@ class SaleOrderLine(models.Model):
                     # PRIORITÀ: Se esistono imballaggi collegati al cliente, mostra solo quelli
                     line.available_packaging_ids = [(6, 0, partner_packagings.ids)]
                 else:
-                    # FALLBACK: Se non ci sono imballaggi collegati al cliente, mostra solo quelli SENZA cliente
-                    no_partner_packagings = all_sales_packagings.filtered(
-                        lambda p: not p.contact_line_ids
+                    # FALLBACK: Se non ci sono imballaggi collegati al cliente, mostra solo quelli SENZA CLIENTE
+                    no_customer_packagings = all_sales_packagings.filtered(
+                        lambda p: not p.contact_line_ids.filtered(lambda c: c.partner_id.is_customer)
                     )
-                    line.available_packaging_ids = [(6, 0, no_partner_packagings.ids)]
+                    line.available_packaging_ids = [(6, 0, no_customer_packagings.ids)]
             else:
                 # Se non c'è un cliente, mostra solo gli imballaggi senza cliente
-                no_partner_packagings = all_sales_packagings.filtered(
-                    lambda p: not p.contact_line_ids
+                no_customer_packagings = all_sales_packagings.filtered(
+                    lambda p: not p.contact_line_ids.filtered(lambda c: c.partner_id.is_customer)
                 )
-                line.available_packaging_ids = [(6, 0, no_partner_packagings.ids)] 
+                line.available_packaging_ids = [(6, 0, no_customer_packagings.ids)] 
