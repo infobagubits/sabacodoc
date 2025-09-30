@@ -8,8 +8,8 @@
             <field name="inherit_id" ref="base.view_partner_form" />
             <field name="priority">1</field>
             <field name="arch" type="xml">
-                <!-- Adicionar campos após codice_prodotti_fornitore -->
-                <xpath expr="//field[@name='codice_prodotti_fornitore']" position="after">
+                <!-- Adicionar campos no primeiro grupo da sheet -->
+                <xpath expr="//sheet/group/group[1]" position="inside">
                     <field name="contact_method_ids" widget="many2many_tags"
                         invisible="not is_customer" />
                     <field name="note_consegna" invisible="not is_customer" />
@@ -18,11 +18,9 @@
                     <field name="listini_consegnati" invisible="not is_customer" />
                 </xpath>
                 
-                <!-- Adicionar etiquetas para telefone e celular -->
-                <xpath expr="//sheet/group/group[2]/field[3]" position="before">
+                <!-- Adicionar etiquetas para telefone e celular no segundo grupo -->
+                <xpath expr="//sheet/group/group[2]" position="inside">
                     <field name="etichetta_telefono" />
-                </xpath>
-                <xpath expr="//sheet/group/group[2]/field[5]" position="before">
                     <field name="etichetta_cellulare" />
                 </xpath>
             </field>
