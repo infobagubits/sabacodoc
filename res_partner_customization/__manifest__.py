@@ -11,6 +11,7 @@
     'website': 'https://www.seusite.com',
     'depends': ['base', 'contacts', 'partner_customer_supplier_extension'],
     'data': [
+        'security/ir.model.access.csv',
         'views/res_partner_views.xml',
     ],
     'installable': True,
