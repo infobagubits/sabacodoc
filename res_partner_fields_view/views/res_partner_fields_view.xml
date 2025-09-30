@@ -5,7 +5,7 @@
         <record id="view_partner_form_fields_extension" model="ir.ui.view">
             <field name="name">res.partner.form.fields.extension</field>
             <field name="model">res.partner</field>
-            <field name="inherit_id" ref="base.view_partner_form" />
+            <field name="inherit_id" ref="res_partner_customization.view_partner_form_inherit_custom_contacts" />
             <field name="priority">1</field>
             <field name="arch" type="xml">
                 <!-- Adicionar campos no primeiro grupo da sheet -->
