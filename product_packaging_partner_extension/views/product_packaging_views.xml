@@ -19,4 +19,20 @@
             </xpath>
         </field>
     </record>
+    
+    <!-- Herda a view de produto para adicionar coluna de parceiros na lista de embalagens -->
+    <record id="product_template_packaging_inherit_partners" model="ir.ui.view">
+        <field name="name">product.template.packaging.inherit.partners</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Adiciona coluna de parceiros após company_id na lista de embalagens -->
+            <xpath expr="//field[@name='packaging_ids']/list/field[@name='company_id']" position="after">
+                <field name="contact_line_ids" 
+                       widget="many2many_tags" 
+                       string="Parceiros Vinculados"
+                       options="{'no_create': True, 'no_create_edit': True}"/>
+            </xpath>
+        </field>
+    </record>
 </odoo> 
