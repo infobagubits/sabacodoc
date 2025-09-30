@@ -8,8 +8,8 @@
             <field name="inherit_id" ref="base.view_partner_form" />
             <field name="priority">1</field>
             <field name="arch" type="xml">
-                <!-- Adicionar campos após giorno_di_chiusura -->
-                <xpath expr="//field[@name='giorno_di_chiusura']" position="after">
+                <!-- Adicionar campos após codice_prodotti_fornitore -->
+                <xpath expr="//field[@name='codice_prodotti_fornitore']" position="after">
                     <field name="contact_method_ids" widget="many2many_tags"
                         invisible="not is_customer" />
                     <field name="note_consegna" invisible="not is_customer" />
