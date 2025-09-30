@@ -28,7 +28,7 @@
         <field name="arch" type="xml">
             <!-- Adiciona coluna de parceiros após company_id -->
             <xpath expr="//field[@name='company_id']" position="after">
-                <field name="contact_line_ids" 
+                <field name="linked_partner_ids" 
                        widget="many2many_tags" 
                        string="Parceiros Vinculados"
                        options="{'no_create': True, 'no_create_edit': True}"/>

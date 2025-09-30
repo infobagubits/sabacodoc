@@ -8,6 +8,20 @@ class ProductPackaging(models.Model):
         'packaging_id',
         string='Contatti'
     )
+    
+    # Campo Many2many computado para mostrar parceiros na lista
+    linked_partner_ids = fields.Many2many(
+        'res.partner',
+        compute='_compute_linked_partner_ids',
+        string='Parceiros Vinculados',
+        store=False
+    )
+
+    @api.depends('contact_line_ids.partner_id')
+    def _compute_linked_partner_ids(self):
+        """Computa os parceiros vinculados a partir das linhas de contato"""
+        for packaging in self:
+            packaging.linked_partner_ids = packaging.contact_line_ids.mapped('partner_id')
 
     @api.model
     def search_packaging_for_partner(self, product_id, partner_id):
