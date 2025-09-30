@@ -8,8 +8,11 @@
         que não estão aparecendo no formulário de partner.
         Depende do res_partner_customization para os campos.
     """,
-    'author': 'SABACO',
-    'website': 'https://www.sabaco.com',
+    'sequence': 1,
+    'author': 'Bagubits SRLS',
+    'maintainer': 'Bagubits SRLS',
+    'website': 'https://bagubits.it',
+    'license': 'LGPL-3',
     'depends': ['base', 'contacts', 'res_partner_customization'],
     'data': [
         'views/res_partner_fields_view.xml',

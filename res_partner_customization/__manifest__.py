@@ -7,8 +7,11 @@
         Questo modulo aggiunge condizionali per i campi cliente e fornitore
         basato sul modulo partner_customer_supplier_extension.
     """,
-    'author': 'Il tuo nome',
-    'website': 'https://www.seusite.com',
+    'sequence': 1,
+    'author': 'Bagubits SRLS',
+    'maintainer': 'Bagubits SRLS',
+    'website': 'https://bagubits.it',
+    'license': 'LGPL-3',
     'depends': ['base', 'contacts', 'partner_customer_supplier_extension'],
     'data': [
         'security/ir.model.access.csv',
