@@ -26,12 +26,12 @@
         <field name="model">product.template</field>
         <field name="inherit_id" ref="studio_customization.odoo_studio_product__eec7a712-35d6-4c6c-a0d0-78b695096804"/>
         <field name="arch" type="xml">
-            <!-- Adiciona coluna de parceiros após company_id na lista do Studio -->
+            <!-- Aggiunge colonna partner dopo company_id nella lista del Studio -->
             <xpath expr="//field[@name='packaging_ids']/list/field[@name='company_id']" position="after">
                 <field name="linked_partner_ids" 
                        widget="many2many_tags" 
-                       string="Parceiros Vinculados"
-                       options="{'no_create': True, 'no_create_edit': True}"/>
+                       string="Partner Collegati"
+                       options="{'no_create': True}"/>
             </xpath>
         </field>
     </record>

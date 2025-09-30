@@ -9,19 +9,33 @@ class ProductPackaging(models.Model):
         string='Contatti'
     )
     
-    # Campo Many2many computado para mostrar parceiros na lista
+    # Campo Many2many computado para mostrar partner nella lista
     linked_partner_ids = fields.Many2many(
         'res.partner',
         compute='_compute_linked_partner_ids',
-        string='Parceiros Vinculados',
+        inverse='_inverse_linked_partner_ids',
+        string='Partner Collegati',
         store=False
     )
 
     @api.depends('contact_line_ids.partner_id')
     def _compute_linked_partner_ids(self):
-        """Computa os parceiros vinculados a partir das linhas de contato"""
+        """Calcola i partner collegati dalle linee di contatto"""
         for packaging in self:
             packaging.linked_partner_ids = packaging.contact_line_ids.mapped('partner_id')
+
+    def _inverse_linked_partner_ids(self):
+        """Gestisce l'aggiornamento delle linee di contatto quando si modificano i partner"""
+        for packaging in self:
+            # Rimuove tutte le linee esistenti
+            packaging.contact_line_ids.unlink()
+            
+            # Crea nuove linee per i partner selezionati
+            for partner in packaging.linked_partner_ids:
+                self.env['product.packaging.partner.rel'].create({
+                    'packaging_id': packaging.id,
+                    'partner_id': partner.id,
+                })
 
     @api.model
     def search_packaging_for_partner(self, product_id, partner_id):
@@ -52,7 +66,7 @@ class ProductPackagingPartnerRel(models.Model):
     packaging_id = fields.Many2one('product.packaging', string='Imballaggio', required=True, ondelete='cascade')
     partner_id = fields.Many2one(
         'res.partner',
-        string='Nome',
+        string='Partner',
         required=True,
         domain="['|', ('is_customer', '=', True), ('is_supplier', '=', True)]"
     )
