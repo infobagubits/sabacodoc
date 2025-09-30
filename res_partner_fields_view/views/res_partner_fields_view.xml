@@ -8,8 +8,8 @@
             <field name="inherit_id" ref="res_partner_customization.view_partner_form_inherit_custom_contacts" />
             <field name="priority">1</field>
             <field name="arch" type="xml">
-                <!-- Adicionar campos no primeiro grupo da sheet -->
-                <xpath expr="//sheet/group/group[1]" position="inside">
+                <!-- Adicionar campos após giorno_di_chiusura -->
+                <xpath expr="//field[@name='giorno_di_chiusura']" position="after">
                     <field name="contact_method_ids" widget="many2many_tags"
                         invisible="not is_customer" />
                     <field name="note_consegna" invisible="not is_customer" />
