@@ -20,18 +20,31 @@
         </field>
     </record>
     
-    <!-- Herda a view de produto para adicionar coluna de parceiros na lista de embalagens -->
+    <!-- View personalizada para lista de embalagens com coluna de parceiros -->
+    <record id="product_packaging_tree_view_with_partners" model="ir.ui.view">
+        <field name="name">product.packaging.list.view.with.partners</field>
+        <field name="model">product.packaging</field>
+        <field name="inherit_id" ref="product.product_packaging_tree_view2"/>
+        <field name="arch" type="xml">
+            <!-- Adiciona coluna de parceiros após company_id -->
+            <xpath expr="//field[@name='company_id']" position="after">
+                <field name="contact_line_ids" 
+                       widget="many2many_tags" 
+                       string="Parceiros Vinculados"
+                       options="{'no_create': True, 'no_create_edit': True}"/>
+            </xpath>
+        </field>
+    </record>
+    
+    <!-- Herda a view de produto para usar a nova view de embalagens -->
     <record id="product_template_packaging_inherit_partners" model="ir.ui.view">
         <field name="name">product.template.packaging.inherit.partners</field>
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
-            <!-- Adiciona coluna de parceiros após company_id na lista de embalagens -->
-            <xpath expr="//field[@name='packaging_ids']/list/field[@name='company_id']" position="after">
-                <field name="contact_line_ids" 
-                       widget="many2many_tags" 
-                       string="Parceiros Vinculados"
-                       options="{'no_create': True, 'no_create_edit': True}"/>
+            <!-- Usa a view personalizada de embalagens -->
+            <xpath expr="//field[@name='packaging_ids']" position="attributes">
+                <attribute name="context">{'list_view_ref':'product_packaging_partner_extension.product_packaging_tree_view_with_partners', 'default_company_id': company_id}</attribute>
             </xpath>
         </field>
     </record>
