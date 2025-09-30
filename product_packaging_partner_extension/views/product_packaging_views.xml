@@ -24,7 +24,7 @@
     <record id="product_packaging_tree_view_with_partners" model="ir.ui.view">
         <field name="name">product.packaging.list.view.with.partners</field>
         <field name="model">product.packaging</field>
-        <field name="inherit_id" ref="product.product_packaging_tree_view2"/>
+        <field name="inherit_id" ref="product.product_packaging_tree_view"/>
         <field name="arch" type="xml">
             <!-- Adiciona coluna de parceiros após company_id -->
             <xpath expr="//field[@name='company_id']" position="after">
@@ -32,6 +32,10 @@
                        widget="many2many_tags" 
                        string="Parceiros Vinculados"
                        options="{'no_create': True, 'no_create_edit': True}"/>
+            </xpath>
+            <!-- Torna a lista editável -->
+            <xpath expr="//list[@name='packaging']" position="attributes">
+                <attribute name="editable">bottom</attribute>
             </xpath>
         </field>
     </record>
