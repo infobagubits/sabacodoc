@@ -13,28 +13,34 @@
                 </attribute>
             </xpath>
 
-            <xpath expr="//field[@name='order_line']/tree//field[@name='discount']" position="replace">
+            <!-- Substitui o campo discount padrão -->
+            <xpath expr="//field[@name='order_line']//field[@name='discount']" position="replace">
                 <field name="discount"
-                    string="Disc. %"
+                    string="Disc.%"
+                    width="50px"
+                    readonly="qty_invoiced != 0"
                     invisible="multiple_discounts_enabled"
                     column_invisible="context.get('hide_discount_purchase', False)"
-                    optional="show"/>
+                    optional="hide"/>
             </xpath>
 
             <!-- Additional fields -->
-            <xpath expr="//field[@name='order_line']/tree//field[@name='discount']" position="after">
+            <xpath expr="//field[@name='order_line']//field[@name='discount']" position="after">
                 <field name="discount1"
                        string="Disc. 1 %"
+                       width="50px"
                        invisible="not multiple_discounts_enabled"
                        column_invisible="not context.get('hide_discount_purchase', False)"
                        optional="show"/>
                 <field name="discount2"
                        string="Disc. 2 %"
+                       width="50px"
                        invisible="not multiple_discounts_enabled"
                        column_invisible="not context.get('hide_discount_purchase', False)"
                        optional="show"/>
                 <field name="discount3"
                        string="Disc. 3 %"
+                       width="50px"
                        invisible="not multiple_discounts_enabled or multiple_discounts_enabled_qtd"
                        column_invisible="not context.get('hide_discount_purchase', False) or context.get('show_discount3_purchase', False)"
                        optional="show"/>
