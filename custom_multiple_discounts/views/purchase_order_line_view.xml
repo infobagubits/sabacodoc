@@ -9,13 +9,14 @@
             <!-- Injects the context -->
             <xpath expr="//field[@name='order_line']" position="attributes">
                 <attribute name="context">
-                    {'hide_discount_purchase': show_multiple_discounts_purchase, 'show_discount3_purchase': show_discount3_purchase}
+                    {'hide_discount_purchase': show_multiple_discounts_purchase, 'show_discount3_purchase': show_discount3_purchase, 'default_state': 'draft'}
                 </attribute>
             </xpath>
 
-            <xpath expr="//field[@name='order_line']/tree//field[@name='discount']" position="replace">
+            <!-- Substitui o campo discount padrão - USA LIST NÃO TREE -->
+            <xpath expr="//field[@name='order_line']/list//field[@name='discount']" position="replace">
                 <field name="discount"
-                    string="Disc. %"
+                    string="Disc.%"
                     width="50px"
                     readonly="qty_invoiced != 0"
                     invisible="multiple_discounts_enabled"
@@ -24,7 +25,7 @@
             </xpath>
 
             <!-- Additional fields -->
-            <xpath expr="//field[@name='order_line']/tree//field[@name='discount']" position="after">
+            <xpath expr="//field[@name='order_line']/list//field[@name='discount']" position="after">
                 <field name="discount1"
                        string="Disc. 1 %"
                        width="50px"
