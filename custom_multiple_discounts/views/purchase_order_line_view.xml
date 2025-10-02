@@ -6,6 +6,12 @@
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
 
+            <!-- Adiciona campos invisíveis para controle -->
+            <xpath expr="//form" position="inside">
+                <field name="show_multiple_discounts_purchase" invisible="1"/>
+                <field name="show_discount3_purchase" invisible="1"/>
+            </xpath>
+
             <!-- Injects the context -->
             <xpath expr="//field[@name='order_line']" position="attributes">
                 <attribute name="context">
@@ -26,6 +32,8 @@
 
             <!-- Additional fields -->
             <xpath expr="//field[@name='order_line']//field[@name='discount']" position="after">
+                <field name="multiple_discounts_enabled" column_invisible="1"/>
+                <field name="multiple_discounts_enabled_qtd" column_invisible="1"/>
                 <field name="discount1"
                        string="Disc. 1 %"
                        width="50px"
