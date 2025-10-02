@@ -3,20 +3,18 @@
     <record id="res_config_settings_view_form_inherit_purchase_multiple_discounts" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.inherit.purchase.multiple.discounts</field>
         <field name="model">res.config.settings</field>
-        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="inherit_id" ref="purchase.res_config_settings_view_form_purchase"/>
         <field name="arch" type="xml">
-            <xpath expr="//app[@name='purchase']" position="inside">
-                <block title="Multiple Discounts">
-                    <setting>
-                        <field name="enable_multiple_discounts_purchase"/>
-                        <div class="text-muted">
-                            Allows applying two or three additional discounts on purchase order lines.
+            <!-- Adiciona após auto_receipt_reminder dentro do bloco Orders -->
+            <xpath expr="//setting[@id='auto_receipt_reminder']" position="after">
+                <setting id="enable_purchase_multiple_discounts" help="Allows applying two or three additional discounts on purchase order lines">
+                    <field name="enable_multiple_discounts_purchase"/>
+                    <div class="content-group" invisible="not enable_multiple_discounts_purchase">
+                        <div class="mt16">
+                            <field name="enable_multiple_discounts_purchase_qtd" class="o_light_label" widget="radio"/>
                         </div>
-                    </setting>
-                    <setting invisible="not enable_multiple_discounts_purchase">
-                        <field name="enable_multiple_discounts_purchase_qtd" class="o_light_label" widget="radio"/>
-                    </setting>
-                </block>
+                    </div>
+                </setting>
             </xpath>
         </field>
     </record>
