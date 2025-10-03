@@ -12,7 +12,7 @@
         'product',
     ],
     'data': [
-        'views/product_template_views.xml',
+        # 'views/product_template_views.xml',  # Desabilitato: campo expiration_time non presente
     ],
     'installable': True,
     'application': False,
