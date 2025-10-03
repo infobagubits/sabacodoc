@@ -61,25 +61,27 @@ class PurchaseOrderLine(models.Model):
             self.discount2 = 0.0
             self.discount3 = 0.0
 
-    @api.onchange('product_id', 'product_qty', 'product_uom')
-    def _onchange_product_id_set_discounts(self):
+    def _product_id_change(self):
         """
-        When product is selected, automatically fetch discount1, discount2, discount3
-        from product.supplierinfo based on the vendor
+        Extends native Odoo method to also fetch discount1, discount2, discount3
+        from product.supplierinfo when product is selected
         """
+        # Call parent method first (sets product_uom, name, taxes, etc)
+        res = super()._product_id_change()
+        
         if not self.product_id:
             self.discount1 = 0.0
             self.discount2 = 0.0
             self.discount3 = 0.0
-            return
+            return res
             
         # Get the seller using the same logic as Odoo uses for price
         params = self._get_select_sellers_params()
         seller = self.product_id._select_seller(
             partner_id=self.partner_id,
-            quantity=self.product_qty,
+            quantity=self.product_qty or 1.0,
             date=self.order_id.date_order and self.order_id.date_order.date() or fields.Date.context_today(self),
-            uom_id=self.product_uom,
+            uom_id=self.product_uom or self.product_id.uom_po_id,
             params=params
         )
         
@@ -93,4 +95,6 @@ class PurchaseOrderLine(models.Model):
             self.discount1 = 0.0
             self.discount2 = 0.0
             self.discount3 = 0.0
+            
+        return res
 
