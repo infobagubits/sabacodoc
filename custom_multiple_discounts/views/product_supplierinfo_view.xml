@@ -10,13 +10,16 @@
             <xpath expr="//field[@name='discount']" position="after">
                 <field name="discount1"
                        string="Disc. 1 %"
-                       optional="hide"/>
+                       width="50px"
+                       optional="show"/>
                 <field name="discount2"
                        string="Disc. 2 %"
-                       optional="hide"/>
+                       width="50px"
+                       optional="show"/>
                 <field name="discount3"
                        string="Disc. 3 %"
-                       optional="hide"/>
+                       width="50px"
+                       optional="show"/>
             </xpath>
 
         </field>
