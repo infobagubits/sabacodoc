@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_product_supplierinfo_list_inherit_multiple_discounts" model="ir.ui.view">
+        <field name="name">product.supplierinfo.list.inherit.multiple.discounts</field>
+        <field name="model">product.supplierinfo</field>
+        <field name="inherit_id" ref="product.product_supplierinfo_tree_view"/>
+        <field name="arch" type="xml">
+
+            <!-- Adiciona os novos campos de desconto após o campo discount padrão -->
+            <xpath expr="//field[@name='discount']" position="after">
+                <field name="discount1"
+                       string="Disc. 1 %"
+                       width="50px"
+                       optional="show"/>
+                <field name="discount2"
+                       string="Disc. 2 %"
+                       width="50px"
+                       optional="show"/>
+                <field name="discount3"
+                       string="Disc. 3 %"
+                       width="50px"
+                       optional="show"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

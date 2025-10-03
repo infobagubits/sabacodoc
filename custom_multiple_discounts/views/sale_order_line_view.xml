@@ -1,0 +1,44 @@
+<odoo>
+    <record id="view_sale_order_form_inherit_multiple_discounts" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.multiple.discounts</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Injects the context -->
+            <xpath expr="//field[@name='order_line']" position="attributes">
+                <attribute name="context">
+                    {'hide_discount': show_multiple_discounts, 'show_discount': show_discount_field, 'show_discount3': show_discount3}
+                </attribute>
+            </xpath>
+
+            <xpath expr="//field[@name='order_line']/list//field[@name='discount']" position="replace">
+                <field name="discount"
+                    string="Disc. %"
+                    width="50px"
+                    column_invisible="context.hide_discount or not context.show_discount"
+                    optional="show"/>
+            </xpath>
+
+            <!-- Additional fields -->
+            <xpath expr="//field[@name='order_line']/list//field[@name='discount']" position="after">
+                <field name="discount1"
+                       string="Disc. 1 %"
+                       width="50px"
+                       column_invisible="not context.hide_discount"
+                       optional="show"/>
+                <field name="discount2"
+                       string="Disc. 2 %"
+                       width="50px"
+                       column_invisible="not context.hide_discount"
+                       optional="show"/>
+                <field name="discount3"
+                       string="Disc. 3 %"
+                       width="50px"
+                       column_invisible="not context.hide_discount or context.show_discount3"
+                       optional="show"/>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>
