@@ -57,7 +57,7 @@ Questo modulo centralizza tutte le modifiche e personalizzazioni generiche richi
 - **Prima:** "Consumabile" (valore: `consu`)
 - **Dopo:** "Prodotto" (valore: `consu`)
 
-**Dettaglio tecnico:** Viene ereditato il modello `product.template` e sovrascritto il campo `type` (Selection) mantenendo gli stessi valori (`consu`, `service`, `combo`) ma modificando la label della prima opzione da "Consumabile" a "Prodotto", rendendo la terminologia più comprensibile per gli utenti finali.
+**Dettaglio tecnico:** Viene ereditato il modello `product.template` e sovrascritto il campo `type` (Selection) mantenendo gli stessi valori (`consu`, `service`, `combo`) ma modificando la label della prima opzione da "Consumabile" a "Prodotto". Inoltre, è stato creato un file di traduzione `i18n/it.po` che sovrascrive la traduzione italiana del termine "Goods" (che viene tradotto come "Consumabile") con "Prodotto", garantendo che la modifica sia visibile anche quando le traduzioni sono caricate.
 
 **Motivazione:** Il termine "Consumabile" risulta poco chiaro per gli utenti. Il cliente preferisce utilizzare il termine più generico "Prodotto" che rappresenta meglio la natura degli articoli gestiti.
 
