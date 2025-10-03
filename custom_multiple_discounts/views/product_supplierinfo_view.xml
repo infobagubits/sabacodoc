@@ -6,31 +6,17 @@
         <field name="inherit_id" ref="product.product_supplierinfo_tree_view"/>
         <field name="arch" type="xml">
 
-            <!-- Adiciona campos computados invisíveis para controle de visibilidade -->
-            <xpath expr="//field[@name='discount']" position="before">
-                <field name="multiple_discounts_enabled" column_invisible="1"/>
-                <field name="multiple_discounts_enabled_qtd" column_invisible="1"/>
-            </xpath>
-
-            <!-- Substitui o campo discount padrão -->
-            <xpath expr="//field[@name='discount']" position="attributes">
-                <attribute name="column_invisible">multiple_discounts_enabled</attribute>
-            </xpath>
-
-            <!-- Adiciona os novos campos após o campo discount -->
+            <!-- Adiciona os novos campos de desconto após o campo discount padrão -->
             <xpath expr="//field[@name='discount']" position="after">
                 <field name="discount1"
                        string="Disc. 1 %"
-                       column_invisible="not multiple_discounts_enabled"
-                       optional="show"/>
+                       optional="hide"/>
                 <field name="discount2"
                        string="Disc. 2 %"
-                       column_invisible="not multiple_discounts_enabled"
-                       optional="show"/>
+                       optional="hide"/>
                 <field name="discount3"
                        string="Disc. 3 %"
-                       column_invisible="not multiple_discounts_enabled or multiple_discounts_enabled_qtd"
-                       optional="show"/>
+                       optional="hide"/>
             </xpath>
 
         </field>
