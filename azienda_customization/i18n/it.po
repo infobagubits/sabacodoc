@@ -1,0 +1,26 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# * azienda_customization
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-03 14:00:00\n"
+"PO-Revision-Date: 2025-10-03 14:00:00\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: azienda_customization
+#: model:ir.model.fields.selection,name:azienda_customization.selection__product_template__type__consu
+msgid "Prodotto"
+msgstr "Prodotto"
+
+#. module: product
+#: model:ir.model.fields.selection,name:product.selection__product_template__type__consu
+msgid "Goods"
+msgstr "Prodotto"
+

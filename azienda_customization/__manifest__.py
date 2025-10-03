@@ -11,6 +11,7 @@
     'depends': [
         'product',
         'product_expiry',
+        'stock',
     ],
     'data': [
         'views/product_template_views.xml',
