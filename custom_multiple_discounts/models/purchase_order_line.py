@@ -61,40 +61,36 @@ class PurchaseOrderLine(models.Model):
             self.discount2 = 0.0
             self.discount3 = 0.0
 
-    @api.depends('product_id', 'product_qty', 'product_uom', 'company_id', 'order_id.partner_id', 'order_id.date_order')
-    def _compute_price_unit_and_date_planned_and_name(self):
+    @api.onchange('product_id', 'product_qty', 'product_uom')
+    def _onchange_product_id_set_discounts(self):
         """
-        Extends the native method to also fetch discount1, discount2, discount3
-        from product.supplierinfo when the product and vendor are selected
+        When product is selected, automatically fetch discount1, discount2, discount3
+        from product.supplierinfo based on the vendor
         """
-        # Call the parent method to maintain standard behavior
-        res = super()._compute_price_unit_and_date_planned_and_name()
-        
-        # Now also populate discount1, discount2, discount3 from supplierinfo
-        for line in self:
-            if not line.product_id or line.invoice_lines or not line.company_id:
-                continue
-                
-            # Get the seller (same logic as native Odoo)
-            params = line._get_select_sellers_params()
-            seller = line.product_id._select_seller(
-                partner_id=line.partner_id,
-                quantity=line.product_qty,
-                date=line.order_id.date_order and line.order_id.date_order.date() or fields.Date.context_today(line),
-                uom_id=line.product_uom,
-                params=params
-            )
+        if not self.product_id:
+            self.discount1 = 0.0
+            self.discount2 = 0.0
+            self.discount3 = 0.0
+            return
             
-            # If seller found, apply discount1, discount2, discount3
-            if seller:
-                line.discount1 = seller.discount1 or 0.0
-                line.discount2 = seller.discount2 or 0.0
-                line.discount3 = seller.discount3 or 0.0
-            else:
-                # If no seller, reset discounts
-                line.discount1 = 0.0
-                line.discount2 = 0.0
-                line.discount3 = 0.0
+        # Get the seller using the same logic as Odoo uses for price
+        params = self._get_select_sellers_params()
+        seller = self.product_id._select_seller(
+            partner_id=self.partner_id,
+            quantity=self.product_qty,
+            date=self.order_id.date_order and self.order_id.date_order.date() or fields.Date.context_today(self),
+            uom_id=self.product_uom,
+            params=params
+        )
         
-        return res
+        # If seller found, apply discount1, discount2, discount3
+        if seller:
+            self.discount1 = seller.discount1 or 0.0
+            self.discount2 = seller.discount2 or 0.0
+            self.discount3 = seller.discount3 or 0.0
+        else:
+            # If no seller, reset discounts
+            self.discount1 = 0.0
+            self.discount2 = 0.0
+            self.discount3 = 0.0
 
