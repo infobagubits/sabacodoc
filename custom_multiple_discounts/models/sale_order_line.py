@@ -6,15 +6,6 @@ class SaleOrderLine(models.Model):
     discount1 = fields.Float(string="Discount 1 (%)", default=0.0)
     discount2 = fields.Float(string="Discount 2 (%)", default=0.0)
     discount3 = fields.Float(string="Discount 3 (%)", default=0.0)
-    
-    discount = fields.Float(
-        string='Discount (%)',
-        compute='_compute_discount_from_multiple',
-        store=True,
-        readonly=False,
-        digits='Discount',
-        default=0.0
-    )
 
     # Field that controls visibility via invisibility, if not already existing
     multiple_discounts_enabled = fields.Boolean(
@@ -50,11 +41,11 @@ class SaleOrderLine(models.Model):
         for line in self:
             line.multiple_discounts_enabled = is_enabled
     
-    @api.depends('discount1', 'discount2', 'discount3', 'product_uom_qty', 'price_unit', 'product_id')
-    def _compute_discount_from_multiple(self):
+    @api.depends('discount1', 'discount2', 'discount3')
+    def _compute_discount(self):
         """
-        Compute the total discount from discount1, discount2, discount3 in cascade.
-        This ensures the discount field is always correctly calculated even when quantity or price changes.
+        Override native discount field computation to calculate from multiple discounts in cascade.
+        This method is called BEFORE _compute_amount, ensuring discount is ready for subtotal calculation.
         """
         param_value = self.env['ir.config_parameter'].sudo().get_param('sale.enable_multiple_discounts', 'False')
         is_enabled = param_value in ('True', '1', 'true')
@@ -70,6 +61,17 @@ class SaleOrderLine(models.Model):
             elif not is_enabled:
                 # If feature is disabled, keep discount as is (don't override)
                 pass
+    
+    # Override the native _compute_amount to ensure our discount is used
+    @api.depends('product_uom_qty', 'price_unit', 'tax_id', 'discount', 'discount1', 'discount2', 'discount3')
+    def _compute_amount(self):
+        """
+        Extend native method to ensure discount is recalculated from discount1/2/3 before computing subtotal.
+        """
+        # First, ensure discount is up to date from discount1/2/3
+        self._compute_discount()
+        # Then call the parent method to compute price_subtotal, price_total, price_tax
+        return super()._compute_amount()
 
     @api.onchange('discount1', 'discount2', 'discount3', 'product_uom_qty', 'price_unit')
     def _onchange_multiple_discounts(self):
