@@ -61,3 +61,40 @@ class PurchaseOrderLine(models.Model):
             self.discount2 = 0.0
             self.discount3 = 0.0
 
+    @api.depends('product_id', 'product_qty', 'product_uom', 'company_id', 'order_id.partner_id', 'order_id.date_order')
+    def _compute_price_unit_and_date_planned_and_name(self):
+        """
+        Extends the native method to also fetch discount1, discount2, discount3
+        from product.supplierinfo when the product and vendor are selected
+        """
+        # Call the parent method to maintain standard behavior
+        res = super()._compute_price_unit_and_date_planned_and_name()
+        
+        # Now also populate discount1, discount2, discount3 from supplierinfo
+        for line in self:
+            if not line.product_id or line.invoice_lines or not line.company_id:
+                continue
+                
+            # Get the seller (same logic as native Odoo)
+            params = line._get_select_sellers_params()
+            seller = line.product_id._select_seller(
+                partner_id=line.partner_id,
+                quantity=line.product_qty,
+                date=line.order_id.date_order and line.order_id.date_order.date() or fields.Date.context_today(line),
+                uom_id=line.product_uom,
+                params=params
+            )
+            
+            # If seller found, apply discount1, discount2, discount3
+            if seller:
+                line.discount1 = seller.discount1 or 0.0
+                line.discount2 = seller.discount2 or 0.0
+                line.discount3 = seller.discount3 or 0.0
+            else:
+                # If no seller, reset discounts
+                line.discount1 = 0.0
+                line.discount2 = 0.0
+                line.discount3 = 0.0
+        
+        return res
+
