@@ -13,6 +13,12 @@
                 </attribute>
             </xpath>
 
+            <!-- Adiciona campos computados invisíveis para controle de visibilidade -->
+            <xpath expr="//field[@name='order_line']/list//field[@name='discount']" position="before">
+                <field name="multiple_discounts_enabled" column_invisible="1"/>
+                <field name="multiple_discounts_enabled_qtd" column_invisible="1"/>
+            </xpath>
+
             <!-- Substitui o campo discount padrão - USA LIST NÃO TREE -->
             <xpath expr="//field[@name='order_line']/list//field[@name='discount']" position="replace">
                 <field name="discount"
