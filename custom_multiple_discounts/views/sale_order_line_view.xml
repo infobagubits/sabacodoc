@@ -15,7 +15,7 @@
             <xpath expr="//field[@name='order_line']/list//field[@name='discount']" position="replace">
                 <field name="discount"
                     string="Disc. %"
-                    invisible="multiple_discounts_enabled"
+                    width="50px"
                     column_invisible="context.hide_discount or not context.show_discount"
                     optional="show"/>
             </xpath>
@@ -24,17 +24,17 @@
             <xpath expr="//field[@name='order_line']/list//field[@name='discount']" position="after">
                 <field name="discount1"
                        string="Disc. 1 %"
-                       invisible="not multiple_discounts_enabled"
+                       width="50px"
                        column_invisible="not context.hide_discount"
                        optional="show"/>
                 <field name="discount2"
                        string="Disc. 2 %"
-                       invisible="not multiple_discounts_enabled"
+                       width="50px"
                        column_invisible="not context.hide_discount"
                        optional="show"/>
                 <field name="discount3"
                        string="Disc. 3 %"
-                       invisible="not multiple_discounts_enabled or multiple_discounts_enabled_qtd"
+                       width="50px"
                        column_invisible="not context.hide_discount or context.show_discount3"
                        optional="show"/>
             </xpath>
