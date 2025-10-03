@@ -9,6 +9,7 @@
             <!-- Modifica il testo da "giorni che seguono la ricezione" a "giorni che seguono la produzione" -->
             <xpath expr="//field[@name='expiration_time']" position="attributes">
                 <attribute name="string">Giorni che seguono la produzione</attribute>
+                <attribute name="help">giorni che seguono la produzione</attribute>
             </xpath>
         </field>
     </record>
