@@ -57,7 +57,7 @@ Questo modulo centralizza tutte le modifiche e personalizzazioni generiche richi
 - **Prima:** "Consumabile" (valore: `consu`)
 - **Dopo:** "Prodotto" (valore: `consu`)
 
-**Dettaglio tecnico:** Viene ereditato il modello `product.template` e sovrascritto il campo `type` (Selection) mantenendo gli stessi valori (`consu`, `service`, `combo`) ma modificando la label della prima opzione da "Consumabile" a "Prodotto". Inoltre, è stato creato un file di traduzione `i18n/it.po` che sovrascrive la traduzione italiana del termine "Goods" (che viene tradotto come "Consumabile") con "Prodotto", garantendo che la modifica sia visibile anche quando le traduzioni sono caricate.
+**Dettaglio tecnico:** È stato ereditato il modello `product.template` e sovrascritto il campo `type` utilizzando un metodo di selezione dinamico (`_selection_type`) invece di una lista statica. Questo approccio bypassa completamente il sistema di traduzioni di Odoo, garantendo che i valori (`consu` → 'Prodotto', `service` → 'Servizio', `combo` → 'Combo') siano sempre visualizzati correttamente indipendentemente dalle traduzioni caricate. Il metodo restituisce dinamicamente i valori delle opzioni ogni volta che il campo viene renderizzato, assicurando che "Consumabile" sia sostituito con "Prodotto" senza interferenze dal sistema i18n. È stata anche creata una view XML che sostituisce il campo nella form per garantire l'uso della definizione personalizzata.
 
 **Motivazione:** Il termine "Consumabile" risulta poco chiaro per gli utenti. Il cliente preferisce utilizzare il termine più generico "Prodotto" che rappresenta meglio la natura degli articoli gestiti.
 
