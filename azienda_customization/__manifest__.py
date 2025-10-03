@@ -10,7 +10,6 @@
     'license': 'LGPL-3',
     'depends': [
         'product',
-        'product_expiry',
     ],
     'data': [
         'views/product_template_views.xml',

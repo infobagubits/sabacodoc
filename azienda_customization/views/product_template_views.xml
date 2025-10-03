@@ -4,7 +4,7 @@
     <record id="product_template_form_view_expiry_text" model="ir.ui.view">
         <field name="name">product.template.form.expiry.text</field>
         <field name="model">product.template</field>
-        <field name="inherit_id" ref="product_expiry.product_template_form_view_expiry"/>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
         <field name="arch" type="xml">
             <!-- Modifica il testo da "giorni che seguono la ricezione" a "giorni che seguono la produzione" -->
             <xpath expr="//field[@name='expiration_time']" position="attributes">
@@ -13,4 +13,3 @@
         </field>
     </record>
 </odoo>
-
