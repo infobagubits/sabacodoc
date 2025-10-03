@@ -20,9 +20,9 @@ Questo modulo centralizza tutte le modifiche e personalizzazioni generiche richi
 - **Prima:** "days after receipt" (tradotto come "giorni che seguono la ricezione")
 - **Dopo:** "giorni che seguono la produzione"
 
-**Dettaglio tecnico:** Viene sostituito il `<span>` che contiene il testo informativo accanto al campo `expiration_time` nella view `product_expiry.view_product_form_expiry`.
+**Dettaglio tecnico:** Viene sostituito l'intero `<div>` che contiene il campo `expiration_time` e il relativo `<span>` informativo nella view `product_expiry.view_product_form_expiry`, utilizzando un XPath che localizza il div successivo al label del campo e lo sostituisce con uno nuovo contenente il testo corretto.
 
-**Motivazione:** Il cliente Sabaco necessita che il testo faccia riferimento alla produzione invece del ricevimento per allinearsi con i loro processi interni.
+**Motivazione:** Il cliente Sabaco necessita che il testo faccia riferimento alla produzione invece del ricevimento per allinearsi con i loro processi interni legati alla produzione anziché al ricevimento della merce.
 
 ### 2. **Nascondere campi nel form prodotto** *(03/10/2025)*
 
@@ -43,7 +43,9 @@ Questo modulo centralizza tutte le modifiche e personalizzazioni generiche richi
    - **Posizione:** Tab Magazzino (sezione Date)
    - **Azione:** Nascosto label + div intero
 
-**Motivazione:** Campi non necessari per i processi aziendali di Sabaco e richiedono una interfaccia più pulita e semplificata.
+**Dettaglio tecnico:** Per ogni campo nascosto, vengono creati XPath specifici che ereditano dalle view originali (`product.product_template_form_view`, `stock.view_template_property_form`, e `product_expiry.view_product_form_expiry`) e applicano l'attributo `invisible="1"` sia al `<label>` che al `<div>` contenente il campo, garantendo che l'intera riga sia completamente nascosta dall'interfaccia utente.
+
+**Motivazione:** Campi non necessari per i processi aziendali di Sabaco. Il cliente richiede una interfaccia più pulita e semplificata, focalizzata solo sui dati essenziali per le loro operazioni quotidiane.
 
 ---
 
