@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Modifica il testo informativo "days after receipt" in "giorni che seguono la produzione" -->
+    <record id="product_template_form_view_expiry_text" model="ir.ui.view">
+        <field name="name">product.template.form.expiry.text</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product_expiry.view_product_form_expiry"/>
+        <field name="arch" type="xml">
+            <!-- Sostituisce direttamente il div che contiene il campo e il testo -->
+            <xpath expr="//label[@for='expiration_time']/following-sibling::div[1]" position="replace">
+                <div>
+                    <field name="expiration_time" class="oe_inline"/>
+                    <span> giorni che seguono la produzione</span>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
