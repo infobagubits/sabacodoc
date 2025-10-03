@@ -43,11 +43,11 @@ class PurchaseOrderLine(models.Model):
         for line in self:
             line.multiple_discounts_enabled = is_enabled
     
-    @api.depends('discount1', 'discount2', 'discount3')
+    @api.depends('discount1', 'discount2', 'discount3', 'product_qty', 'price_unit', 'product_id')
     def _compute_discount_from_multiple(self):
         """
         Compute the total discount from discount1, discount2, discount3 in cascade.
-        This ensures the discount field is always correctly calculated.
+        This ensures the discount field is always correctly calculated even when quantity or price changes.
         """
         param_value = self.env['ir.config_parameter'].sudo().get_param('purchase.enable_multiple_discounts', 'False')
         is_enabled = param_value in ('True', '1', 'true')
