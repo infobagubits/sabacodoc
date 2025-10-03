@@ -6,6 +6,15 @@ class PurchaseOrderLine(models.Model):
     discount1 = fields.Float(string="Discount 1 (%)", default=0.0)
     discount2 = fields.Float(string="Discount 2 (%)", default=0.0)
     discount3 = fields.Float(string="Discount 3 (%)", default=0.0)
+    
+    discount = fields.Float(
+        string='Discount (%)',
+        compute='_compute_discount_from_multiple',
+        store=True,
+        readonly=False,
+        digits='Discount',
+        default=0.0
+    )
 
     # Field that controls visibility
     multiple_discounts_enabled = fields.Boolean(
@@ -33,6 +42,27 @@ class PurchaseOrderLine(models.Model):
         is_enabled = param_value in ('True', '1', 'true')
         for line in self:
             line.multiple_discounts_enabled = is_enabled
+    
+    @api.depends('discount1', 'discount2', 'discount3')
+    def _compute_discount_from_multiple(self):
+        """
+        Compute the total discount from discount1, discount2, discount3 in cascade.
+        This ensures the discount field is always correctly calculated.
+        """
+        param_value = self.env['ir.config_parameter'].sudo().get_param('purchase.enable_multiple_discounts', 'False')
+        is_enabled = param_value in ('True', '1', 'true')
+        
+        for line in self:
+            if is_enabled and (line.discount1 or line.discount2 or line.discount3):
+                d1 = line.discount1 or 0.0
+                d2 = line.discount2 or 0.0
+                d3 = line.discount3 or 0.0
+                # Cascade calculation
+                multiplicador = (1 - d1/100.0) * (1 - d2/100.0) * (1 - d3/100.0)
+                line.discount = (1.0 - multiplicador) * 100.0
+            elif not is_enabled:
+                # If feature is disabled, keep discount as is (don't override)
+                pass
 
     @api.onchange('discount1', 'discount2', 'discount3', 'product_qty', 'price_unit')
     def _onchange_multiple_discounts(self):
