@@ -61,19 +61,17 @@ class PurchaseOrderLine(models.Model):
             self.discount2 = 0.0
             self.discount3 = 0.0
 
-    def _product_id_change(self):
+    @api.onchange('product_id')
+    def _onchange_product_id_discounts(self):
         """
-        Extends native Odoo method to also fetch discount1, discount2, discount3
-        from product.supplierinfo when product is selected
+        When product is selected, automatically fetch discount1, discount2, discount3
+        from product.supplierinfo. This runs AFTER the native onchange_product_id
         """
-        # Call parent method first (sets product_uom, name, taxes, etc)
-        res = super()._product_id_change()
-        
         if not self.product_id:
             self.discount1 = 0.0
             self.discount2 = 0.0
             self.discount3 = 0.0
-            return res
+            return
             
         # Get the seller using the same logic as Odoo uses for price
         params = self._get_select_sellers_params()
@@ -95,6 +93,4 @@ class PurchaseOrderLine(models.Model):
             self.discount1 = 0.0
             self.discount2 = 0.0
             self.discount3 = 0.0
-            
-        return res
 
