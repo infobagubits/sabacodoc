@@ -47,6 +47,20 @@ Questo modulo centralizza tutte le modifiche e personalizzazioni generiche richi
 
 **Motivazione:** Campi non necessari per i processi aziendali di Sabaco. Il cliente richiede una interfaccia più pulita e semplificata, focalizzata solo sui dati essenziali per le loro operazioni quotidiane.
 
+### 3. **Rinominare opzione "Consumabile" in "Prodotto" nel campo Product Type** *(03/10/2025)*
+
+**Modello:** `product.template`  
+**Campo:** `type`  
+**File:** `models/product_template.py`
+
+**Modifica:**
+- **Prima:** "Consumabile" (valore: `consu`)
+- **Dopo:** "Prodotto" (valore: `consu`)
+
+**Dettaglio tecnico:** Viene ereditato il modello `product.template` e sovrascritto il campo `type` (Selection) mantenendo gli stessi valori (`consu`, `service`, `combo`) ma modificando la label della prima opzione da "Consumabile" a "Prodotto", rendendo la terminologia più comprensibile per gli utenti finali.
+
+**Motivazione:** Il termine "Consumabile" risulta poco chiaro per gli utenti. Il cliente preferisce utilizzare il termine più generico "Prodotto" che rappresenta meglio la natura degli articoli gestiti.
+
 ---
 
 ## Dipendenze
