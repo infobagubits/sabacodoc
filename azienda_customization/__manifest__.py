@@ -10,9 +10,10 @@
     'license': 'LGPL-3',
     'depends': [
         'product',
+        'product_expiry',
     ],
     'data': [
-        # 'views/product_template_views.xml',  # Desabilitato: campo expiration_time non presente
+        'views/product_template_views.xml',
     ],
     'installable': True,
     'application': False,

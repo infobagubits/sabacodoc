@@ -10,21 +10,19 @@ Questo modulo centralizza tutte le modifiche e personalizzazioni generiche richi
 
 ## Customizzazioni Implementate
 
-### 1. **Modifica testo campo data di scadenza prodotto** *(03/10/2025)* - **SOSPESA**
+### 1. **Modifica testo informativo campo data di scadenza prodotto** *(03/10/2025)*
 
 **Modello:** `product.template`  
 **Campo:** `expiration_time`  
-**File:** `views/product_template_views.xml` (commentato nel manifest)
+**File:** `views/product_template_views.xml`
 
-**Stato:** SOSPESA - Il campo `expiration_time` non è presente nel sistema. Richiede l'installazione del modulo `product_expiry`.
-
-**Modifica richiesta:**
-- **Prima:** "giorni che seguono la ricezione"
+**Modifica:**
+- **Prima:** "days after receipt" (tradotto come "giorni che seguono la ricezione")
 - **Dopo:** "giorni che seguono la produzione"
 
-**Motivazione:** Il cliente Sabaco necessita che il testo faccia riferimento alla produzione invece del ricevimento per allinearsi con i loro processi interni.
+**Dettaglio tecnico:** Viene sostituito il `<span>` che contiene il testo informativo accanto al campo `expiration_time` nella view `product_expiry.view_product_form_expiry`.
 
-**Nota:** Questa customizzazione sarà attivata quando il modulo `product_expiry` sarà installato nel sistema.
+**Motivazione:** Il cliente Sabaco necessita che il testo faccia riferimento alla produzione invece del ricevimento per allinearsi con i loro processi interni.
 
 ---
 

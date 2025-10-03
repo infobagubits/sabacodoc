@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Modifica il testo del campo expiration_time -->
+    <!-- Modifica il testo informativo "days after receipt" in "giorni che seguono la produzione" -->
     <record id="product_template_form_view_expiry_text" model="ir.ui.view">
         <field name="name">product.template.form.expiry.text</field>
         <field name="model">product.template</field>
-        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="inherit_id" ref="product_expiry.view_product_form_expiry"/>
         <field name="arch" type="xml">
-            <!-- Modifica il testo da "giorni che seguono la ricezione" a "giorni che seguono la produzione" -->
-            <xpath expr="//field[@name='expiration_time']" position="attributes">
-                <attribute name="string">Giorni che seguono la produzione</attribute>
-                <attribute name="help">giorni che seguono la produzione</attribute>
+            <!-- Modifica il testo da "days after receipt" a "giorni che seguono la produzione" -->
+            <xpath expr="//field[@name='expiration_time']" position="after">
+                <span> giorni che seguono la produzione</span>
             </xpath>
+            <!-- Rimuove il testo originale "days after receipt" -->
+            <xpath expr="//field[@name='expiration_time']/following-sibling::span[1]" position="replace"/>
         </field>
     </record>
 </odoo>
