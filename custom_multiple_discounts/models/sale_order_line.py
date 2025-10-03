@@ -41,10 +41,10 @@ class SaleOrderLine(models.Model):
         for line in self:
             line.multiple_discounts_enabled = is_enabled
 
-    @api.onchange('discount1', 'discount2', 'discount3')
+    @api.onchange('discount1', 'discount2', 'discount3', 'product_uom_qty', 'price_unit')
     def _onchange_multiple_discounts(self):
         """
-        When the user fills discount1, discount2, discount3,
+        When the user fills discount1, discount2, discount3, or changes quantity/price,
         we calculate the TOTAL DISCOUNT in cascade and assign it to 'discount' (native Odoo).
         Cascade example:
            final_price = base_price * (1 - d1/100) * (1 - d2/100) * (1 - d3/100)
