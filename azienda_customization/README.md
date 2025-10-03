@@ -24,12 +24,34 @@ Questo modulo centralizza tutte le modifiche e personalizzazioni generiche richi
 
 **Motivazione:** Il cliente Sabaco necessita che il testo faccia riferimento alla produzione invece del ricevimento per allinearsi con i loro processi interni.
 
+### 2. **Nascondere campi nel form prodotto** *(03/10/2025)*
+
+**Modello:** `product.template`  
+**File:** `views/product_template_views.xml`
+
+**Campi nascosti:**
+
+1. **standard_price** (Costo)
+   - **Posizione:** Tab Generale
+   - **Azione:** Nascosto label + div intero
+   
+2. **sale_delay** (Tempo di risposta al cliente)
+   - **Posizione:** Tab Magazzino
+   - **Azione:** Nascosto label + div intero
+   
+3. **removal_time** (Data di rimozione)
+   - **Posizione:** Tab Magazzino (sezione Date)
+   - **Azione:** Nascosto label + div intero
+
+**Motivazione:** Campi non necessari per i processi aziendali di Sabaco e richiedono una interfaccia più pulita e semplificata.
+
 ---
 
 ## Dipendenze
 
 - `product`
 - `product_expiry`
+- `stock`
 
 ## Autore
 
