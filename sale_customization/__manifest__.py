@@ -1,4 +1,5 @@
 {
+    # Updated after database restore - force push to STG
     'name': 'Modulo Personalizzato Vendite',
     'version': '18.0.1.0.0',
     'category': 'Sales/Inventory',
