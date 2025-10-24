@@ -5,8 +5,8 @@
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
 
-            <!-- Inserisce il campo dopo il campo categ_id -->
-            <xpath expr="//field[@name='categ_id']" position="after">
+            <!-- Inserisce il campo dopo il campo active -->
+            <xpath expr="//field[@name='active']" position="after">
                 <field name="x_secondary_uom_id" 
                        string="Unità di Misura Secondaria"
                        options="{'no_create': True}"/>
