@@ -5,9 +5,24 @@
         <field name="model">stock.move.line</field>
         <field name="inherit_id" ref="stock.view_stock_move_line_operation_tree"/>
         <field name="arch" type="xml">
+            
+            <!-- Rinominare Numero di Lotto/Serie in "Lotto" -->
+            <xpath expr="//field[@name='lot_id']" position="attributes">
+                <attribute name="string">Lotto</attribute>
+            </xpath>
+            
+            <!-- Rimuovere colonna "Stocca in" -->
+            <xpath expr="//field[@name='location_dest_id']" position="replace"/>
+            
+            <!-- Rinominare Unità di misura in "UdM" -->
+            <xpath expr="//field[@name='product_uom_id']" position="attributes">
+                <attribute name="string">UdM</attribute>
+            </xpath>
+            
+            <!-- Aggiungere campi secondari con nomi personalizzati -->
             <xpath expr="//field[@name='product_uom_id'][last()]" position="after">
-                <field name="x_secondary_qty"/>
-                <field name="x_secondary_uom_id"/>
+                <field name="x_secondary_qty" string="Qty sec."/>
+                <field name="x_secondary_uom_id" string="UdM sec"/>
             </xpath>
         </field>
     </record>
