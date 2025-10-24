@@ -1,23 +1,28 @@
 <odoo>
-    <record id="view_product_form_secondary_uom" model="ir.ui.view">
-        <field name="name">product.template.form.secondary.uom</field>
+    <record id="custom_unit_measurement_product_template_form" model="ir.ui.view">
+        <field name="name">custom.unit.measurement.product.template.form</field>
         <field name="model">product.template</field>
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
 
-            <!-- Insere o campo depois do bloco que contém "per KG" -->
-            <xpath expr="//div[@name='list_price_uom']" position="after">
-                    <field name="x_secondary_uom_id" options="{'no_create': True}"/>
+            <!-- Insere o campo depois do campo product_uom -->
+            <xpath expr="//field[@name='product_uom']" position="after">
+                <field name="x_secondary_uom_id" 
+                       string="Unità di Misura Secondaria"
+                       options="{'no_create': True}"
+                       help="Unità secondaria utilizzata per la visualizzazione aggiuntiva"/>
             </xpath>
 
+            <!-- Botão de estatística para quantidade secundária -->
             <xpath expr="//button[@name='action_open_documents']" position="before">
                 <button type="object"
                         name="action_dummy_secondary_qty"
                         icon="fa-cubes"
                         class="oe_stat_button"
-                        invisible="x_secondary_uom_id == False">
-                    <field name="x_secondary_qty_display" widget="statinfo" string="Quantità secondaria disponibile"/>
-
+                        invisible="not x_secondary_uom_id">
+                    <field name="x_secondary_qty_display" 
+                           widget="statinfo" 
+                           string="Quantità Secondaria Disponibile"/>
                 </button>
             </xpath>
         </field>
