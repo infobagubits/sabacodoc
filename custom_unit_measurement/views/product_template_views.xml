@@ -5,24 +5,19 @@
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
 
-            <!-- Insere o campo na seção de informações gerais, após o campo type -->
-            <xpath expr="//field[@name='taxes_id']" position="before">
-                <field name="x_secondary_uom_id" 
-                       string="Unità di Misura Secondaria"
-                       options="{'no_create': True}"
-                       help="Unità secondaria utilizzata per la visualizzazione aggiuntiva"/>
+            <!-- Inserisce il campo dopo il blocco che contiene "per KG" -->
+            <xpath expr="//div[@name='list_price_uom']" position="after">
+                <field name="x_secondary_uom_id" options="{'no_create': True}"/>
             </xpath>
 
-            <!-- Botão de estatística para quantidade secundária -->
+            <!-- Aggiunge il pulsante di statistica prima del pulsante di documenti -->
             <xpath expr="//button[@name='action_open_documents']" position="before">
                 <button type="object"
                         name="action_dummy_secondary_qty"
                         icon="fa-cubes"
                         class="oe_stat_button"
-                        invisible="not x_secondary_uom_id">
-                    <field name="x_secondary_qty_display" 
-                           widget="statinfo" 
-                           string="Quantità Secondaria Disponibile"/>
+                        invisible="x_secondary_uom_id == False">
+                    <field name="x_secondary_qty_display" widget="statinfo" string="Quantità secondaria disponibile"/>
                 </button>
             </xpath>
         </field>
