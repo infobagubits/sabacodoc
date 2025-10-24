@@ -5,9 +5,11 @@
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
 
-            <!-- Inserisce il campo dopo il blocco che contiene "per KG" -->
-            <xpath expr="//div[@name='list_price_uom']" position="after">
-                <field name="x_secondary_uom_id" options="{'no_create': True}"/>
+            <!-- Inserisce il campo dopo il gruppo standard_price -->
+            <xpath expr="//group[@name='group_standard_price']" position="after">
+                <field name="x_secondary_uom_id" 
+                       string="Unità di Misura Secondaria"
+                       options="{'no_create': True}"/>
             </xpath>
 
             <!-- Aggiunge il pulsante di statistica prima del pulsante di documenti -->
