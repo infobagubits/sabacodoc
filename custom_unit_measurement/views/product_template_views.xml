@@ -6,7 +6,7 @@
         <field name="arch" type="xml">
 
             <!-- Insere o campo na seção de informações gerais, após o campo type -->
-            <xpath expr="//field[@name='type']" position="after">
+            <xpath expr="//field[@name='taxes_id']" position="before">
                 <field name="x_secondary_uom_id" 
                        string="Unità di Misura Secondaria"
                        options="{'no_create': True}"
