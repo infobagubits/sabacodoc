@@ -4,7 +4,7 @@
     'category': 'Inventory',
     'summary': 'Generic secondary unit of measure for products and stock management',
     'description': """
-        Generic module for secondary unit of measure functionality:
+        Modulo generico per funzionalità di unità di misura secondaria:
         
         FEATURES:
         - Secondary unit of measure in products
