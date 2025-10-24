@@ -5,10 +5,10 @@
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
 
-            <!-- Insere o campo depois do campo uom_id -->
-            <xpath expr="//field[@name='uom_id']" position="after">
+            <!-- Insere o campo depois do div list_price_uom -->
+            <xpath expr="//div[@name='list_price_uom']" position="after">
+                <label for="x_secondary_uom_id" string="Unità di Misura Secondaria"/>
                 <field name="x_secondary_uom_id" 
-                       string="Unità di Misura Secondaria"
                        options="{'no_create': True}"
                        help="Unità secondaria utilizzata per la visualizzazione aggiuntiva"/>
             </xpath>
