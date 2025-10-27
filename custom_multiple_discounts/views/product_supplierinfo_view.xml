@@ -8,18 +8,9 @@
 
             <!-- Adiciona os novos campos de desconto após o campo discount padrão -->
             <xpath expr="//field[@name='discount']" position="after">
-                <field name="discount1"
-                       string="Disc. 1 %"
-                       width="50px"
-                       optional="show"/>
-                <field name="discount2"
-                       string="Disc. 2 %"
-                       width="50px"
-                       optional="show"/>
-                <field name="discount3"
-                       string="Disc. 3 %"
-                       width="50px"
-                       optional="show"/>
+                <field name="discount1" string="Disc. 1 %" optional="show"/>
+                <field name="discount2" string="Disc. 2 %" optional="show"/>
+                <field name="discount3" string="Disc. 3 %" optional="show"/>
             </xpath>
 
         </field>
