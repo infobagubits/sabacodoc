@@ -6,6 +6,11 @@
         <field name="inherit_id" ref="product.product_supplierinfo_tree_view"/>
         <field name="arch" type="xml">
 
+            <!-- Muda o nome do campo discount padrão para testar se a herança funciona -->
+            <xpath expr="//field[@name='discount']" position="attributes">
+                <attribute name="string">TESTE</attribute>
+            </xpath>
+
             <!-- Adiciona os novos campos de desconto após o campo discount padrão -->
             <xpath expr="//field[@name='discount']" position="after">
                 <field name="discount1" string="Disc. 1 %" optional="show"/>
