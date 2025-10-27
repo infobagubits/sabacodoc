@@ -7,16 +7,11 @@
         <field name="inherit_id" ref="studio_customization.odoo_studio_product__eec7a712-35d6-4c6c-a0d0-78b695096804"/>
         <field name="priority" eval="200"/>
         <field name="arch" type="xml">
-            <!-- Muda o nome do campo discount para teste -->
-            <xpath expr="//field[@name='seller_ids']/list/field[@name='discount']" position="attributes">
-                <attribute name="string">TESTE STUDIO</attribute>
-            </xpath>
-
             <!-- Adiciona os campos discount1/2/3 após o campo discount -->
             <xpath expr="//field[@name='seller_ids']/list/field[@name='discount']" position="after">
-                <field name="discount1" string="Disc. 1 %" optional="show"/>
-                <field name="discount2" string="Disc. 2 %" optional="show"/>
-                <field name="discount3" string="Disc. 3 %" optional="show"/>
+                <field name="discount1" string="Sc. 1%" optional="show"/>
+                <field name="discount2" string="Sc. 2%" optional="show"/>
+                <field name="discount3" string="Sc. 3%" optional="show"/>
             </xpath>
         </field>
     </record>
