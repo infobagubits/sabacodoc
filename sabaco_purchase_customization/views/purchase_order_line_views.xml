@@ -78,6 +78,8 @@
             <xpath expr="//field[@name='product_uom_qty']" position="after">
                 <field name="qty_available_at_confirmation" string="Qt. a disposizione"/>
                 <field name="qty_planned_at_confirmation" string="Qt. prevista"/>
+                <field name="x_secondary_qty_at_confirmation" string="Qty. secondaria"/>
+                <field name="x_secondary_uom_id_at_confirmation" string="UdM secondaria"/>
             </xpath>
             
             <!-- Aggiunge campo giorno della settimana dopo date_approve -->

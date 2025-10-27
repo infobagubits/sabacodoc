@@ -29,6 +29,20 @@ class PurchaseOrderLine(models.Model):
         readonly=True,
         store=True,
     )
+    
+    x_secondary_qty_at_confirmation = fields.Float(
+        string='Qty. secondaria',
+        help='Quantità secondaria al momento della conferma dell\'ordine',
+        readonly=True,
+    )
+    
+    x_secondary_uom_id_at_confirmation = fields.Many2one(
+        'uom.uom',
+        string='UdM secondaria',
+        help='Unità di misura secondaria al momento della conferma dell\'ordine',
+        readonly=True,
+        store=True,
+    )
 
     @api.onchange('product_id')
     def _onchange_product_id_purchase_uom_free(self):
@@ -71,6 +85,12 @@ class PurchaseOrderLine(models.Model):
             
             # Salva giorno della settimana
             line.confirmation_weekday = line._get_weekday_name(line.order_id.date_approve or line.order_id.date_order)
+            
+            # Salva quantità secondaria e UDM secondaria
+            if hasattr(line.product_id, 'x_secondary_qty'):
+                line.x_secondary_qty_at_confirmation = line.product_id.x_secondary_qty
+            if hasattr(line.product_id, 'x_secondary_uom_id'):
+                line.x_secondary_uom_id_at_confirmation = line.product_id.x_secondary_uom_id
         
         return line
     
@@ -95,5 +115,11 @@ class PurchaseOrderLine(models.Model):
                     # Salva giorno della settimana
                     if not line.confirmation_weekday:
                         line.confirmation_weekday = line._get_weekday_name(line.order_id.date_approve or line.order_id.date_order)
+                    
+                    # Salva quantità secondaria e UDM secondaria
+                    if hasattr(line.product_id, 'x_secondary_qty'):
+                        line.x_secondary_qty_at_confirmation = line.product_id.x_secondary_qty
+                    if hasattr(line.product_id, 'x_secondary_uom_id'):
+                        line.x_secondary_uom_id_at_confirmation = line.product_id.x_secondary_uom_id
         
         return res
