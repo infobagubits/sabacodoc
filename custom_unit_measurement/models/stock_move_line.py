@@ -17,7 +17,7 @@ class StockMoveLine(models.Model):
     
     product_packaging_id = fields.Many2one(
         related='move_id.product_packaging_id',
-        string='Imballaggio',
+        string='Confezione',
         readonly=True,
         store=True,
     )
