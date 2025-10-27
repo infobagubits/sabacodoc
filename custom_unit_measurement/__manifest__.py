@@ -1,7 +1,22 @@
 {
-    'name': 'Unidade Secundária no Produto',
-    'version': '1.0',
+    'name': 'Custom Unit Measurement',
+    'version': '18.0.1.0.0',
     'category': 'Inventory',
+    'summary': 'Generic secondary unit of measure for products and stock management',
+    'description': """
+        Modulo generico per funzionalità di unità di misura secondaria:
+        
+        FEATURES:
+        - Secondary unit of measure in products
+        - Stock management with secondary units
+        - Picking operations with secondary quantities
+        - Stock quant tracking with secondary units
+        - Automatic quantity calculations
+        - Stock validation and controls
+        
+        This module provides a generic foundation that can be extended
+        by other modules for specific business needs.
+    """,
     'author': 'Bagubits SRLS',
     'maintainer': 'Bagubits SRLS',
     'website': 'https://bagubits.it',
@@ -14,9 +29,6 @@
         'views/stock_move_line_secondary_operations_list.xml',
         'views/stock_quant_views.xml',
         'views/stock_quant_simple_secondary_view.xml',
-
-
-
     ],
     'installable': True,
     'application': False,

@@ -15,6 +15,30 @@ class StockMoveLine(models.Model):
         store=False,
     )
     
+    product_packaging_id = fields.Many2one(
+        'product.packaging',
+        string='Confezione',
+        domain="[('product_id', '=', product_id)]",
+        readonly=False,
+    )
+    
+    product_packaging_qty = fields.Float(
+        string='Quantità Confezione',
+        readonly=False,
+    )
+    
+    @api.onchange('product_packaging_id', 'product_packaging_qty')
+    def _onchange_packaging_qty(self):
+        """
+        Calcola la quantità in base al numero di confezioni e alla quantità per confezione.
+        quantity = product_packaging_qty * product_packaging_id.qty
+        """
+        if self.product_packaging_id and self.product_packaging_qty:
+            self.quantity = self.product_packaging_qty * self.product_packaging_id.qty
+        elif not self.product_packaging_id:
+            # Se non c'è confezione, resetta a 0
+            self.quantity = 0.0
+    
     @api.model
     def create(self, vals):
         """

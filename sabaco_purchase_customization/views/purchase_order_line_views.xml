@@ -67,4 +67,44 @@
             </xpath>
         </field>
     </record>
+    
+    <!-- Eredita la vista dello storico acquisti per aggiungere i nuovi campi -->
+    <record id="purchase_history_tree_inherit" model="ir.ui.view">
+        <field name="name">purchase.history.tree.inherit</field>
+        <field name="model">purchase.order.line</field>
+        <field name="inherit_id" ref="purchase.purchase_history_tree"/>
+        <field name="arch" type="xml">
+            <!-- Aggiunge i campi qt. a disposizione e qt. prevista dopo quantity -->
+            <xpath expr="//field[@name='product_uom_qty']" position="after">
+                <field name="qty_available_at_confirmation" string="Qt. a disposizione"/>
+                <field name="qty_planned_at_confirmation" string="Qt. prevista"/>
+                <field name="x_secondary_qty_at_confirmation" string="Qty. secondaria"/>
+                <field name="x_secondary_uom_id_at_confirmation" string="UdM secondaria"/>
+            </xpath>
+            
+            <!-- Aggiunge campo giorno della settimana dopo date_approve -->
+            <xpath expr="//field[@name='date_approve']" position="after">
+                <field name="confirmation_weekday" string="Giorno"/>
+            </xpath>
+        </field>
+    </record>
+    
+    <!-- Eredita la vista di ricerca dello storico per aggiungere il filtro per giorno settimana -->
+    <record id="purchase_order_line_search_inherit" model="ir.ui.view">
+        <field name="name">purchase.order.line.search.inherit</field>
+        <field name="model">purchase.order.line</field>
+        <field name="inherit_id" ref="purchase.purchase_order_line_search"/>
+        <field name="arch" type="xml">
+            <!-- Aggiunge filtri per giorno della settimana -->
+            <xpath expr="//separator[1]" position="before">
+                <filter string="Lunedì" name="filter_monday" domain="[('confirmation_weekday', '=', 'Lunedì')]"/>
+                <filter string="Martedì" name="filter_tuesday" domain="[('confirmation_weekday', '=', 'Martedì')]"/>
+                <filter string="Mercoledì" name="filter_wednesday" domain="[('confirmation_weekday', '=', 'Mercoledì')]"/>
+                <filter string="Giovedì" name="filter_thursday" domain="[('confirmation_weekday', '=', 'Giovedì')]"/>
+                <filter string="Venerdì" name="filter_friday" domain="[('confirmation_weekday', '=', 'Venerdì')]"/>
+                <filter string="Sabato" name="filter_saturday" domain="[('confirmation_weekday', '=', 'Sabato')]"/>
+                <filter string="Domenica" name="filter_sunday" domain="[('confirmation_weekday', '=', 'Domenica')]"/>
+            </xpath>
+        </field>
+    </record>
 </odoo>
