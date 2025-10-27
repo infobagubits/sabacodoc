@@ -22,8 +22,8 @@
                 <field name="x_secondary_uom_id" string="UdM sec"/>
             </xpath>
             
-            <!-- Aggiungere campi packaging dopo UdM sec -->
-            <xpath expr="//field[@name='x_secondary_uom_id']" position="after">
+            <!-- Aggiungere campi packaging dopo quantity -->
+            <xpath expr="//field[@name='quantity']" position="after">
                 <field name="product_packaging_qty" readonly="0"/>
                 <field name="product_packaging_id"/>
             </xpath>
