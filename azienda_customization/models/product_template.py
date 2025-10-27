@@ -66,23 +66,26 @@ class ProductTemplate(models.Model):
         # Trova il prossimo sequenziale disponibile
         # Cerca tutti i prodotti con lo stesso base_code
         existing = self.env['product.template'].search([
-            ('default_code', 'like', base_code + '-%')
+            ('default_code', 'like', base_code + '%')
         ])
         
-        # Estrae i numeri esistenti
+        # Estrae i numeri esistenti dalla fine del default_code
         max_seq = 0
         for product in existing:
-            if product.default_code and '-' in product.default_code:
-                try:
-                    seq_num = int(product.default_code.split('-')[-1])
-                    if seq_num > max_seq:
-                        max_seq = seq_num
-                except ValueError:
-                    pass
+            if product.default_code and product.default_code.startswith(base_code):
+                # Rimuove il base_code per ottenere solo il numero finale
+                seq_str = product.default_code[len(base_code):]
+                if seq_str and seq_str.isdigit():
+                    try:
+                        seq_num = int(seq_str)
+                        if seq_num > max_seq:
+                            max_seq = seq_num
+                    except ValueError:
+                        pass
         
         # Genera il nuovo sequenziale
         new_seq = max_seq + 1
         
-        # Ritorna il codice completo con sequenziale a 3 cifre
-        return f"{base_code}-{new_seq:03d}"
+        # Ritorna il codice completo con sequenziale senza zeri iniziali
+        return f"{base_code}{new_seq}"
 
