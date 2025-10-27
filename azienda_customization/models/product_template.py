@@ -52,7 +52,7 @@ class ProductTemplate(models.Model):
         
         # 2. Codice fornitore (codice_prodotti_fornitore)
         if self.seller_ids and self.seller_ids[0]:
-            partner = self.seller_ids[0].name  # name é o partner_id
+            partner = self.seller_ids[0].partner_id  # campo correto
             if partner and hasattr(partner, 'codice_prodotti_fornitore') and partner.codice_prodotti_fornitore:
                 codes.append(partner.codice_prodotti_fornitore)
         
