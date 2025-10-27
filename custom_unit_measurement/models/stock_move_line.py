@@ -15,6 +15,20 @@ class StockMoveLine(models.Model):
         store=False,
     )
     
+    product_packaging_id = fields.Many2one(
+        related='move_id.product_packaging_id',
+        string='Imballaggio',
+        readonly=True,
+        store=True,
+    )
+    
+    product_packaging_qty = fields.Float(
+        related='move_id.product_packaging_qty',
+        string='Quantità Confezione',
+        readonly=True,
+        store=True,
+    )
+    
     @api.model
     def create(self, vals):
         """
