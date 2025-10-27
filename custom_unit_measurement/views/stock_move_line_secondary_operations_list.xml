@@ -10,12 +10,7 @@
             <xpath expr="//field[@name='lot_name']" position="attributes">
                 <attribute name="string">Lotto</attribute>
             </xpath>
-            
-            <!-- Rimuovere colonna "Stocca in" -->
-            <xpath expr="//field[@name='location_dest_id']" position="attributes">
-                <attribute name="invisible">1</attribute>
-            </xpath>
-            
+                    
             <!-- Rinominare Unità di misura in "UdM" -->
             <xpath expr="//field[@name='product_uom_id'][last()]" position="attributes">
                 <attribute name="string">UdM</attribute>
