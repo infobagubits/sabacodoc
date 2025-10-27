@@ -24,7 +24,7 @@
             
             <!-- Aggiungere campi packaging dopo quantity -->
             <xpath expr="//field[@name='quantity']" position="after">
-                <field name="product_packaging_qty" readonly="0"/>
+                <field name="product_packaging_qty" readonly="False"/>
                 <field name="product_packaging_id"/>
             </xpath>
         </field>
