@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="view_product_supplierinfo_list_inherit_multiple_discounts" model="ir.ui.view">
-        <field name="name">product.supplierinfo.list.inherit.multiple.discounts</field>
+    <!-- Herda a view base primeiro -->
+    <record id="view_product_supplierinfo_list_inherit_multiple_discounts_base" model="ir.ui.view">
+        <field name="name">product.supplierinfo.list.inherit.multiple.discounts.base</field>
         <field name="model">product.supplierinfo</field>
-        <field name="inherit_id" ref="purchase.product_supplierinfo_tree_view2"/>
+        <field name="inherit_id" ref="product.product_supplierinfo_tree_view"/>
         <field name="arch" type="xml">
-
             <!-- Muda o nome do campo discount padrão para testar se a herança funciona -->
             <xpath expr="//field[@name='discount']" position="attributes">
-                <attribute name="string">TESTE</attribute>
+                <attribute name="string">TESTE BASE</attribute>
             </xpath>
 
             <!-- Adiciona os novos campos de desconto após o campo discount padrão -->
@@ -17,7 +17,48 @@
                 <field name="discount2" string="Disc. 2 %" optional="show"/>
                 <field name="discount3" string="Disc. 3 %" optional="show"/>
             </xpath>
+        </field>
+    </record>
 
+    <!-- Herda a view purchase também -->
+    <record id="view_product_supplierinfo_list_inherit_multiple_discounts_purchase" model="ir.ui.view">
+        <field name="name">product.supplierinfo.list.inherit.multiple.discounts.purchase</field>
+        <field name="model">product.supplierinfo</field>
+        <field name="inherit_id" ref="purchase.product_supplierinfo_tree_view2"/>
+        <field name="priority" eval="99"/>
+        <field name="arch" type="xml">
+            <!-- Muda o nome do campo discount padrão para testar se a herança funciona -->
+            <xpath expr="//field[@name='discount']" position="attributes">
+                <attribute name="string">TESTE PURCHASE</attribute>
+            </xpath>
+
+            <!-- Adiciona os novos campos de desconto após o campo discount padrão -->
+            <xpath expr="//field[@name='discount']" position="after">
+                <field name="discount1" string="Disc. 1 %" optional="show"/>
+                <field name="discount2" string="Disc. 2 %" optional="show"/>
+                <field name="discount3" string="Disc. 3 %" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Cria uma view completamente nova com prioridade altíssima -->
+    <record id="custom_product_supplierinfo_tree_view_force" model="ir.ui.view">
+        <field name="name">product.supplierinfo.tree.custom.force</field>
+        <field name="model">product.supplierinfo</field>
+        <field name="inherit_id" ref="purchase.product_product_supplierinfo_tree_view2"/>
+        <field name="priority" eval="1"/>
+        <field name="arch" type="xml">
+            <!-- Força mudança do discount -->
+            <xpath expr="//field[@name='discount']" position="attributes">
+                <attribute name="string">TESTE FORCE</attribute>
+            </xpath>
+
+            <!-- Adiciona campos após discount -->
+            <xpath expr="//field[@name='discount']" position="after">
+                <field name="discount1" string="Disc. 1 %" optional="show"/>
+                <field name="discount2" string="Disc. 2 %" optional="show"/>
+                <field name="discount3" string="Disc. 3 %" optional="show"/>
+            </xpath>
         </field>
     </record>
 </odoo>
