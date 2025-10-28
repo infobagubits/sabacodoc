@@ -26,17 +26,17 @@
             <!-- Additional fields -->
             <xpath expr="//field[@name='order_line']/list//field[@name='discount']" position="after">
                 <field name="discount1"
-                       string="Disc. 1 %"
+                       string="Sc. 1%"
                        width="50px"
                        column_invisible="not context.get('hide_discount_purchase', False)"
                        optional="show"/>
                 <field name="discount2"
-                       string="Disc. 2 %"
+                       string="Sc. 2%"
                        width="50px"
                        column_invisible="not context.get('hide_discount_purchase', False)"
                        optional="show"/>
                 <field name="discount3"
-                       string="Disc. 3 %"
+                       string="Sc. 3%"
                        width="50px"
                        column_invisible="not context.get('hide_discount_purchase', False) or context.get('show_discount3_purchase', False)"
                        optional="show"/>
