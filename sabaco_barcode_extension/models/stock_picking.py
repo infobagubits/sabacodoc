@@ -23,8 +23,8 @@ class StockPicking(models.Model):
                     ('name', '=', picking.origin)
                 ], limit=1)
                 
-                if purchase_order and purchase_order.notes:
-                    picking.purchase_order_note = purchase_order.notes
+                if purchase_order and purchase_order.x_studio_note:
+                    picking.purchase_order_note = purchase_order.x_studio_note
                 else:
                     picking.purchase_order_note = False
             else:
