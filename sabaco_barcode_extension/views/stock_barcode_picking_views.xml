@@ -11,11 +11,11 @@
                 <xpath expr="//kanban[hasclass('o_kanban_mobile')]" position="inside">
                     <field name="note"/>
                 </xpath>
-                <!-- Adiciona o campo de notas no template do card, após a primeira div do footer -->
-                <!-- Posição: abaixo do nome da empresa (partner_id), antes da data/status -->
+                <!-- Adiciona o campo de notas no final do card, após o footer -->
+                <!-- Posição: última coisa do card -->
                 <!-- FASE 1: Teste com valor fixo - SEMPRE VISÍVEL para debug -->
-                <xpath expr="//t[@t-name='card']//footer/div[@class='d-flex'][1]" position="after">
-                    <div class="w-100 mt-1 mb-1 text-muted small">
+                <xpath expr="//t[@t-name='card']//footer" position="after">
+                    <div class="mt-2 mb-1 text-muted small">
                         <span class="fw-bold">Note Test:</span> 
                         <span>Questo è un testo fisso per test - ID: <field name="id"/></span>
                     </div>
