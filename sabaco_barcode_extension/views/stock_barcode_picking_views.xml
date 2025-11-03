@@ -13,9 +13,9 @@
                 </xpath>
                 <!-- Adiciona o campo de notas no template do card, após a primeira div do footer -->
                 <!-- Posição: abaixo do nome da empresa (partner_id), antes da data/status -->
-                <!-- FASE 1: Teste com valor fixo -->
-                <xpath expr="//footer/div[@class='d-flex'][1]" position="after">
-                    <div class="mt-1 mb-1 text-muted small" invisible="not note">
+                <!-- FASE 1: Teste com valor fixo - SEMPRE VISÍVEL para debug -->
+                <xpath expr="//t[@t-name='card']//footer/div[@class='d-flex'][1]" position="after">
+                    <div class="w-100 mt-1 mb-1 text-muted small">
                         <span class="fw-bold">Note Test:</span> 
                         <span>Questo è un testo fisso per test - ID: <field name="id"/></span>
                     </div>
