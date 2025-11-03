@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Estende o template LineQuantity para adicionar quantidade de embalagem -->
+    <t t-inherit="stock_barcode.LineQuantity" t-inherit-mode="extension">
+        <!-- FASE TESTE: Adiciona valor fixo após a quantidade para validar inserção -->
+        <xpath expr="//small[@class='o_line_uom text-muted ms-1']" position="after">
+            <div class="text-muted small mt-1" t-if="props.line.product_packaging_id">
+                <span class="fw-bold">Test:</span> 
+                <span>5.00 confezioni</span>
+            </div>
+        </xpath>
+    </t>
+
+</templates>
