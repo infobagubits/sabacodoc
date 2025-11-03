@@ -26,7 +26,7 @@
     ],
     'assets': {
         'web.assets_backend': [
-            'sabaco_barcode_extension/static/src/components/line.xml',
+            'sabaco_barcode_extension/static/src/**/*',
         ],
     },
     'installable': True,
