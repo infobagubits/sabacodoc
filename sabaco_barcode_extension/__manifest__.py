@@ -18,6 +18,7 @@
     'license': 'LGPL-3',
     'depends': [
         'stock_barcode',
+        'purchase_stock',
     ],
     'data': [
         'views/stock_barcode_picking_views.xml',
