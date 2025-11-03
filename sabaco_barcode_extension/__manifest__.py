@@ -22,6 +22,7 @@
     ],
     'data': [
         'views/stock_barcode_picking_views.xml',
+        'views/stock_picking_move_views.xml',
     ],
     'installable': True,
     'auto_install': False,
