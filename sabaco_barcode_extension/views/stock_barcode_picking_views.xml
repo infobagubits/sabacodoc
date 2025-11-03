@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Herda a view kanban do barcode para adicionar campo de notas nos cards -->
+        <record id="stock_picking_view_kanban_note" model="ir.ui.view">
+            <field name="name">stock.picking.view.kanban.note.sabaco</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock_barcode.stock_picking_view_kanban"/>
+            <field name="arch" type="xml">
+                <!-- Declara o campo note na lista de campos do kanban -->
+                <xpath expr="//kanban[hasclass('o_kanban_mobile')]" position="inside">
+                    <field name="note"/>
+                </xpath>
+                <!-- Adiciona o campo de notas no template do card, após o campo picking_properties -->
+                <!-- FASE 1: Teste com valor fixo -->
+                <xpath expr="//field[@name='picking_properties']" position="after">
+                    <div class="mt-2 text-muted small">
+                        <span class="fw-bold">Note Test:</span> 
+                        <span>Questo è un testo fisso per test - ID: <field name="id"/></span>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
