@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Estende o formulário de inserção de produto no barcode para adicionar campos de confezioni -->
+        <record id="view_stock_move_line_product_selector_confezioni" model="ir.ui.view">
+            <field name="name">stock.move.line.product.selector.confezioni</field>
+            <field name="model">stock.move.line</field>
+            <field name="inherit_id" ref="stock_barcode.stock_move_line_product_selector"/>
+            <field name="arch" type="xml">
+                <!-- Adiciona campos de confezioni após a seção de quantidade, antes das localizações -->
+                <xpath expr="//div[@name='quantity']" position="after">
+                    <!-- Campo Confezioni Richieste -->
+                    <div name="confezioni_richieste" class="row my-2" invisible="not move_id">
+                        <div class="text-black-50 mt-2 fs-5">
+                            <span class="fa fa-cube me-1"/>
+                            <label for="x_studio_confezioni_richieste" string="Confezioni Richieste" class="p-0"/>
+                        </div>
+                        <field name="x_studio_confezioni_richieste" 
+                               placeholder="Confezioni Richieste"
+                               options="{'type': 'number'}"/>
+                    </div>
+                    <!-- Campo Confezioni (product_packaging_id) -->
+                    <div name="confezioni" class="row my-2" invisible="not product_id">
+                        <div class="text-black-50 mt-2 fs-5">
+                            <span class="fa fa-archive me-1"/>
+                            <label for="product_packaging_id" string="Confezione" class="p-0"/>
+                        </div>
+                        <field name="product_packaging_id" 
+                               placeholder="Confezione"
+                               domain="[('product_id', '=', product_id)]"
+                               options="{'no_open': True}"/>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

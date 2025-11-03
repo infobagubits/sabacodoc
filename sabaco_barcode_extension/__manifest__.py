@@ -23,6 +23,7 @@
     'data': [
         'views/stock_barcode_picking_views.xml',
         'views/stock_picking_move_views.xml',
+        'views/stock_move_line_product_selector.xml',
     ],
     'assets': {
         'web.assets_backend': [
