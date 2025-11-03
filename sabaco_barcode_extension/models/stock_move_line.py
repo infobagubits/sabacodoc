@@ -9,8 +9,8 @@ class StockMoveLine(models.Model):
     def _get_fields_stock_barcode(self):
         """Estende os campos disponíveis no contexto JavaScript do barcode"""
         fields = super()._get_fields_stock_barcode()
-        # Adiciona product_packaging_qty se ainda não estiver na lista
-        if 'product_packaging_qty' not in fields:
-            fields.append('product_packaging_qty')
+        # Adiciona x_studio_confezioni_richieste se ainda não estiver na lista
+        if 'x_studio_confezioni_richieste' not in fields:
+            fields.append('x_studio_confezioni_richieste')
         return fields
 

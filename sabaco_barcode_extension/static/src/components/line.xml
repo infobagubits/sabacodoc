@@ -3,11 +3,12 @@
 
     <!-- Estende o template LineQuantity para adicionar quantidade de embalagem -->
     <t t-inherit="stock_barcode.LineQuantity" t-inherit-mode="extension">
-        <!-- Adiciona Confezioni richieste e Confezioni após a unidade de medida -->
+        <!-- Adiciona x_studio_confezioni_richieste e product_packaging_id após a unidade de medida -->
         <xpath expr="//small[@class='o_line_uom text-muted ms-1']" position="after">
-            <div class="text-muted small mt-1" t-if="props.line.product_packaging_id and props.line.product_packaging_qty">
-                <span t-esc="props.line.product_packaging_qty.toFixed(2)"/>
-                <span t-if="props.line.product_packaging_id.name"> <t t-esc="props.line.product_packaging_id.name"/></span>
+            <div class="text-muted small mt-1" t-if="props.line.x_studio_confezioni_richieste or props.line.product_packaging_id">
+                <span t-if="props.line.x_studio_confezioni_richieste" t-esc="props.line.x_studio_confezioni_richieste"/>
+                <span t-if="props.line.x_studio_confezioni_richieste and props.line.product_packaging_id"> </span>
+                <span t-if="props.line.product_packaging_id.name" t-esc="props.line.product_packaging_id.name"/>
             </div>
         </xpath>
     </t>
