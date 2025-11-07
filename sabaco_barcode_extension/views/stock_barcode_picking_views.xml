@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Herda a view kanban do barcode para adicionar campo de notas nos cards -->
+        <record id="stock_picking_view_kanban_note" model="ir.ui.view">
+            <field name="name">stock.picking.view.kanban.note.sabaco</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock_barcode.stock_picking_view_kanban"/>
+            <field name="arch" type="xml">
+                <!-- Declara os campos necessários na lista de campos do kanban -->
+                <xpath expr="//kanban[hasclass('o_kanban_mobile')]" position="inside">
+                    <field name="origin"/>
+                    <field name="purchase_order_note"/>
+                </xpath>
+                <!-- Adiciona o campo de notas do purchase.order no final do card, após o footer -->
+                <!-- Posição: última coisa do card -->
+                <xpath expr="//t[@t-name='card']//footer" position="after">
+                    <div class="mt-2 mb-1 text-muted small" invisible="not purchase_order_note">
+                        <field name="purchase_order_note" nolabel="1" options="{'size': 150}"/>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
