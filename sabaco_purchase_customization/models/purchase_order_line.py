@@ -94,32 +94,39 @@ class PurchaseOrderLine(models.Model):
         
         return line
     
+    def _update_confirmation_fields(self):
+        """
+        Aggiorna i campi di storico quando l'ordine viene confermato.
+        Questo metodo viene chiamato quando purchase.order cambia stato a 'purchase'.
+        Aggiorna sempre i campi quando l'ordine viene confermato per la prima volta.
+        """
+        for line in self:
+            if line.product_id and line.order_id.state == 'purchase':
+                # Salva quantità disponibile
+                line.qty_available_at_confirmation = line.product_id.qty_available
+                
+                # Salva quantità prevista (virtual_available)
+                if hasattr(line.product_id, 'virtual_available'):
+                    line.qty_planned_at_confirmation = line.product_id.virtual_available
+                
+                # Salva giorno della settimana
+                if not line.confirmation_weekday:
+                    line.confirmation_weekday = line._get_weekday_name(line.order_id.date_approve or line.order_id.date_order)
+                
+                # Salva quantità secondaria e UDM secondaria
+                if hasattr(line.product_id, 'x_secondary_qty'):
+                    line.x_secondary_qty_at_confirmation = line.product_id.x_secondary_qty
+                if hasattr(line.product_id, 'x_secondary_uom_id'):
+                    line.x_secondary_uom_id_at_confirmation = line.product_id.x_secondary_uom_id
+    
     def write(self, vals):
         """
         Al momento della modifica dello stato, aggiorna i campi se necessario
         """
         res = super().write(vals)
         
-        # Se l'ordine viene confermato
+        # Se l'ordine viene confermato (quando state viene scritto direttamente nella linea)
         if 'state' in vals and vals['state'] == 'purchase':
-            for line in self:
-                if line.product_id:
-                    # Salva quantità disponibile
-                    if not line.qty_available_at_confirmation:
-                        line.qty_available_at_confirmation = line.product_id.qty_available
-                    
-                    # Salva quantità prevista
-                    if not line.qty_planned_at_confirmation and hasattr(line.product_id, 'virtual_available'):
-                        line.qty_planned_at_confirmation = line.product_id.virtual_available
-                    
-                    # Salva giorno della settimana
-                    if not line.confirmation_weekday:
-                        line.confirmation_weekday = line._get_weekday_name(line.order_id.date_approve or line.order_id.date_order)
-                    
-                    # Salva quantità secondaria e UDM secondaria
-                    if hasattr(line.product_id, 'x_secondary_qty'):
-                        line.x_secondary_qty_at_confirmation = line.product_id.x_secondary_qty
-                    if hasattr(line.product_id, 'x_secondary_uom_id'):
-                        line.x_secondary_uom_id_at_confirmation = line.product_id.x_secondary_uom_id
+            self._update_confirmation_fields()
         
         return res
