@@ -86,23 +86,17 @@ class PurchaseOrderLine(models.Model):
             # Salva giorno della settimana
             line.confirmation_weekday = line._get_weekday_name(line.order_id.date_approve or line.order_id.date_order)
             
-            # Calcola e salva quantità secondaria
-            # Usa la quantità principale del pedido (product_uom_qty) e converte per la UDM secondaria
-            if hasattr(line.product_id.product_tmpl_id, 'x_secondary_uom_id') and line.product_id.product_tmpl_id.x_secondary_uom_id:
-                secondary_uom = line.product_id.product_tmpl_id.x_secondary_uom_id
-                primary_uom = line.product_uom or line.product_id.uom_id
-                primary_qty = line.product_uom_qty or 0.0
-                
-                # Calcola la quantità secondaria usando la conversione tra unità
-                line.x_secondary_qty_at_confirmation = line._calculate_secondary_qty(
-                    primary_qty, 
-                    primary_uom, 
-                    secondary_uom
-                )
-                line.x_secondary_uom_id_at_confirmation = secondary_uom
+            # Salva quantità secondaria disponibile del prodotto
+            # Usa x_secondary_qty_available del prodotto (stessa logica di qty_available)
+            if hasattr(line.product_id.product_tmpl_id, 'x_secondary_qty_available'):
+                line.x_secondary_qty_at_confirmation = line.product_id.product_tmpl_id.x_secondary_qty_available
             else:
-                # Se non c'è unità secondaria, azzera i campi
                 line.x_secondary_qty_at_confirmation = 0.0
+            
+            # Salva UDM secondaria del prodotto
+            if hasattr(line.product_id.product_tmpl_id, 'x_secondary_uom_id') and line.product_id.product_tmpl_id.x_secondary_uom_id:
+                line.x_secondary_uom_id_at_confirmation = line.product_id.product_tmpl_id.x_secondary_uom_id
+            else:
                 line.x_secondary_uom_id_at_confirmation = False
         
         return line
@@ -150,23 +144,17 @@ class PurchaseOrderLine(models.Model):
                 if not line.confirmation_weekday:
                     line.confirmation_weekday = line._get_weekday_name(line.order_id.date_approve or line.order_id.date_order)
                 
-                # Calcola e salva quantità secondaria
-                # Usa la quantità principale del pedido (product_uom_qty) e converte per la UDM secondaria
-                if hasattr(line.product_id.product_tmpl_id, 'x_secondary_uom_id') and line.product_id.product_tmpl_id.x_secondary_uom_id:
-                    secondary_uom = line.product_id.product_tmpl_id.x_secondary_uom_id
-                    primary_uom = line.product_uom or line.product_id.uom_id
-                    primary_qty = line.product_uom_qty or 0.0
-                    
-                    # Calcola la quantità secondaria usando la conversione tra unità
-                    line.x_secondary_qty_at_confirmation = self._calculate_secondary_qty(
-                        primary_qty, 
-                        primary_uom, 
-                        secondary_uom
-                    )
-                    line.x_secondary_uom_id_at_confirmation = secondary_uom
+                # Salva quantità secondaria disponibile del prodotto
+                # Usa x_secondary_qty_available del prodotto (stessa logica di qty_available)
+                if hasattr(line.product_id.product_tmpl_id, 'x_secondary_qty_available'):
+                    line.x_secondary_qty_at_confirmation = line.product_id.product_tmpl_id.x_secondary_qty_available
                 else:
-                    # Se non c'è unità secondaria, azzera i campi
                     line.x_secondary_qty_at_confirmation = 0.0
+                
+                # Salva UDM secondaria del prodotto
+                if hasattr(line.product_id.product_tmpl_id, 'x_secondary_uom_id') and line.product_id.product_tmpl_id.x_secondary_uom_id:
+                    line.x_secondary_uom_id_at_confirmation = line.product_id.product_tmpl_id.x_secondary_uom_id
+                else:
                     line.x_secondary_uom_id_at_confirmation = False
     
     def write(self, vals):
