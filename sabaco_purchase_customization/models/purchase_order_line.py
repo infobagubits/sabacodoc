@@ -86,13 +86,50 @@ class PurchaseOrderLine(models.Model):
             # Salva giorno della settimana
             line.confirmation_weekday = line._get_weekday_name(line.order_id.date_approve or line.order_id.date_order)
             
-            # Salva quantità secondaria e UDM secondaria
-            if hasattr(line.product_id, 'x_secondary_qty'):
-                line.x_secondary_qty_at_confirmation = line.product_id.x_secondary_qty
-            if hasattr(line.product_id, 'x_secondary_uom_id'):
-                line.x_secondary_uom_id_at_confirmation = line.product_id.x_secondary_uom_id
+            # Calcola e salva quantità secondaria
+            # Usa la quantità principale del pedido (product_uom_qty) e converte per la UDM secondaria
+            if hasattr(line.product_id.product_tmpl_id, 'x_secondary_uom_id') and line.product_id.product_tmpl_id.x_secondary_uom_id:
+                secondary_uom = line.product_id.product_tmpl_id.x_secondary_uom_id
+                primary_uom = line.product_uom or line.product_id.uom_id
+                primary_qty = line.product_uom_qty or 0.0
+                
+                # Calcola la quantità secondaria usando la conversione tra unità
+                line.x_secondary_qty_at_confirmation = line._calculate_secondary_qty(
+                    primary_qty, 
+                    primary_uom, 
+                    secondary_uom
+                )
+                line.x_secondary_uom_id_at_confirmation = secondary_uom
+            else:
+                # Se non c'è unità secondaria, azzera i campi
+                line.x_secondary_qty_at_confirmation = 0.0
+                line.x_secondary_uom_id_at_confirmation = False
         
         return line
+    
+    def _calculate_secondary_qty(self, primary_qty, primary_uom, secondary_uom):
+        """
+        Calcola la quantità secondaria a partire dalla quantità principale.
+        Usa la conversione standard del Odoo tra unità di misura.
+        """
+        if not primary_qty or not primary_uom or not secondary_uom:
+            return 0.0
+        
+        # Verifica se le unità appartengono alla stessa categoria
+        if primary_uom.category_id != secondary_uom.category_id:
+            return 0.0
+        
+        # Usa il metodo standard del Odoo per convertire tra unità
+        try:
+            secondary_qty = primary_uom._compute_quantity(
+                primary_qty, 
+                secondary_uom, 
+                round=True
+            )
+            return secondary_qty
+        except Exception:
+            # Se la conversione fallisce, ritorna 0
+            return 0.0
     
     def _update_confirmation_fields(self):
         """
@@ -113,11 +150,24 @@ class PurchaseOrderLine(models.Model):
                 if not line.confirmation_weekday:
                     line.confirmation_weekday = line._get_weekday_name(line.order_id.date_approve or line.order_id.date_order)
                 
-                # Salva quantità secondaria e UDM secondaria
-                if hasattr(line.product_id, 'x_secondary_qty'):
-                    line.x_secondary_qty_at_confirmation = line.product_id.x_secondary_qty
-                if hasattr(line.product_id, 'x_secondary_uom_id'):
-                    line.x_secondary_uom_id_at_confirmation = line.product_id.x_secondary_uom_id
+                # Calcola e salva quantità secondaria
+                # Usa la quantità principale del pedido (product_uom_qty) e converte per la UDM secondaria
+                if hasattr(line.product_id.product_tmpl_id, 'x_secondary_uom_id') and line.product_id.product_tmpl_id.x_secondary_uom_id:
+                    secondary_uom = line.product_id.product_tmpl_id.x_secondary_uom_id
+                    primary_uom = line.product_uom or line.product_id.uom_id
+                    primary_qty = line.product_uom_qty or 0.0
+                    
+                    # Calcola la quantità secondaria usando la conversione tra unità
+                    line.x_secondary_qty_at_confirmation = self._calculate_secondary_qty(
+                        primary_qty, 
+                        primary_uom, 
+                        secondary_uom
+                    )
+                    line.x_secondary_uom_id_at_confirmation = secondary_uom
+                else:
+                    # Se non c'è unità secondaria, azzera i campi
+                    line.x_secondary_qty_at_confirmation = 0.0
+                    line.x_secondary_uom_id_at_confirmation = False
     
     def write(self, vals):
         """
