@@ -5,10 +5,10 @@
     <t t-inherit="stock_barcode.LineQuantity" t-inherit-mode="extension">
         <!-- Adiciona x_studio_confezioni_richieste (via move_id) e product_packaging_id após a unidade de medida -->
         <xpath expr="//small[@class='o_line_uom text-muted ms-1']" position="after">
-            <div class="text-muted small mt-1" t-if="(props.line.move_id &amp;&amp; props.line.move_id.x_studio_confezioni_richieste) or props.line.product_packaging_id">
+            <div class="text-muted small mt-1" t-if="(props.line.move_id &amp;&amp; props.line.move_id.x_studio_confezioni_richieste) or (props.line.product_packaging_id &amp;&amp; props.line.product_packaging_id.name)">
                 <span t-if="props.line.move_id &amp;&amp; props.line.move_id.x_studio_confezioni_richieste" t-esc="props.line.move_id.x_studio_confezioni_richieste"/>
-                <span t-if="(props.line.move_id &amp;&amp; props.line.move_id.x_studio_confezioni_richieste) and props.line.product_packaging_id"> </span>
-                <span t-if="props.line.product_packaging_id.name" t-esc="props.line.product_packaging_id.name"/>
+                <span t-if="(props.line.move_id &amp;&amp; props.line.move_id.x_studio_confezioni_richieste) and (props.line.product_packaging_id &amp;&amp; props.line.product_packaging_id.name)"> </span>
+                <span t-if="props.line.product_packaging_id &amp;&amp; props.line.product_packaging_id.name" t-esc="props.line.product_packaging_id.name"/>
             </div>
         </xpath>
     </t>
