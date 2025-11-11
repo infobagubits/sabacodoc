@@ -7,8 +7,57 @@
             <field name="model">stock.move.line</field>
             <field name="inherit_id" ref="stock_barcode.stock_move_line_product_selector"/>
             <field name="arch" type="xml">
-                <!-- Adiciona campos de confezioni ACIMA da linha de quantità (readonly) com labels, centralizados -->
+                <!-- Adiciona calculadora ACIMA dos campos de confezioni, centralizada -->
                 <xpath expr="//div[@name='quantity']" position="before">
+                    <!-- Calcolatrice: valore1, operatore, valore2, risultato - centralizada -->
+                    <div name="calcolatrice" class="row my-2 justify-content-center">
+                        <div class="col-auto d-flex align-items-end gap-2">
+                            <!-- Valore 1 -->
+                            <div class="d-flex flex-column">
+                                <div class="text-black-50 mb-1 fs-6">
+                                    <label for="calcolatrice_valore1" string="Valore 1" class="p-0"/>
+                                </div>
+                                <field name="calcolatrice_valore1" 
+                                       placeholder="0.00"
+                                       options="{'type': 'number'}"
+                                       class="text-end"
+                                       style="width: 80px;"/>
+                            </div>
+                            <!-- Operatore -->
+                            <div class="d-flex align-items-end">
+                                <field name="calcolatrice_operatore" 
+                                       nolabel="1"
+                                       options="{'no_create': True, 'no_create_edit': True}"/>
+                            </div>
+                            <!-- Valore 2 -->
+                            <div class="d-flex flex-column">
+                                <div class="text-black-50 mb-1 fs-6">
+                                    <label for="calcolatrice_valore2" string="Valore 2" class="p-0"/>
+                                </div>
+                                <field name="calcolatrice_valore2" 
+                                       placeholder="0.00"
+                                       options="{'type': 'number'}"
+                                       class="text-end"
+                                       style="width: 80px;"/>
+                            </div>
+                            <!-- Separatore = -->
+                            <div class="d-flex align-items-center px-1">
+                                <span class="fs-4 fw-bold">=</span>
+                            </div>
+                            <!-- Risultato -->
+                            <div class="d-flex flex-column">
+                                <div class="text-black-50 mb-1 fs-6">
+                                    <label for="calcolatrice_risultato" string="Risultato" class="p-0"/>
+                                </div>
+                                <field name="calcolatrice_risultato" 
+                                       readonly="1"
+                                       placeholder="0.00"
+                                       class="text-end fw-bold"
+                                       options="{'type': 'number'}"
+                                       style="width: 80px;"/>
+                            </div>
+                        </div>
+                    </div>
                     <!-- Campos de confezioni em linha com labels, centralizados na página -->
                     <div name="confezioni" class="row my-2 justify-content-center">
                         <!-- Campo Confezioni Richieste (readonly) -->
