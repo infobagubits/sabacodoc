@@ -9,11 +9,11 @@
             <field name="arch" type="xml">
                 <!-- Adiciona campos de quantidade e unidade secundária exatamente abaixo dos campos padrão -->
                 <xpath expr="//div[@name='quantity']" position="after">
-                    <!-- Quantidade e Unidade Secundária - mesmo layout dos campos padrão -->
+                    <!-- Quantidade e Unidade Secundária - EXATAMENTE o mesmo layout dos campos padrão -->
                     <div name="quantity_secondary" class="row my-2">
                         <div class="col">
                             <field name="x_secondary_qty" class="text-end"
-                                options="{'type': 'number'}" placeholder="Quantità Secondaria"/>
+                                options="{'type': 'number'}" placeholder="Quantity"/>
                         </div>
                         <div class="col-3 ps-0" groups="uom.group_uom">
                             <field name="x_secondary_uom_id" options="{'no_open': True}" groups="uom.group_uom"/>
