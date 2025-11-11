@@ -15,6 +15,18 @@ patch(BarcodePickingModel.prototype, {
         if (smlData.move_id) {
             smlData.move_id = this.cache.getRecord('stock.move', smlData.move_id);
         }
+        // Garante que product_uom_id seja sempre um objeto válido (não null)
+        // Isso pode acontecer se o cache não tiver o registro ainda
+        if (!smlData.product_uom_id && smlData.product_id) {
+            const product = this.cache.getRecord('product.product', smlData.product_id);
+            if (product && product.uom_id) {
+                smlData.product_uom_id = this.cache.getRecord('uom.uom', product.uom_id);
+            }
+        }
+        // Garante que location_dest_id seja sempre um objeto válido
+        if (!smlData.location_dest_id && smlData.location_id) {
+            smlData.location_dest_id = smlData.location_id;
+        }
         return smlData;
     },
 
