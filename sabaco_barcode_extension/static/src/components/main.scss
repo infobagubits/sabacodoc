@@ -1,33 +1,28 @@
 // Estilos para campos de quantidade e unidade secundária
-// Aplicam os mesmos estilos dos campos padrão (qty_done e product_uom_id)
+// Aplicam EXATAMENTE os mesmos estilos dos campos padrão (qty_done e product_uom_id)
 .o_barcode_line_form {
-    [name="x_secondary_qty"], [name="x_secondary_uom_id"] {
-        margin-bottom: 0;
+    .row {
+        & > div {
+            // Aplica os mesmos estilos dos campos padrão aos campos secundários
+            [name="x_secondary_qty"], [name="x_secondary_uom_id"] {
+                margin-bottom: 0;
 
-        & .o_input {
-            font-size: 2rem;
-        }
-    }
+                & .o_input {
+                    font-size: 2rem;
+                }
+            }
 
-    :not(td)[name="x_secondary_uom_id"] {
-        height: 100%;
-        margin-bottom: 0;
-        font-size: 2rem;
-        width: 100%;
-    }
+            :not(td)[name="x_secondary_uom_id"] {
+                height: 100%;
+                margin-bottom: 0;
+                font-size: 2rem;
+            }
 
-    [name="x_secondary_uom_id"] .o-autocomplete, 
-    [name="x_secondary_uom_id"] .o_field_many2one_selection, 
-    [name="x_secondary_uom_id"] .o_field_many2one_selection input {
-        height: 100%;
-        width: 100%;
-        font-size: 2rem;
-    }
-    
-    // Garante que o container do campo secundário tenha o mesmo tamanho
-    [name="quantity_secondary"] {
-        .col-3 {
-            min-width: 0;
+            [name="x_secondary_uom_id"] .o-autocomplete, 
+            [name="x_secondary_uom_id"] .o_field_many2one_selection, 
+            [name="x_secondary_uom_id"] .o_field_many2one_selection input {
+                height: 100%;
+            }
         }
     }
 }
