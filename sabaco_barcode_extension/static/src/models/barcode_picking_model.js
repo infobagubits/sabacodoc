@@ -34,7 +34,21 @@ patch(BarcodePickingModel.prototype, {
         
         // Obtém product_uom_id do produto se não estiver disponível no move
         const product = this.cache.getRecord('product.product', move.product_id);
-        const productUomId = product?.uom_id || move.product_uom || move.product_id?.uom_id;
+        if (!product) {
+            return null;
+        }
+        
+        const productUomId = product.uom_id || move.product_uom;
+        const productUom = productUomId ? this.cache.getRecord('uom.uom', productUomId) : null;
+        
+        // Obtém location_id e location_dest_id - devem ser objetos válidos para ordenação
+        const locationId = this.cache.getRecord('stock.location', move.location_id);
+        const locationDestId = this.cache.getRecord('stock.location', move.location_dest_id);
+        
+        // Garante que location_id não seja null (necessário para ordenação)
+        if (!locationId) {
+            return null;
+        }
         
         // Cria dados de linha virtual a partir do move
         const lineData = {
@@ -42,9 +56,9 @@ patch(BarcodePickingModel.prototype, {
             virtual_id: existingLine?.virtual_id || this._uniqueVirtualId,
             move_id: move,
             product_id: product,
-            product_uom_id: this.cache.getRecord('uom.uom', productUomId),
-            location_id: this.cache.getRecord('stock.location', move.location_id),
-            location_dest_id: this.cache.getRecord('stock.location', move.location_dest_id),
+            product_uom_id: productUom,
+            location_id: locationId,
+            location_dest_id: locationDestId || null,
             quantity: move.product_uom_qty || 0,
             qty_done: 0,
             picked: false,
@@ -52,10 +66,11 @@ patch(BarcodePickingModel.prototype, {
             lot_id: null,
             lot_name: null,
             owner_id: null,
-            package_id: null,
-            result_package_id: null,
+            package_id: null, // null é OK, o sortingMethod verifica isso
+            result_package_id: null, // null é OK, o sortingMethod verifica isso
             product_packaging_id: null,
             dummy_id: null,
+            product_category_name: product.categ_id?.complete_name || product.category_name || '',
             sortIndex: existingLine?.sortIndex,
         };
 
@@ -119,6 +134,65 @@ patch(BarcodePickingModel.prototype, {
         }
         
         return defaultValues;
+    },
+
+    /**
+     * Estende _sortingMethod para lidar com valores null nas linhas virtuais
+     */
+    _sortingMethod(l1, l2) {
+        // Sort by source location - proteção contra null
+        const sourceLocation1 = l1.location_id?.display_name || '';
+        const sourceLocation2 = l2.location_id?.display_name || '';
+        if (sourceLocation1 < sourceLocation2) {
+            return -1;
+        } else if (sourceLocation1 > sourceLocation2) {
+            return 1;
+        }
+        // Sort by (source) package - proteção contra null
+        const package1 = l1.package_id?.name || '';
+        const package2 = l2.package_id?.name || '';
+        if (package1 < package2) {
+            return -1;
+        } else if (package1 > package2) {
+            return 1;
+        }
+        // Sort by destination location - já tem verificação de null
+        if (l1.location_dest_id && l2.location_dest_id) {
+            const destinationLocation1 = l1.location_dest_id.display_name || '';
+            const destinationLocation2 = l2.location_dest_id.display_name || '';
+            if (destinationLocation1 < destinationLocation2) {
+                return -1;
+            } else if (destinationLocation1 > destinationLocation2) {
+                return 1;
+            }
+        }
+        // Sort by result package - já tem verificação de null
+        if (l1.result_package_id && l2.result_package_id) {
+            const resultPackage1 = l1.result_package_id.name || '';
+            const resultPackage2 = l2.result_package_id.name || '';
+            if (resultPackage1 < resultPackage2) {
+                return -1;
+            } else if (resultPackage1 > resultPackage2) {
+                return 1;
+            }
+        }
+        // Sort by product's category - proteção contra null
+        const categ1 = l1.product_category_name || '';
+        const categ2 = l2.product_category_name || '';
+        if (categ1 < categ2) {
+            return -1;
+        } else if (categ1 > categ2) {
+            return 1;
+        }
+        // Sort by product's display name - proteção contra null
+        const product1 = l1.product_id?.display_name || '';
+        const product2 = l2.product_id?.display_name || '';
+        if (product1 < product2) {
+            return -1;
+        } else if (product1 > product2) {
+            return 1;
+        }
+        return 0;
     },
 });
 
