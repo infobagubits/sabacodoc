@@ -38,8 +38,15 @@ patch(BarcodePickingModel.prototype, {
             return null;
         }
         
-        const productUomId = product.uom_id || move.product_uom;
-        const productUom = productUomId ? this.cache.getRecord('uom.uom', productUomId) : null;
+        // Obtém product_uom_id - prioriza move.product_uom, depois product.uom_id
+        const productUomId = move.product_uom || product.uom_id;
+        if (!productUomId) {
+            return null; // Não pode criar linha sem UOM
+        }
+        const productUom = this.cache.getRecord('uom.uom', productUomId);
+        if (!productUom) {
+            return null; // Não pode criar linha sem UOM válido
+        }
         
         // Obtém location_id e location_dest_id - devem ser objetos válidos para ordenação
         const locationId = this.cache.getRecord('stock.location', move.location_id);
@@ -50,15 +57,19 @@ patch(BarcodePickingModel.prototype, {
             return null;
         }
         
+        // Garante que location_dest_id seja sempre um objeto válido (necessário para template)
+        // Se não existir no cache, usa location_id como fallback
+        const validLocationDestId = locationDestId || locationId;
+        
         // Cria dados de linha virtual a partir do move
         const lineData = {
             id: null, // Não tem ID porque não existe move_line ainda
             virtual_id: existingLine?.virtual_id || this._uniqueVirtualId,
             move_id: move,
             product_id: product,
-            product_uom_id: productUom,
+            product_uom_id: productUom, // Sempre um objeto válido (não null)
             location_id: locationId,
-            location_dest_id: locationDestId || null,
+            location_dest_id: validLocationDestId, // Sempre um objeto válido (não null)
             quantity: move.product_uom_qty || 0,
             qty_done: 0,
             picked: false,
