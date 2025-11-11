@@ -164,13 +164,73 @@ patch(BarcodePickingModel.prototype, {
     /**
      * Estende getEditedLineParams para lidar com linhas virtuais (sem id)
      * Retorna null como currentId se a linha não tiver id, permitindo criar nova linha
+     * Também armazena a linha para uso no contexto
      */
     getEditedLineParams(line) {
+        // Armazena a linha atual para uso no contexto
+        this._currentEditedLine = line;
         // Se a linha não tem id (é virtual), retorna null para permitir criar nova linha
         if (!line || !line.id) {
-            return { currentId: null };
+            return { currentId: null, isVirtual: true };
         }
         return super.getEditedLineParams(...arguments);
+    },
+
+    /**
+     * Limpa a referência da linha editada quando necessário
+     */
+    displayBarcodeLines(lineId) {
+        // Limpa a referência da linha editada
+        this._currentEditedLine = null;
+        return super.displayBarcodeLines(...arguments);
+    },
+
+    /**
+     * Estende _getNewLineDefaultContext para incluir dados da linha virtual quando editada
+     */
+    _getNewLineDefaultContext() {
+        const context = super._getNewLineDefaultContext(...arguments);
+        
+        // Se estamos editando uma linha virtual (sem id), adiciona os dados da linha ao contexto
+        if (this._currentEditedLine && !this._currentEditedLine.id) {
+            const line = this._currentEditedLine;
+            
+            // Adiciona product_id se disponível
+            if (line.product_id && line.product_id.id) {
+                context.default_product_id = line.product_id.id;
+            }
+            
+            // Adiciona move_id se disponível
+            if (line.move_id) {
+                const moveId = typeof line.move_id === 'object' ? line.move_id.id : line.move_id;
+                if (moveId) {
+                    context.default_move_id = moveId;
+                }
+            }
+            
+            // Adiciona location_id se disponível (sobrescreve o padrão)
+            if (line.location_id && line.location_id.id) {
+                context.default_location_id = line.location_id.id;
+            }
+            
+            // Adiciona location_dest_id se disponível (sobrescreve o padrão)
+            if (line.location_dest_id && line.location_dest_id.id) {
+                context.default_location_dest_id = line.location_dest_id.id;
+            }
+            
+            // Adiciona product_uom_id se disponível
+            if (line.product_uom_id && line.product_uom_id.id) {
+                context.default_product_uom_id = line.product_uom_id.id;
+            }
+            
+            // Adiciona quantity se disponível (como qty_done inicial)
+            if (line.quantity !== undefined && line.quantity > 0) {
+                context.default_qty_done = line.quantity;
+                context.default_quantity = line.quantity;
+            }
+        }
+        
+        return context;
     },
 
     /**
