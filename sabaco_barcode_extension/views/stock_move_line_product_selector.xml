@@ -7,19 +7,20 @@
             <field name="model">stock.move.line</field>
             <field name="inherit_id" ref="stock_barcode.stock_move_line_product_selector"/>
             <field name="arch" type="xml">
-                <!-- Adiciona campos de confezioni ACIMA da linha de quantità (readonly) com labels, alinhados à direita -->
+                <!-- Adiciona campos de confezioni ACIMA da linha de quantità (readonly) com labels, centralizados -->
                 <xpath expr="//div[@name='quantity']" position="before">
-                    <!-- Campos de confezioni em linha com labels, justificados à direita -->
-                    <div name="confezioni" class="row my-2 justify-content-end">
+                    <!-- Campos de confezioni em linha com labels, centralizados na página -->
+                    <div name="confezioni" class="row my-2 justify-content-center">
                         <!-- Campo Confezioni Richieste (readonly) -->
                         <div class="col-auto" invisible="not move_id or not x_studio_confezioni_richieste">
-                            <div class="text-black-50 mt-2 fs-5">
+                            <div class="text-black-50 mt-2 fs-5 text-end">
                                 <span class="fa fa-cube me-1"/>
                                 <label for="x_studio_confezioni_richieste" string="Confezioni Richieste" class="p-0"/>
                             </div>
                             <field name="x_studio_confezioni_richieste" 
                                    readonly="1"
                                    placeholder="Confezioni Richieste"
+                                   class="text-end"
                                    options="{'type': 'number'}"/>
                         </div>
                         <!-- Campo Confezioni (product_packaging_id) - readonly -->
