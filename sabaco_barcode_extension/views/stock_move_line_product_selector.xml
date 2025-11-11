@@ -7,12 +7,12 @@
             <field name="model">stock.move.line</field>
             <field name="inherit_id" ref="stock_barcode.stock_move_line_product_selector"/>
             <field name="arch" type="xml">
-                <!-- Adiciona campos de confezioni ACIMA da linha de quantidade (readonly) com labels -->
+                <!-- Adiciona campos de confezioni ACIMA da linha de quantità (readonly) com labels, alinhados à direita -->
                 <xpath expr="//div[@name='quantity']" position="before">
-                    <!-- Campos de confezioni em linha com labels -->
-                    <div name="confezioni" class="row my-2">
+                    <!-- Campos de confezioni em linha com labels, justificados à direita -->
+                    <div name="confezioni" class="row my-2 justify-content-end">
                         <!-- Campo Confezioni Richieste (readonly) -->
-                        <div class="col" invisible="not move_id or not x_studio_confezioni_richieste">
+                        <div class="col-auto" invisible="not move_id or not x_studio_confezioni_richieste">
                             <div class="text-black-50 mt-2 fs-5">
                                 <span class="fa fa-cube me-1"/>
                                 <label for="x_studio_confezioni_richieste" string="Confezioni Richieste" class="p-0"/>
@@ -23,7 +23,7 @@
                                    options="{'type': 'number'}"/>
                         </div>
                         <!-- Campo Confezioni (product_packaging_id) - readonly -->
-                        <div class="col" invisible="not product_packaging_id">
+                        <div class="col-auto" invisible="not product_packaging_id">
                             <div class="text-black-50 mt-2 fs-5">
                                 <span class="fa fa-archive me-1"/>
                                 <label for="product_packaging_id" string="Confezione" class="p-0"/>
