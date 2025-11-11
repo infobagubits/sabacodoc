@@ -13,12 +13,22 @@
         height: 100%;
         margin-bottom: 0;
         font-size: 2rem;
+        width: 100%;
     }
 
     [name="x_secondary_uom_id"] .o-autocomplete, 
     [name="x_secondary_uom_id"] .o_field_many2one_selection, 
     [name="x_secondary_uom_id"] .o_field_many2one_selection input {
         height: 100%;
+        width: 100%;
+        font-size: 2rem;
+    }
+    
+    // Garante que o container do campo secundário tenha o mesmo tamanho
+    [name="quantity_secondary"] {
+        .col-3 {
+            min-width: 0;
+        }
     }
 }
 
