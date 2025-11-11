@@ -7,10 +7,10 @@
             <field name="model">stock.move.line</field>
             <field name="inherit_id" ref="stock_barcode.stock_move_line_product_selector"/>
             <field name="arch" type="xml">
-                <!-- Adiciona calculadora ACIMA dos campos de confezioni, alinhada à direita (mesma coluna vertical da UdM) -->
+                <!-- Adiciona calculadora ACIMA dos campos de confezioni, centralizada -->
                 <xpath expr="//div[@name='quantity']" position="before">
-                    <!-- Calcolatrice: valore1, operatore, valore2, risultato - alinhada à direita -->
-                    <div name="calcolatrice" class="row my-2 justify-content-end">
+                    <!-- Calcolatrice: valore1, operatore, valore2, risultato - centralizada -->
+                    <div name="calcolatrice" class="row my-2 justify-content-center">
                         <div class="col-auto d-flex align-items-end gap-2">
                             <!-- Valore 1 -->
                             <div class="d-flex flex-column">
