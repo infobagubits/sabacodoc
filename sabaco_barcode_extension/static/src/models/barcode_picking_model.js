@@ -74,9 +74,12 @@ patch(BarcodePickingModel.prototype, {
         const validLocationDestId = locationDestId || locationId;
         
         // Cria dados de linha virtual a partir do move
+        // Usa virtual_id como dummy_id para permitir que a linha seja encontrada em onOpenProductPage
+        const virtualId = existingLine?.virtual_id || this._uniqueVirtualId;
         const lineData = {
             id: null, // Não tem ID porque não existe move_line ainda
-            virtual_id: existingLine?.virtual_id || this._uniqueVirtualId,
+            virtual_id: virtualId,
+            dummy_id: virtualId, // Usa virtual_id como dummy_id para permitir busca em onOpenProductPage
             move_id: move,
             product_id: product,
             product_uom_id: productUom, // Sempre um objeto válido (não null)
@@ -92,7 +95,6 @@ patch(BarcodePickingModel.prototype, {
             package_id: null, // null é OK, o sortingMethod verifica isso
             result_package_id: null, // null é OK, o sortingMethod verifica isso
             product_packaging_id: null,
-            dummy_id: null,
             product_category_name: product.categ_id?.complete_name || product.category_name || '',
             sortIndex: existingLine?.sortIndex,
         };
@@ -157,6 +159,18 @@ patch(BarcodePickingModel.prototype, {
         }
         
         return defaultValues;
+    },
+
+    /**
+     * Estende getEditedLineParams para lidar com linhas virtuais (sem id)
+     * Retorna null como currentId se a linha não tiver id, permitindo criar nova linha
+     */
+    getEditedLineParams(line) {
+        // Se a linha não tem id (é virtual), retorna null para permitir criar nova linha
+        if (!line || !line.id) {
+            return { currentId: null };
+        }
+        return super.getEditedLineParams(...arguments);
     },
 
     /**
