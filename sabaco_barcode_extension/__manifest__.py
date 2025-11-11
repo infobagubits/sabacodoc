@@ -19,6 +19,7 @@
     'depends': [
         'stock_barcode',
         'purchase_stock',
+        'custom_unit_measurement',
     ],
     'data': [
         'views/stock_barcode_picking_views.xml',

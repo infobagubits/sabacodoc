@@ -7,6 +7,19 @@
             <field name="model">stock.move.line</field>
             <field name="inherit_id" ref="stock_barcode.stock_move_line_product_selector"/>
             <field name="arch" type="xml">
+                <!-- Adiciona campos de quantidade e unidade secundária exatamente abaixo dos campos padrão -->
+                <xpath expr="//div[@name='quantity']" position="after">
+                    <!-- Quantidade e Unidade Secundária - mesmo layout dos campos padrão -->
+                    <div name="quantity_secondary" class="row my-2">
+                        <div class="col">
+                            <field name="x_secondary_qty" class="text-end"
+                                options="{'type': 'number'}" placeholder="Quantità Secondaria"/>
+                        </div>
+                        <div class="col-3 ps-0" groups="uom.group_uom">
+                            <field name="x_secondary_uom_id" options="{'no_open': True}" groups="uom.group_uom"/>
+                        </div>
+                    </div>
+                </xpath>
                 <!-- Adiciona calculadora ACIMA dos campos de confezioni, centralizada -->
                 <xpath expr="//div[@name='quantity']" position="before">
                     <!-- Calcolatrice: valore1, operatore, valore2, risultato - centralizada -->
