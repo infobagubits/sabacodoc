@@ -14,6 +14,12 @@ patch(BarcodePickingModel.prototype, {
         // Resolve move_id como objeto completo do cache para acessar seus campos
         if (smlData.move_id) {
             smlData.move_id = this.cache.getRecord('stock.move', smlData.move_id);
+            // IMPORTANTE: Sempre mostra a quantidade TOTAL do transferimento (move.product_uom_qty)
+            // não a quantidade reservada ou a quantidade da move_line
+            // Se o produto tem 20 richiesti ma solo 10 disponibili, deve mostrare 20
+            if (smlData.move_id && smlData.move_id.product_uom_qty !== undefined) {
+                smlData.quantity = smlData.move_id.product_uom_qty;
+            }
         }
         // Garante que product_uom_id seja sempre um objeto válido (não null)
         // Isso pode acontecer se o cache não tiver o registro ainda
@@ -242,6 +248,23 @@ patch(BarcodePickingModel.prototype, {
         }
         
         return context;
+    },
+
+    /**
+     * Sobrescreve getQtyDemand para sempre retornar a quantidade TOTAL do transferimento
+     * (move.product_uom_qty), não a quantidade reservada (reserved_uom_qty)
+     * Se o produto tem 20 richiesti ma solo 10 disponibili, deve mostrare 20
+     */
+    getQtyDemand(line) {
+        // Se a linha tem move_id, retorna a quantidade total do transferimento
+        if (line.move_id) {
+            const move = typeof line.move_id === 'object' ? line.move_id : this.cache.getRecord('stock.move', line.move_id);
+            if (move && move.product_uom_qty !== undefined) {
+                return move.product_uom_qty;
+            }
+        }
+        // Fallback: usa o método padrão se não tiver move_id
+        return super.getQtyDemand(...arguments);
     },
 
     /**
