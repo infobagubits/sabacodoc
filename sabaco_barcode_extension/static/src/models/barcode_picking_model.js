@@ -110,13 +110,20 @@ patch(BarcodePickingModel.prototype, {
         const lines = [];
         const picking = this.cache.getRecord(this.resModel, this.resId);
         
+        if (!picking) {
+            return lines;
+        }
+        
         // 1. Adiciona todas as linhas existentes (move_line_ids)
-        for (const id of picking.move_line_ids) {
+        for (const id of picking.move_line_ids || []) {
             const smlData = this._getMoveLineData(id);
-            lines.push(smlData);
+            if (smlData) {
+                lines.push(smlData);
+            }
         }
 
         // 2. Adiciona produtos de move_ids que não têm move_line_ids correspondentes
+        // Normaliza move_ids para garantir comparação correta
         const existingMoveIds = new Set();
         for (const line of lines) {
             if (line.move_id) {
@@ -128,9 +135,13 @@ patch(BarcodePickingModel.prototype, {
         }
 
         // Itera sobre todos os moves do picking
-        for (const moveId of picking.move_ids || []) {
+        // Normaliza moveId para garantir comparação correta (pode ser objeto ou número)
+        for (const moveIdRaw of picking.move_ids || []) {
+            // Normaliza moveId: pode ser objeto (com .id) ou número direto
+            const moveId = typeof moveIdRaw === 'object' ? moveIdRaw.id : moveIdRaw;
+            
             // Se este move não tem move_line correspondente, cria uma linha virtual
-            if (!existingMoveIds.has(moveId)) {
+            if (moveId && !existingMoveIds.has(moveId)) {
                 const moveData = this._getMoveData(moveId);
                 if (moveData) {
                     lines.push(moveData);
