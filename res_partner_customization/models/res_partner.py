@@ -61,9 +61,10 @@ class ResPartner(models.Model):
         help='Etichetta per il numero di cellulare',
         groups='base.group_user',
     )
-    contact_method_ids = fields.Many2many(
-        'res.partner.contact_method',
-        string='Metodi di contatto'
+    contact_method = fields.Text(
+        string='Metodo di contatto',
+        help='Note aggiuntive per la consegna',
+        groups='base.group_user',
     )
     note_consegna = fields.Text(
         string='Note di Consegna',
