@@ -5,19 +5,19 @@
         <record id="view_partner_form_fields_extension" model="ir.ui.view">
             <field name="name">res.partner.form.fields.extension</field>
             <field name="model">res.partner</field>
-            <field name="inherit_id" ref="res_partner_customization.view_partner_form_inherit_custom_contacts" />
+            <field name="inherit_id"
+                ref="res_partner_customization.view_partner_form_inherit_custom_contacts" />
             <field name="priority">1</field>
             <field name="arch" type="xml">
                 <!-- Adicionar campos após giorno_di_chiusura -->
                 <xpath expr="//field[@name='giorno_di_chiusura']" position="after">
-                    <field name="contact_method_ids" widget="many2many_tags"
-                        invisible="not is_customer" />
+                    <field name="contact_method" invisible="not is_customer" />
                     <field name="note_consegna" invisible="not is_customer" />
                     <field name="note_amministrative" invisible="not is_customer" />
                     <field name="note_passaggi" invisible="not is_customer" />
                     <field name="listini_consegnati" invisible="not is_customer" />
                 </xpath>
-                
+
                 <!-- Adicionar etiquetas para telefone e celular no segundo grupo -->
                 <xpath expr="//sheet/group/group[2]" position="inside">
                     <field name="etichetta_telefono" />
