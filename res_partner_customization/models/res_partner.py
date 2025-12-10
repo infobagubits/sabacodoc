@@ -17,6 +17,18 @@ class ResPartner(models.Model):
         help='Prodotti dove questo partner è fornitore'
     )
 
+    # Campi deprecati - mantenuti per compatibilità ma nascosti nelle view
+    codice_fornitore = fields.Char(
+        string='Codice Fornitore',
+        help='Codice identificativo del fornitore (DEPRECATO - campo nascosto)',
+        groups='base.group_user',
+    )
+
+    codice_cliente = fields.Char(
+        string='Codice Cliente',
+        help='Codice identificativo del cliente (DEPRECATO - campo nascosto)',
+        groups='base.group_user',
+    )
 
     stato_cliente = fields.Selection([
         ('no_cons_diretta', 'NO Cons. Diretta'),
