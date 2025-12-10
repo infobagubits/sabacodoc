@@ -1,4 +1,5 @@
-from odoo import models, fields
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'
@@ -45,9 +46,34 @@ class ResPartner(models.Model):
     
     codice_prodotti_fornitore = fields.Char(
         string='Codice Prodotti Fornitore',
-        help='Codice identificativo dei prodotti forniti dal fornitore',
+        help='Codice identificativo dei prodotti forniti dal fornitore (deve essere univoco)',
         groups='base.group_user',
     )
+
+    @api.onchange('codice_prodotti_fornitore')
+    def _onchange_codice_prodotti_fornitore(self):
+        """Verifica che il codice prodotti fornitore sia univoco"""
+        if self.codice_prodotti_fornitore and self.is_supplier:
+            # Cerca altri fornitori con lo stesso codice
+            domain = [
+                ('codice_prodotti_fornitore', '=', self.codice_prodotti_fornitore),
+                ('is_supplier', '=', True),
+            ]
+            # Esclude il record corrente se ha un ID
+            if self._origin.id:
+                domain.append(('id', '!=', self._origin.id))
+            
+            existing = self.env['res.partner'].search(domain, limit=1)
+            if existing:
+                return {
+                    'warning': {
+                        'title': _('Attenzione - Codice Duplicato'),
+                        'message': _('Il Codice Prodotti Fornitore "%s" è già utilizzato dal fornitore "%s". Il codice deve essere univoco.') % (
+                            self.codice_prodotti_fornitore, 
+                            existing.name
+                        ),
+                    }
+                }
 
     giorno_di_chiusura = fields.Char(
         string="Giorno di chiusura"
