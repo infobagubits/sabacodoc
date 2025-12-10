@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <!-- View para ID Contatto - herda diretamente da base com prioridade baixa -->
+        <record id="view_partner_form_id_contatto" model="ir.ui.view">
+            <field name="name">res.partner.form.id.contatto</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form" />
+            <field name="priority">5</field>
+            <field name="arch" type="xml">
+                <!-- ID Contatto - prima del span address_name (primo campo del primo gruppo) -->
+                <xpath expr="//sheet/group/group[1]/span[@name='address_name']" position="before">
+                    <field name="id" string="ID Contatto" readonly="1"/>
+                </xpath>
+            </field>
+        </record>
+        
         <!-- View específica para campos que não aparecem -->
         <record id="view_partner_form_fields_extension" model="ir.ui.view">
             <field name="name">res.partner.form.fields.extension</field>
@@ -9,10 +23,6 @@
                 ref="res_partner_customization.view_partner_form_inherit_custom_contacts" />
             <field name="priority">1</field>
             <field name="arch" type="xml">
-                <!-- ID Contatto - primeiro campo no primeiro grupo -->
-                <xpath expr="//sheet/group/group[1]" position="inside">
-                    <field name="id" string="ID Contatto" readonly="1"/>
-                </xpath>
                 
                 <!-- Adicionar campos após giorno_di_chiusura -->
                 <xpath expr="//field[@name='giorno_di_chiusura']" position="after">
