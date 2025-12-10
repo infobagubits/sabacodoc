@@ -9,6 +9,11 @@
                 ref="res_partner_customization.view_partner_form_inherit_custom_contacts" />
             <field name="priority">1</field>
             <field name="arch" type="xml">
+                <!-- ID Contatto - prima del campo Nome alternativo -->
+                <xpath expr="//field[@name='x_studio_nome_alternativo']" position="before">
+                    <field name="id" string="ID Contatto" readonly="1"/>
+                </xpath>
+                
                 <!-- Adicionar campos após giorno_di_chiusura -->
                 <xpath expr="//field[@name='giorno_di_chiusura']" position="after">
                     <field name="contact_method" invisible="not is_customer" />
