@@ -35,5 +35,17 @@
 
             </field>
         </record>
+        <!-- View per ocultar campo Metodo di pagamento - herda da view account -->
+        <record id="view_partner_hide_payment_method" model="ir.ui.view">
+            <field name="name">res.partner.hide.payment.method</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="account.view_partner_property_form" />
+            <field name="arch" type="xml">
+                <!-- Oculta campo Metodo di pagamento (property_inbound_payment_method_line_id) -->
+                <xpath expr="//field[@name='property_inbound_payment_method_line_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
     </data>
 </odoo>

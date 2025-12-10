@@ -13,7 +13,7 @@
     'maintainer': 'Bagubits SRLS',
     'website': 'https://bagubits.it',
     'license': 'LGPL-3',
-    'depends': ['base', 'contacts', 'res_partner_customization'],
+    'depends': ['base', 'contacts', 'account', 'res_partner_customization'],
     'data': [
         'views/res_partner_fields_view.xml',
     ],
