@@ -87,23 +87,5 @@
                 </xpath>
             </field>
         </record>
-        
-        <!-- Protezione anche per le view di lista (tree) - nasconde i campi nelle liste -->
-        <record id="view_partner_tree_hide_deprecated_fields" model="ir.ui.view">
-            <field name="name">res.partner.tree.hide.deprecated.fields</field>
-            <field name="model">res.partner</field>
-            <field name="inherit_id" ref="base.view_partner_tree" />
-            <field name="priority">99</field>
-            <field name="arch" type="xml">
-                <!-- Nasconde codice_cliente nelle view di lista -->
-                <xpath expr="//field[@name='codice_cliente']" position="attributes">
-                    <attribute name="column_invisible">1</attribute>
-                </xpath>
-                <!-- Nasconde codice_fornitore nelle view di lista -->
-                <xpath expr="//field[@name='codice_fornitore']" position="attributes">
-                    <attribute name="column_invisible">1</attribute>
-                </xpath>
-            </field>
-        </record>
     </data>
 </odoo>
