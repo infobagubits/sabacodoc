@@ -33,11 +33,6 @@
                     <field name="listini_consegnati" invisible="not is_customer" />
                 </xpath>
 
-                <!-- Adicionar etiquetas para telefone e celular no segundo grupo -->
-                <xpath expr="//sheet/group/group[2]" position="inside">
-                    <field name="etichetta_telefono" />
-                    <field name="etichetta_cellulare" />
-                </xpath>
             </field>
         </record>
     </data>
