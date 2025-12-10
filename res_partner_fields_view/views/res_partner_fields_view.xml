@@ -9,8 +9,8 @@
                 ref="res_partner_customization.view_partner_form_inherit_custom_contacts" />
             <field name="priority">1</field>
             <field name="arch" type="xml">
-                <!-- ID Contatto - prima del campo Nome alternativo -->
-                <xpath expr="//field[@name='x_studio_nome_alternativo']" position="before">
+                <!-- ID Contatto - primeiro campo no primeiro grupo -->
+                <xpath expr="//sheet/group/group[1]" position="inside">
                     <field name="id" string="ID Contatto" readonly="1"/>
                 </xpath>
                 
