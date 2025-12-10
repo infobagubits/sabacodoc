@@ -47,5 +47,18 @@
                 </xpath>
             </field>
         </record>
+        
+        <!-- View per ocultar campo Acquirente (buyer_id) - herda da view purchase -->
+        <record id="view_partner_hide_buyer" model="ir.ui.view">
+            <field name="name">res.partner.hide.buyer</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="purchase.view_partner_property_form" />
+            <field name="arch" type="xml">
+                <!-- Oculta campo Acquirente (buyer_id) -->
+                <xpath expr="//field[@name='buyer_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
     </data>
 </odoo>
