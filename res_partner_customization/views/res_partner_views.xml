@@ -51,6 +51,11 @@
                     <field name="etichetta_cellulare" />
                 </xpath>
 
+                <!-- Oculta campo Metodo di pagamento (property_inbound_payment_method_line_id) -->
+                <xpath expr="//field[@name='property_inbound_payment_method_line_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                
                 <!-- Il gruppo Vendite è visibile solo se Cliente è selezionato -->
                 <xpath expr="//page[@name='sales_purchases']//group[@name='sale']"
                     position="attributes">
