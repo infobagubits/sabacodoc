@@ -18,10 +18,8 @@
                 </xpath>
                 <!-- Campi esistenti -->
                 <xpath expr="//sheet/group/group[1]" position="inside">
-                    <field name="codice_cliente" invisible="not is_customer" />
                     <field name="stato_cliente" invisible="not is_customer" />
                     <field name="tipo_cliente" invisible="not is_customer" />
-                    <field name="codice_fornitore" invisible="not is_supplier" />
                     <field name="codice_prodotti_fornitore" invisible="not is_supplier" />
                     <field name="giorno_di_chiusura" />
                     <field name="contact_method" invisible="not is_customer" />

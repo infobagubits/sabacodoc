@@ -17,17 +17,6 @@ class ResPartner(models.Model):
         help='Prodotti dove questo partner è fornitore'
     )
 
-    codice_fornitore = fields.Char(
-        string='Codice Fornitore',
-        help='Codice identificativo del fornitore',
-        groups='base.group_user',
-    )
-
-    codice_cliente = fields.Char(
-        string='Codice Cliente',
-        help='Codice identificativo del cliente',
-        groups='base.group_user',
-    )
 
     stato_cliente = fields.Selection([
         ('no_cons_diretta', 'NO Cons. Diretta'),
