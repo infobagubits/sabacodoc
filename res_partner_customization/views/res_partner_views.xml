@@ -16,11 +16,22 @@
                         <span invisible="not is_company">Indirizzo sede legale</span>
                     </span>
                 </xpath>
+                <!-- Campi deprecati - completamente nascosti SEMPRE, indipendentemente dalle flags -->
+                <!-- Forza codice_cliente a essere invisibile sempre (anche se is_customer=True) -->
+                <xpath expr="//field[@name='codice_cliente']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <!-- Forza codice_fornitore a essere invisibile sempre (anche se is_supplier=True) -->
+                <xpath expr="//field[@name='codice_fornitore']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                
                 <!-- Campi esistenti -->
                 <xpath expr="//sheet/group/group[1]" position="inside">
-                    <!-- Campi deprecati - completamente nascosti -->
-                    <field name="codice_cliente" invisible="1" />
-                    <field name="codice_fornitore" invisible="1" />
+                    <!-- Campi deprecati - aggiunti come SEMPRE invisibili (invisible="1" senza condizioni) -->
+                    <!-- Questi campi NON devono apparire MAI, anche quando is_customer o is_supplier sono True -->
+                    <field name="codice_cliente" invisible="1" column_invisible="1" />
+                    <field name="codice_fornitore" invisible="1" column_invisible="1" />
                     <!-- Campi attivi -->
                     <field name="stato_cliente" invisible="not is_customer" />
                     <field name="tipo_cliente" invisible="not is_customer" />
@@ -50,6 +61,47 @@
                 <xpath expr="//page[@name='sales_purchases']//group[@name='purchase']"
                     position="attributes">
                     <attribute name="invisible">not is_supplier</attribute>
+                </xpath>
+            </field>
+        </record>
+        
+        <!-- View aggiuntiva con priorità alta per garantire che i campi deprecati siano SEMPRE nascosti -->
+        <!-- Questa view viene applicata per ultima e forza l'invisibilità indipendentemente da altre condizioni -->
+        <record id="view_partner_form_hide_deprecated_fields" model="ir.ui.view">
+            <field name="name">res.partner.form.hide.deprecated.fields</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="res_partner_customization.view_partner_form_inherit_custom_contacts" />
+            <field name="priority">99</field>
+            <field name="arch" type="xml">
+                <!-- Forza codice_cliente a essere invisibile SEMPRE, anche se altre view lo rendono visibile -->
+                <!-- Questo sovrascrive QUALSIASI condizione, incluso invisible="not is_customer" -->
+                <xpath expr="//field[@name='codice_cliente']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                    <attribute name="column_invisible">1</attribute>
+                </xpath>
+                <!-- Forza codice_fornitore a essere invisibile SEMPRE, anche se altre view lo rendono visibile -->
+                <!-- Questo sovrascrive QUALSIASI condizione, incluso invisible="not is_supplier" -->
+                <xpath expr="//field[@name='codice_fornitore']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                    <attribute name="column_invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
+        
+        <!-- Protezione anche per le view di lista (tree) - nasconde i campi nelle liste -->
+        <record id="view_partner_tree_hide_deprecated_fields" model="ir.ui.view">
+            <field name="name">res.partner.tree.hide.deprecated.fields</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_tree" />
+            <field name="priority">99</field>
+            <field name="arch" type="xml">
+                <!-- Nasconde codice_cliente nelle view di lista -->
+                <xpath expr="//field[@name='codice_cliente']" position="attributes">
+                    <attribute name="column_invisible">1</attribute>
+                </xpath>
+                <!-- Nasconde codice_fornitore nelle view di lista -->
+                <xpath expr="//field[@name='codice_fornitore']" position="attributes">
+                    <attribute name="column_invisible">1</attribute>
                 </xpath>
             </field>
         </record>
