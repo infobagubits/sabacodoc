@@ -45,6 +45,10 @@
                 <xpath expr="//field[@name='property_outbound_payment_method_line_id']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
+                <!-- Rende obbligatorio il campo Posizione fiscale (property_account_position_id) -->
+                <xpath expr="//field[@name='property_account_position_id']" position="attributes">
+                    <attribute name="required">1</attribute>
+                </xpath>
             </field>
         </record>
         
