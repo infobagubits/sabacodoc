@@ -26,7 +26,8 @@
                 
                 <!-- Adicionar campos após giorno_di_chiusura -->
                 <xpath expr="//field[@name='giorno_di_chiusura']" position="after">
-                    <field name="contact_method" />
+                    <field name="contact_method" invisible="1" />
+                    <field name="contact_method_ids" widget="many2many_tags" />
                     <field name="note_consegna" invisible="not is_customer" />
                     <field name="note_amministrative" invisible="not is_customer" />
                     <field name="note_passaggi" invisible="not is_customer" />

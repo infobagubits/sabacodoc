@@ -88,12 +88,24 @@ class ResPartner(models.Model):
         help='Etichetta per il numero di cellulare',
         groups='base.group_user',
     )
+    # Campo deprecato - mantenuto per compatibilità
     contact_method = fields.Selection([
         ('whatsapp', 'WhatsApp'),
         ('telefono', 'Telefono'),
         ('mail', 'Mail'),
-    ], string='Metodo di contatto',
-        help='Metodo preferito per contattare il partner',
+    ], string='Metodo di contatto (OLD)',
+        help='Campo deprecato - usare contact_method_ids',
+        groups='base.group_user',
+    )
+    
+    # Nuovo campo Many2many per selezione multipla
+    contact_method_ids = fields.Many2many(
+        'res.partner.contact.method',
+        'res_partner_contact_method_rel',
+        'partner_id',
+        'method_id',
+        string='Metodo di contatto',
+        help='Metodi preferiti per contattare il partner',
         groups='base.group_user',
     )
     note_consegna = fields.Text(

@@ -14,6 +14,8 @@
     'license': 'LGPL-3',
     'depends': ['base', 'contacts', 'account', 'partner_customer_supplier_extension'],
     'data': [
+        'security/ir.model.access.csv',
+        'data/contact_method_data.xml',
         'views/res_partner_views.xml',
     ],
     'installable': True,

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="contact_method_whatsapp" model="res.partner.contact.method">
+            <field name="name">WhatsApp</field>
+        </record>
+        <record id="contact_method_telefono" model="res.partner.contact.method">
+            <field name="name">Telefono</field>
+        </record>
+        <record id="contact_method_mail" model="res.partner.contact.method">
+            <field name="name">Mail</field>
+        </record>
+    </data>
+</odoo>
+
