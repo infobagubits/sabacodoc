@@ -120,7 +120,17 @@ class ResPartner(models.Model):
         help='Note aggiuntive per i passaggi',
         groups='base.group_user',
     )
+    # Campo deprecato - mantenuto per compatibilità
     listini_consegnati = fields.Char(
+        string='Listini Consegnati (OLD)',
+        help='Campo deprecato - usare listini_consegnati_ids',
+        groups='base.group_user',
+    )
+    
+    # Nuovo campo Many2many per selezione multipla
+    listini_consegnati_ids = fields.Many2many(
+        'res.partner.listino',
         string='Listini Consegnati',
+        help='Listini consegnati al cliente',
         groups='base.group_user',
     )

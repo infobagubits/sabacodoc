@@ -42,7 +42,8 @@
                     <field name="note_consegna" invisible="not is_customer" />
                     <field name="note_amministrative" invisible="not is_customer" />
                     <field name="note_passaggi" invisible="not is_customer" />
-                    <field name="listini_consegnati" invisible="not is_customer" />
+                    <field name="listini_consegnati" invisible="1" />
+                    <field name="listini_consegnati_ids" widget="many2many_tags" invisible="not is_customer" />
                 </xpath>
 
                 <xpath expr="//sheet/group/group[2]/field[3]" position="before">
