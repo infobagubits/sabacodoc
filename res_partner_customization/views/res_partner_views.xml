@@ -38,7 +38,7 @@
                     <field name="codice_prodotti_fornitore" invisible="not is_supplier" />
                     <field name="giorno_di_chiusura" />
                     <field name="contact_method" invisible="1" />
-                    <field name="contact_method_ids" widget="many2many_tags" />
+                    <field name="contact_method_ids" widget="many2many_tags" invisible="not is_customer" />
                     <field name="note_consegna" invisible="not is_customer" />
                     <field name="note_amministrative" invisible="not is_customer" />
                     <field name="note_passaggi" invisible="not is_customer" />
