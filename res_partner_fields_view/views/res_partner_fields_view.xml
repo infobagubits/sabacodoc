@@ -60,5 +60,18 @@
                 </xpath>
             </field>
         </record>
+        
+        <!-- View per ocultar sezione Varie (Misc) in Vendite e acquisti -->
+        <record id="view_partner_hide_misc_section" model="ir.ui.view">
+            <field name="name">res.partner.hide.misc.section</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form" />
+            <field name="arch" type="xml">
+                <!-- Oculta sezione Varie (Misc) dentro Vendite e acquisti -->
+                <xpath expr="//group[@name='misc']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
     </data>
 </odoo>
