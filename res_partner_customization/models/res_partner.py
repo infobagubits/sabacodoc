@@ -88,9 +88,12 @@ class ResPartner(models.Model):
         help='Etichetta per il numero di cellulare',
         groups='base.group_user',
     )
-    contact_method = fields.Text(
-        string='Metodo di contatto',
-        help='Note aggiuntive per la consegna',
+    contact_method = fields.Selection([
+        ('whatsapp', 'WhatsApp'),
+        ('telefono', 'Telefono'),
+        ('mail', 'Mail'),
+    ], string='Metodo di contatto',
+        help='Metodo preferito per contattare il partner',
         groups='base.group_user',
     )
     note_consegna = fields.Text(
