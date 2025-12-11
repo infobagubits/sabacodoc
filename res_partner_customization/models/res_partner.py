@@ -101,9 +101,6 @@ class ResPartner(models.Model):
     # Nuovo campo Many2many per selezione multipla
     contact_method_ids = fields.Many2many(
         'res.partner.contact.method',
-        'res_partner_contact_method_rel',
-        'partner_id',
-        'method_id',
         string='Metodo di contatto',
         help='Metodi preferiti per contattare il partner',
         groups='base.group_user',
