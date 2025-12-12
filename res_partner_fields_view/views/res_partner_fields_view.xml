@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
+        <!-- View para ID Contatto - herda diretamente da base com prioridade baixa -->
+        <record id="view_partner_form_id_contatto" model="ir.ui.view">
+            <field name="name">res.partner.form.id.contatto</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form" />
+            <field name="priority">5</field>
+            <field name="arch" type="xml">
+                <!-- ID Contatto - prima del span address_name (primo campo del primo gruppo) -->
+                <xpath expr="//sheet/group/group[1]/span[@name='address_name']" position="before">
+                    <field name="id" string="ID Contatto" readonly="1"/>
+                </xpath>
+            </field>
+        </record>
+        
         <!-- View específica para campos que não aparecem -->
         <record id="view_partner_form_fields_extension" model="ir.ui.view">
             <field name="name">res.partner.form.fields.extension</field>
@@ -9,19 +23,59 @@
                 ref="res_partner_customization.view_partner_form_inherit_custom_contacts" />
             <field name="priority">1</field>
             <field name="arch" type="xml">
+                
                 <!-- Adicionar campos após giorno_di_chiusura -->
                 <xpath expr="//field[@name='giorno_di_chiusura']" position="after">
-                    <field name="contact_method" invisible="not is_customer" />
+                    <field name="contact_method" invisible="1" />
+                    <field name="contact_method_ids" widget="many2many_tags" invisible="not is_customer" />
                     <field name="note_consegna" invisible="not is_customer" />
                     <field name="note_amministrative" invisible="not is_customer" />
                     <field name="note_passaggi" invisible="not is_customer" />
-                    <field name="listini_consegnati" invisible="not is_customer" />
+                    <field name="listini_consegnati" invisible="1" />
+                    <field name="listini_consegnati_ids" widget="many2many_tags" invisible="not is_customer" />
                 </xpath>
 
-                <!-- Adicionar etiquetas para telefone e celular no segundo grupo -->
-                <xpath expr="//sheet/group/group[2]" position="inside">
-                    <field name="etichetta_telefono" />
-                    <field name="etichetta_cellulare" />
+            </field>
+        </record>
+        <!-- View per ocultar campo Metodo di pagamento ACQUISTI - herda da view account -->
+        <record id="view_partner_hide_payment_method" model="ir.ui.view">
+            <field name="name">res.partner.hide.payment.method</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="account.view_partner_property_form" />
+            <field name="arch" type="xml">
+                <!-- Oculta campo Metodo di pagamento ACQUISTI (property_outbound_payment_method_line_id) -->
+                <xpath expr="//field[@name='property_outbound_payment_method_line_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <!-- Rende obbligatorio il campo Posizione fiscale (property_account_position_id) -->
+                <xpath expr="//field[@name='property_account_position_id']" position="attributes">
+                    <attribute name="required">1</attribute>
+                </xpath>
+            </field>
+        </record>
+        
+        <!-- View per ocultar campo Acquirente (buyer_id) - herda da view purchase -->
+        <record id="view_partner_hide_buyer" model="ir.ui.view">
+            <field name="name">res.partner.hide.buyer</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="purchase.view_partner_property_form" />
+            <field name="arch" type="xml">
+                <!-- Oculta campo Acquirente (buyer_id) -->
+                <xpath expr="//field[@name='buyer_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
+        
+        <!-- View per ocultar sezione Varie (Misc) in Vendite e acquisti -->
+        <record id="view_partner_hide_misc_section" model="ir.ui.view">
+            <field name="name">res.partner.hide.misc.section</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form" />
+            <field name="arch" type="xml">
+                <!-- Oculta sezione Varie (Misc) dentro Vendite e acquisti -->
+                <xpath expr="//group[@name='misc']" position="attributes">
+                    <attribute name="invisible">1</attribute>
                 </xpath>
             </field>
         </record>

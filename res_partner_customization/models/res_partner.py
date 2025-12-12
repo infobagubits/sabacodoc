@@ -1,4 +1,5 @@
-from odoo import models, fields
+from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'
@@ -17,15 +18,16 @@ class ResPartner(models.Model):
         help='Prodotti dove questo partner è fornitore'
     )
 
+    # Campi deprecati - mantenuti per compatibilità ma nascosti nelle view
     codice_fornitore = fields.Char(
         string='Codice Fornitore',
-        help='Codice identificativo del fornitore',
+        help='Codice identificativo del fornitore (DEPRECATO - campo nascosto)',
         groups='base.group_user',
     )
 
     codice_cliente = fields.Char(
         string='Codice Cliente',
-        help='Codice identificativo del cliente',
+        help='Codice identificativo del cliente (DEPRECATO - campo nascosto)',
         groups='base.group_user',
     )
 
@@ -44,9 +46,34 @@ class ResPartner(models.Model):
     
     codice_prodotti_fornitore = fields.Char(
         string='Codice Prodotti Fornitore',
-        help='Codice identificativo dei prodotti forniti dal fornitore',
+        help='Codice identificativo dei prodotti forniti dal fornitore (deve essere univoco)',
         groups='base.group_user',
     )
+
+    @api.onchange('codice_prodotti_fornitore')
+    def _onchange_codice_prodotti_fornitore(self):
+        """Verifica che il codice prodotti fornitore sia univoco"""
+        if self.codice_prodotti_fornitore and self.is_supplier:
+            # Cerca altri fornitori con lo stesso codice
+            domain = [
+                ('codice_prodotti_fornitore', '=', self.codice_prodotti_fornitore),
+                ('is_supplier', '=', True),
+            ]
+            # Esclude il record corrente se ha un ID
+            if self._origin.id:
+                domain.append(('id', '!=', self._origin.id))
+            
+            existing = self.env['res.partner'].search(domain, limit=1)
+            if existing:
+                return {
+                    'warning': {
+                        'title': _('Attenzione - Codice Duplicato'),
+                        'message': _('Il Codice Prodotti Fornitore "%s" è già utilizzato dal fornitore "%s". Il codice deve essere univoco.') % (
+                            self.codice_prodotti_fornitore, 
+                            existing.name
+                        ),
+                    }
+                }
 
     giorno_di_chiusura = fields.Char(
         string="Giorno di chiusura"
@@ -61,9 +88,21 @@ class ResPartner(models.Model):
         help='Etichetta per il numero di cellulare',
         groups='base.group_user',
     )
-    contact_method = fields.Text(
+    # Campo deprecato - mantenuto per compatibilità
+    contact_method = fields.Selection([
+        ('whatsapp', 'WhatsApp'),
+        ('telefono', 'Telefono'),
+        ('mail', 'Mail'),
+    ], string='Metodo di contatto (OLD)',
+        help='Campo deprecato - usare contact_method_ids',
+        groups='base.group_user',
+    )
+    
+    # Nuovo campo Many2many per selezione multipla
+    contact_method_ids = fields.Many2many(
+        'res.partner.contact.method',
         string='Metodo di contatto',
-        help='Note aggiuntive per la consegna',
+        help='Metodi preferiti per contattare il partner',
         groups='base.group_user',
     )
     note_consegna = fields.Text(
@@ -81,7 +120,17 @@ class ResPartner(models.Model):
         help='Note aggiuntive per i passaggi',
         groups='base.group_user',
     )
+    # Campo deprecato - mantenuto per compatibilità
     listini_consegnati = fields.Char(
+        string='Listini Consegnati (OLD)',
+        help='Campo deprecato - usare listini_consegnati_ids',
+        groups='base.group_user',
+    )
+    
+    # Nuovo campo Many2many per selezione multipla
+    listini_consegnati_ids = fields.Many2many(
+        'res.partner.listino',
         string='Listini Consegnati',
+        help='Listini consegnati al cliente',
         groups='base.group_user',
     )

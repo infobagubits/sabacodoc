@@ -16,19 +16,34 @@
                         <span invisible="not is_company">Indirizzo sede legale</span>
                     </span>
                 </xpath>
+                <!-- Campi deprecati - completamente nascosti SEMPRE, indipendentemente dalle flags -->
+                <!-- Forza codice_cliente a essere invisibile sempre (anche se is_customer=True) -->
+                <xpath expr="//field[@name='codice_cliente']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <!-- Forza codice_fornitore a essere invisibile sempre (anche se is_supplier=True) -->
+                <xpath expr="//field[@name='codice_fornitore']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                
                 <!-- Campi esistenti -->
                 <xpath expr="//sheet/group/group[1]" position="inside">
-                    <field name="codice_cliente" invisible="not is_customer" />
+                    <!-- Campi deprecati - aggiunti come SEMPRE invisibili (invisible="1" senza condizioni) -->
+                    <!-- Questi campi NON devono apparire MAI, anche quando is_customer o is_supplier sono True -->
+                    <field name="codice_cliente" invisible="1" column_invisible="1" />
+                    <field name="codice_fornitore" invisible="1" column_invisible="1" />
+                    <!-- Campi attivi -->
                     <field name="stato_cliente" invisible="not is_customer" />
                     <field name="tipo_cliente" invisible="not is_customer" />
-                    <field name="codice_fornitore" invisible="not is_supplier" />
                     <field name="codice_prodotti_fornitore" invisible="not is_supplier" />
                     <field name="giorno_di_chiusura" />
-                    <field name="contact_method" invisible="not is_customer" />
+                    <field name="contact_method" invisible="1" />
+                    <field name="contact_method_ids" widget="many2many_tags" invisible="not is_customer" />
                     <field name="note_consegna" invisible="not is_customer" />
                     <field name="note_amministrative" invisible="not is_customer" />
                     <field name="note_passaggi" invisible="not is_customer" />
-                    <field name="listini_consegnati" invisible="not is_customer" />
+                    <field name="listini_consegnati" invisible="1" />
+                    <field name="listini_consegnati_ids" widget="many2many_tags" invisible="not is_customer" />
                 </xpath>
 
                 <xpath expr="//sheet/group/group[2]/field[3]" position="before">
@@ -48,6 +63,42 @@
                 <xpath expr="//page[@name='sales_purchases']//group[@name='purchase']"
                     position="attributes">
                     <attribute name="invisible">not is_supplier</attribute>
+                </xpath>
+            </field>
+        </record>
+        
+        <!-- View aggiuntiva con priorità alta per garantire che i campi deprecati siano SEMPRE nascosti -->
+        <!-- Questa view viene applicata per ultima e forza l'invisibilità indipendentemente da altre condizioni -->
+        <record id="view_partner_form_hide_deprecated_fields" model="ir.ui.view">
+            <field name="name">res.partner.form.hide.deprecated.fields</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="res_partner_customization.view_partner_form_inherit_custom_contacts" />
+            <field name="priority">99</field>
+            <field name="arch" type="xml">
+                <!-- Forza codice_cliente a essere invisibile SEMPRE, anche se altre view lo rendono visibile -->
+                <!-- Questo sovrascrive QUALSIASI condizione, incluso invisible="not is_customer" -->
+                <xpath expr="//field[@name='codice_cliente']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                    <attribute name="column_invisible">1</attribute>
+                </xpath>
+                <!-- Forza codice_fornitore a essere invisibile SEMPRE, anche se altre view lo rendono visibile -->
+                <!-- Questo sovrascrive QUALSIASI condizione, incluso invisible="not is_supplier" -->
+                <xpath expr="//field[@name='codice_fornitore']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                    <attribute name="column_invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
+        
+        <!-- View per ocultar campo Metodo di pagamento - herda da view account -->
+        <record id="view_partner_property_form_hide_payment_method" model="ir.ui.view">
+            <field name="name">res.partner.property.form.hide.payment.method</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="account.view_partner_property_form" />
+            <field name="arch" type="xml">
+                <!-- Oculta campo Metodo di pagamento (property_inbound_payment_method_line_id) -->
+                <xpath expr="//field[@name='property_inbound_payment_method_line_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
                 </xpath>
             </field>
         </record>
