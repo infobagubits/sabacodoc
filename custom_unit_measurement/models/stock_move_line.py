@@ -31,14 +31,28 @@ class StockMoveLine(models.Model):
     @api.onchange('product_packaging_id', 'product_packaging_qty')
     def _onchange_packaging_qty(self):
         """
-        Calcola la quantità in base al numero di confezioni e alla quantità per confezione.
+        Quando altera quantidade de confezioni, calcula a quantidade total.
         quantity = product_packaging_qty * product_packaging_id.qty
         """
         if self.product_packaging_id and self.product_packaging_qty:
             self.quantity = self.product_packaging_qty * self.product_packaging_id.qty
         elif not self.product_packaging_id:
-            # Se non c'è confezione, resetta a 0
+            # Se não c'è confezione, resetta a 0
             self.quantity = 0.0
+    
+    @api.onchange('quantity', 'product_packaging_id')
+    def _onchange_quantity(self):
+        """
+        Quando altera quantidade total, calcula automaticamente a quantidade de confezioni.
+        product_packaging_qty = quantity / product_packaging_id.qty
+        Mantém exatidão: 192.500 KG ÷ 180 = 1,0694444444 confezioni
+        """
+        if self.product_packaging_id and self.quantity:
+            # Calcula a quantidade de confezioni dividindo quantidade total pela quantidade por confezione
+            self.product_packaging_qty = self.quantity / self.product_packaging_id.qty
+        elif not self.product_packaging_id:
+            # Se não c'è confezione, resetta a 0
+            self.product_packaging_qty = 0.0
     
     @api.model
     def create(self, vals):
