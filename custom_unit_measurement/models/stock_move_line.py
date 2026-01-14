@@ -25,7 +25,7 @@ class StockMoveLine(models.Model):
     product_packaging_qty = fields.Float(
         string='Quantità Confezione',
         readonly=False,
-        digits=(16, 10),  # Permite até 10 casas decimais para manter precisão
+        digits=(16, 10),  # Consente fino a 10 cifre decimali per mantenere la precisione esatta del valore
     )
     
     @api.onchange('product_packaging_id', 'product_packaging_qty')
