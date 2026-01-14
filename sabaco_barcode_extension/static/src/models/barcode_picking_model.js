@@ -14,12 +14,10 @@ patch(BarcodePickingModel.prototype, {
         // Resolve move_id como objeto completo do cache para acessar seus campos
         if (smlData.move_id) {
             smlData.move_id = this.cache.getRecord('stock.move', smlData.move_id);
-            // IMPORTANTE: Sempre mostra a quantidade TOTAL do transferimento (move.product_uom_qty)
-            // não a quantidade reservada ou a quantidade da move_line
-            // Se o produto tem 20 richiesti ma solo 10 disponibili, deve mostrare 20
-            if (smlData.move_id && smlData.move_id.product_uom_qty !== undefined) {
-                smlData.quantity = smlData.move_id.product_uom_qty;
-            }
+            // CORREZIONE: Mantém la quantità specifica della move_line, non la quantità totale del move
+            // Ogni lotto ha la sua quantità propria (es: lotto1=3, lotto2=6, lotto3=3)
+            // NON sobrescreve smlData.quantity con move.product_uom_qty
+            // La quantità di smlData viene dal server ed è corretta per ogni move_line
         }
         // Garante que product_uom_id seja sempre um objeto válido (não null)
         // Isso pode acontecer se o cache não tiver o registro ainda
@@ -251,19 +249,13 @@ patch(BarcodePickingModel.prototype, {
     },
 
     /**
-     * Sobrescreve getQtyDemand para sempre retornar a quantidade TOTAL do transferimento
-     * (move.product_uom_qty), não a quantidade reservada (reserved_uom_qty)
-     * Se o produto tem 20 richiesti ma solo 10 disponibili, deve mostrare 20
+     * Sobrescreve getQtyDemand para retornar a quantidade ESPECÍFICA de cada move_line
+     * (não a quantidade total do transferimento)
+     * Se o produto tem 3 lotti (3, 6, 3) PZ, deve mostrare 3, 6, 3 rispettivamente
      */
     getQtyDemand(line) {
-        // Se a linha tem move_id, retorna a quantidade total do transferimento
-        if (line.move_id) {
-            const move = typeof line.move_id === 'object' ? line.move_id : this.cache.getRecord('stock.move', line.move_id);
-            if (move && move.product_uom_qty !== undefined) {
-                return move.product_uom_qty;
-            }
-        }
-        // Fallback: usa o método padrão se não tiver move_id
+        // Retorna a quantidade específica da move_line do servidor
+        // Usa o método padrão que já retorna corretamente a quantidade de cada linha
         return super.getQtyDemand(...arguments);
     },
 
