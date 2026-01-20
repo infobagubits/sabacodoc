@@ -36,45 +36,22 @@ class StockMoveLine(models.Model):
         readonly=True,
     )
     
-    @api.onchange('product_packaging_id', 'product_packaging_qty')
-    def _onchange_packaging_qty(self):
-        """
-        Quando altera quantidade de confezioni, calcula a quantidade total.
-        quantity = product_packaging_qty * product_packaging_id.qty
-        
-        IMPORTANTE: Usa verificação de tolerância para evitar loop infinito
-        com _onchange_quantity que faz o cálculo inverso.
-        """
-        if self.product_packaging_id and self.product_packaging_qty:
-            # Calcula o valor esperado
-            expected_quantity = self.product_packaging_qty * self.product_packaging_id.qty
-            # Só atualiza se a diferença for significativa (evita loop de onchange)
-            # Tolerância de 0.001 para evitar loops por diferenças de arredondamento
-            if abs(self.quantity - expected_quantity) > 0.001:
-                self.quantity = expected_quantity
-        elif not self.product_packaging_id:
-            # Se não c'è confezione, resetta a 0
-            self.quantity = 0.0
-    
     @api.onchange('quantity', 'product_packaging_id')
     def _onchange_quantity(self):
         """
-        Quando altera quantidade total, calcula automaticamente a quantidade de confezioni.
+        Quando altera quantidade total o confezione, calcula automaticamente
+        a quantidade de confezioni.
+        
         product_packaging_qty = quantity / product_packaging_id.qty
         Mantém exatidão: 192.500 KG ÷ 180 = 1,0694444444 confezioni
         
-        IMPORTANTE: Usa verificação de tolerância para evitar loop infinito
-        com _onchange_packaging_qty que faz o cálculo inverso.
+        NOTA: Questo è l'UNICO onchange per evitare loop infiniti.
+        La quantità totale (quantity) NON viene mai calcolata automaticamente
+        da product_packaging_qty per prevenire cicli di ricalcolo.
         """
         if self.product_packaging_id and self.quantity and self.product_packaging_id.qty:
-            # Calcula o valor esperado
-            expected_packaging_qty = self.quantity / self.product_packaging_id.qty
-            # Só atualiza se a diferença for significativa (evita loop de onchange)
-            # Tolerância de 0.0001 para evitar loops por diferenças de arredondamento
-            if abs(self.product_packaging_qty - expected_packaging_qty) > 0.0001:
-                self.product_packaging_qty = expected_packaging_qty
+            self.product_packaging_qty = self.quantity / self.product_packaging_id.qty
         elif not self.product_packaging_id:
-            # Se não c'è confezione, resetta a 0
             self.product_packaging_qty = 0.0
     
     @api.model
