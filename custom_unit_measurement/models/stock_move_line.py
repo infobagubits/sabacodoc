@@ -25,15 +25,7 @@ class StockMoveLine(models.Model):
     product_packaging_qty = fields.Float(
         string='Quantità Confezione',
         readonly=False,
-        digits=(16, 10),  # Consente fino a 10 cifre decimali per mantenere la precisione esatta del valore
-        store=True,  # Armazena com precisão total no banco
-    )
-    
-    product_packaging_qty_display = fields.Float(
-        string='Quantità Confezione',
-        related='product_packaging_qty',
-        digits=(16, 2),  # Exibe apenas 2 casas decimais para melhor legibilità
-        readonly=True,
+        digits=(16, 2),  # Exibe com 2 casas decimais
     )
     
     @api.onchange('quantity', 'product_packaging_id')
@@ -75,11 +67,8 @@ class StockMoveLine(models.Model):
         return res
 
     def unlink(self):
-        moves = self.mapped('move_id')
-        res = super().unlink()
-        for move in moves:
-            move.x_secondary_qty = sum(move.move_line_ids.mapped('x_secondary_qty'))
-        return res
+        # Temporariamente simplificado para investigar loop
+        return super().unlink()
 
     def _update_move_secondary_qty(self):
         """
