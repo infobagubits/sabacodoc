@@ -25,8 +25,22 @@ class StockMoveLine(models.Model):
     product_packaging_qty = fields.Float(
         string='Quantità Confezione',
         readonly=False,
-        digits=(16, 2),  # Exibe com 2 casas decimais
+        digits=(16, 10),  # Armazena com 10 decimais para precisão nos cálculos
     )
+    
+    # Campo para exibição com arredondamento (NÃO armazenado = não causa loops)
+    product_packaging_qty_display = fields.Float(
+        string='Qtà Confezione',
+        compute='_compute_packaging_qty_display',
+        digits=(16, 2),  # Exibe com 2 decimais
+        store=False,  # IMPORTANTE: não armazenar para evitar loops
+    )
+    
+    @api.depends('product_packaging_qty')
+    def _compute_packaging_qty_display(self):
+        """Calcula o valor arredondado para exibição."""
+        for line in self:
+            line.product_packaging_qty_display = line.product_packaging_qty
     
     @api.onchange('quantity', 'product_packaging_id')
     def _onchange_quantity(self):
