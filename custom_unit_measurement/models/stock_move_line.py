@@ -67,14 +67,37 @@ class StockMoveLine(models.Model):
         return res
 
     def unlink(self):
-        # Temporariamente simplificado para investigar loop
-        return super().unlink()
+        """
+        Ao deletar uma linha, atualiza a quantidade secundária do movimento.
+        Usa flag de contexto para evitar loop infinito de recomputação.
+        """
+        # Evita loop: se já estamos atualizando, não dispara novamente
+        if self.env.context.get('_skip_secondary_qty_update'):
+            return super().unlink()
+        
+        # Salva referência aos moves ANTES de deletar
+        moves_to_update = self.mapped('move_id')
+        
+        # Deleta os registros
+        res = super().unlink()
+        
+        # Atualiza os moves com flag para evitar loop
+        for move in moves_to_update.with_context(_skip_secondary_qty_update=True):
+            if move.exists():
+                total = sum(move.move_line_ids.mapped('x_secondary_qty'))
+                move.with_context(_skip_secondary_qty_update=True).x_secondary_qty = total
+        
+        return res
 
     def _update_move_secondary_qty(self):
         """
         Soma as quantidades secundárias das linhas e atualiza a move.
+        Usa flag de contexto para evitar loop infinito.
         """
+        if self.env.context.get('_skip_secondary_qty_update'):
+            return
+        
         for line in self:
             if line.move_id:
                 total = sum(line.move_id.move_line_ids.mapped('x_secondary_qty'))
-                line.move_id.x_secondary_qty = total
+                line.move_id.with_context(_skip_secondary_qty_update=True).x_secondary_qty = total
