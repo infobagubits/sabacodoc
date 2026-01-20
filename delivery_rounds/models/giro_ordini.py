@@ -24,7 +24,8 @@ class GiroOrdine(models.Model):
             ('sabato', 'Sabato'),
             ('domenica', 'Domenica'),
         ],
-        string="Giorno consegna"
+        string="Giorno consegna",
+        required=True  # Campo obbligatorio per creare un giro
     )
 
     note = fields.Text(string='Note')
