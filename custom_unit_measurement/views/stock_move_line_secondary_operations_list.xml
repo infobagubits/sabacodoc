@@ -3,29 +3,30 @@
     <record id="view_stock_move_line_secondary_in_operations_list" model="ir.ui.view">
         <field name="name">stock.move.line.secondary.in.operations.list</field>
         <field name="model">stock.move.line</field>
-        <field name="inherit_id" ref="stock.view_stock_move_line_operation_tree"/>
+        <field name="inherit_id" ref="stock.view_stock_move_line_operation_tree" />
         <field name="arch" type="xml">
-            
+
             <!-- Rinominare Numero di Lotto/Serie in "Lotto" -->
             <xpath expr="//field[@name='lot_name']" position="attributes">
                 <attribute name="string">Lotto</attribute>
             </xpath>
-                    
+
             <!-- Rinominare Unità di misura in "UdM" -->
             <xpath expr="//field[@name='product_uom_id'][last()]" position="attributes">
                 <attribute name="string">UdM</attribute>
             </xpath>
-            
+
             <!-- Aggiungere campi secondari con nomi personalizzati -->
             <xpath expr="//field[@name='product_uom_id'][last()]" position="after">
-                <field name="x_secondary_qty" string="Qty sec."/>
-                <field name="x_secondary_uom_id" string="UdM sec"/>
+                <field name="x_secondary_qty" string="Qty sec." />
+                <field name="x_secondary_uom_id" string="UdM sec" />
             </xpath>
-            
+
             <!-- Aggiungere campi packaging dopo quantity -->
             <xpath expr="//field[@name='quantity']" position="before">
-                <field name="product_packaging_qty_display" string="Quantità Confezione"/>
-                <field name="product_packaging_id" string="Confezione"/>
+                <field name="product_packaging_qty_display" string="Quantità Confezione"
+                    readonly="0" />
+                <field name="product_packaging_id" string="Confezione" />
             </xpath>
         </field>
     </record>
