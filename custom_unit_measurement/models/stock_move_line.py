@@ -25,41 +25,39 @@ class StockMoveLine(models.Model):
     product_packaging_qty = fields.Float(
         string='Quantità Confezione',
         readonly=False,
-        digits=(16, 10),  # Consente fino a 10 cifre decimali per mantenere la precisione esatta del valore
-        store=True,  # Armazena com precisão total no banco
+        digits=(16, 10),  # Armazena com 10 decimais para precisão nos cálculos
     )
     
+    # Campo para exibição com arredondamento (NÃO armazenado = não causa loops)
     product_packaging_qty_display = fields.Float(
-        string='Quantità Confezione',
-        related='product_packaging_qty',
-        digits=(16, 2),  # Exibe apenas 2 casas decimais para melhor legibilità
-        readonly=True,
+        string='Qtà Confezione',
+        compute='_compute_packaging_qty_display',
+        digits=(16, 2),  # Exibe com 2 decimais
+        store=False,  # IMPORTANTE: não armazenar para evitar loops
     )
     
-    @api.onchange('product_packaging_id', 'product_packaging_qty')
-    def _onchange_packaging_qty(self):
-        """
-        Quando altera quantidade de confezioni, calcula a quantidade total.
-        quantity = product_packaging_qty * product_packaging_id.qty
-        """
-        if self.product_packaging_id and self.product_packaging_qty:
-            self.quantity = self.product_packaging_qty * self.product_packaging_id.qty
-        elif not self.product_packaging_id:
-            # Se não c'è confezione, resetta a 0
-            self.quantity = 0.0
+    @api.depends('product_packaging_qty')
+    def _compute_packaging_qty_display(self):
+        """Calcula o valor arredondado para exibição."""
+        for line in self:
+            line.product_packaging_qty_display = line.product_packaging_qty
     
     @api.onchange('quantity', 'product_packaging_id')
     def _onchange_quantity(self):
         """
-        Quando altera quantidade total, calcula automaticamente a quantidade de confezioni.
+        Quando altera quantidade total o confezione, calcula automaticamente
+        a quantidade de confezioni.
+        
         product_packaging_qty = quantity / product_packaging_id.qty
         Mantém exatidão: 192.500 KG ÷ 180 = 1,0694444444 confezioni
+        
+        NOTA: Questo è l'UNICO onchange per evitare loop infiniti.
+        La quantità totale (quantity) NON viene mai calcolata automaticamente
+        da product_packaging_qty per prevenire cicli di ricalcolo.
         """
-        if self.product_packaging_id and self.quantity:
-            # Calcula a quantidade de confezioni dividindo quantidade total pela quantidade por confezione
+        if self.product_packaging_id and self.quantity and self.product_packaging_id.qty:
             self.product_packaging_qty = self.quantity / self.product_packaging_id.qty
         elif not self.product_packaging_id:
-            # Se não c'è confezione, resetta a 0
             self.product_packaging_qty = 0.0
     
     @api.model
@@ -83,17 +81,37 @@ class StockMoveLine(models.Model):
         return res
 
     def unlink(self):
-        moves = self.mapped('move_id')
+        """
+        Ao deletar uma linha, atualiza a quantidade secundária do movimento.
+        Usa flag de contexto para evitar loop infinito de recomputação.
+        """
+        # Evita loop: se já estamos atualizando, não dispara novamente
+        if self.env.context.get('_skip_secondary_qty_update'):
+            return super().unlink()
+        
+        # Salva referência aos moves ANTES de deletar
+        moves_to_update = self.mapped('move_id')
+        
+        # Deleta os registros
         res = super().unlink()
-        for move in moves:
-            move.x_secondary_qty = sum(move.move_line_ids.mapped('x_secondary_qty'))
+        
+        # Atualiza os moves com flag para evitar loop
+        for move in moves_to_update.with_context(_skip_secondary_qty_update=True):
+            if move.exists():
+                total = sum(move.move_line_ids.mapped('x_secondary_qty'))
+                move.with_context(_skip_secondary_qty_update=True).x_secondary_qty = total
+        
         return res
 
     def _update_move_secondary_qty(self):
         """
         Soma as quantidades secundárias das linhas e atualiza a move.
+        Usa flag de contexto para evitar loop infinito.
         """
+        if self.env.context.get('_skip_secondary_qty_update'):
+            return
+        
         for line in self:
             if line.move_id:
                 total = sum(line.move_id.move_line_ids.mapped('x_secondary_qty'))
-                line.move_id.x_secondary_qty = total
+                line.move_id.with_context(_skip_secondary_qty_update=True).x_secondary_qty = total
