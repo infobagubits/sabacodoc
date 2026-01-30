@@ -18,7 +18,6 @@
         
         Implementazione tramite CSS (predefinito) o JavaScript (alternativa).
     """,
-    'author': 'Sviluppo Personalizzato',
     'depends': ['web'],
     'data': [
         'security/ir.model.access.csv',
