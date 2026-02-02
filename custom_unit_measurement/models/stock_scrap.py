@@ -58,9 +58,15 @@ class StockScrap(models.Model):
                     move.write({'x_secondary_qty': secondary_qty})
                     
                     # Atualiza também as linhas de movimento
+                    # IMPORTANTE: Escreve em AMBOS os campos (módulo e Studio)
                     for line in move.move_line_ids:
-                        _logger.info(f"SCRAP do_scrap: Atualizando move_line {line.id} com x_secondary_qty = {secondary_qty}")
-                        line.with_context(_skip_secondary_qty_update=True).write({'x_secondary_qty': secondary_qty})
+                        _logger.info(f"SCRAP do_scrap: Atualizando move_line {line.id} com secondary_qty = {secondary_qty}")
+                        vals_to_write = {'x_secondary_qty': secondary_qty}
+                        # Também atualiza o campo Studio se existir
+                        if 'x_studio_quantita_secondaria' in self.env['stock.move.line']._fields:
+                            vals_to_write['x_studio_quantita_secondaria'] = secondary_qty
+                            _logger.info(f"SCRAP do_scrap: Campo Studio encontrado, atualizando x_studio_quantita_secondaria")
+                        line.with_context(_skip_secondary_qty_update=True).write(vals_to_write)
             
             # Subtrai a quantidade secundária do estoque disponível do produto
             if secondary_qty and scrap.product_id:
