@@ -35,20 +35,32 @@ class StockScrap(models.Model):
         """Estende os valores do movimento para incluir a quantidade secundária."""
         vals = super()._prepare_move_values()
         
-        # Adiciona a quantidade secundária ao movimento
-        if self.x_secondary_qty:
-            vals['x_secondary_qty'] = self.x_secondary_qty
+        _logger.info(f"SCRAP _prepare_move_values: x_secondary_qty = {self.x_secondary_qty}")
+        
+        # SEMPRE adiciona a quantidade secundária ao movimento (mesmo se for 0)
+        vals['x_secondary_qty'] = self.x_secondary_qty or 0.0
+        
+        # Modifica a move_line para incluir x_secondary_qty
+        if vals.get('move_line_ids'):
+            new_move_line_ids = []
+            for line_vals in vals['move_line_ids']:
+                if isinstance(line_vals, tuple) and len(line_vals) == 3:
+                    # Cria nova tupla com o dicionário atualizado
+                    line_dict = dict(line_vals[2])  # Copia o dicionário
+                    line_dict['x_secondary_qty'] = self.x_secondary_qty or 0.0
+                    new_move_line_ids.append((line_vals[0], line_vals[1], line_dict))
+                else:
+                    new_move_line_ids.append(line_vals)
+            vals['move_line_ids'] = new_move_line_ids
             
-            # Adiciona também na move_line
-            if vals.get('move_line_ids'):
-                for line_vals in vals['move_line_ids']:
-                    if isinstance(line_vals, tuple) and len(line_vals) == 3:
-                        line_vals[2]['x_secondary_qty'] = self.x_secondary_qty
+        _logger.info(f"SCRAP _prepare_move_values: vals = {vals}")
         
         return vals
 
     def do_scrap(self):
         """Estende o método de scarto para atualizar a quantidade secundária disponível."""
+        _logger.info(f"SCRAP do_scrap: Iniciando scarto para {self.name}, x_secondary_qty = {self.x_secondary_qty}")
+        
         res = super().do_scrap()
         
         # Após o scarto, subtrai a quantidade secundária do estoque disponível do produto
