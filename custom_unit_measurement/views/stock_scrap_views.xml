@@ -9,10 +9,11 @@
             <field name="arch" type="xml">
                 <!-- Aggiunge i campi quantità secondaria dopo scrap_qty -->
                 <xpath expr="//div[hasclass('o_row')][.//field[@name='scrap_qty']]" position="after">
-                    <label for="x_secondary_qty" invisible="not x_secondary_uom_id"/>
-                    <div class="o_row" invisible="not x_secondary_uom_id">
+                    <field name="x_secondary_uom_id" invisible="1"/>
+                    <label for="x_secondary_qty" string="Quantità Secondaria" invisible="not product_id.x_secondary_uom_id"/>
+                    <div class="o_row" invisible="not product_id.x_secondary_uom_id">
                         <field name="x_secondary_qty" readonly="state == 'done'"/>
-                        <field name="x_secondary_uom_id" readonly="1"/>
+                        <field name="x_secondary_uom_id" readonly="1" class="oe_inline"/>
                     </div>
                 </xpath>
             </field>
@@ -26,10 +27,11 @@
             <field name="arch" type="xml">
                 <!-- Aggiunge i campi quantità secondaria dopo scrap_qty nel dialog -->
                 <xpath expr="//div[hasclass('o_row')][.//field[@name='scrap_qty']]" position="after">
-                    <label for="x_secondary_qty" invisible="not x_secondary_uom_id"/>
-                    <div class="o_row" invisible="not x_secondary_uom_id">
+                    <field name="x_secondary_uom_id" invisible="1"/>
+                    <label for="x_secondary_qty" string="Quantità Secondaria" invisible="not product_id.x_secondary_uom_id"/>
+                    <div class="o_row" invisible="not product_id.x_secondary_uom_id">
                         <field name="x_secondary_qty"/>
-                        <field name="x_secondary_uom_id" readonly="1"/>
+                        <field name="x_secondary_uom_id" readonly="1" class="oe_inline"/>
                     </div>
                 </xpath>
             </field>
