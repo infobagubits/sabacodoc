@@ -14,9 +14,11 @@ class StockPicking(models.Model):
     )
 
     def _get_fields_stock_barcode(self):
-        """Estende i campi inviati al client barcode per includere origin (SO/PO number)"""
+        """Estende i campi inviati al client barcode per includere origin e documento fornitore"""
         fields = super()._get_fields_stock_barcode()
         fields.append('origin')
+        fields.append('supplier_document_number')
+        fields.append('supplier_document_date')
         return fields
 
     @api.depends('origin')

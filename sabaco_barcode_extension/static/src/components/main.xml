@@ -9,6 +9,17 @@
                 <t t-esc="env.model.record.origin"/>
             </div>
         </xpath>
+        
+        <!-- Aggiunge info documento fornitore sotto il partner (solo per ricezioni incoming) -->
+        <xpath expr="//button[hasclass('o_title')]//div[hasclass('o_barcode_partner')]" position="after">
+            <div t-if="env.model.record.picking_type_code === 'incoming' and (env.model.record.supplier_document_number or env.model.record.supplier_document_date)" 
+                 class="text-muted small">
+                <i class="fa fa-file-text-o me-1"/>
+                <span t-if="env.model.record.supplier_document_number" t-esc="env.model.record.supplier_document_number"/>
+                <span t-if="env.model.record.supplier_document_number and env.model.record.supplier_document_date"> - </span>
+                <span t-if="env.model.record.supplier_document_date" t-esc="env.model.record.supplier_document_date"/>
+            </div>
+        </xpath>
     </t>
 
 </templates>

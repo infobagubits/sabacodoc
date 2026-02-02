@@ -20,11 +20,13 @@
         'stock_barcode',
         'purchase_stock',
         'custom_unit_measurement',
+        'stock_picking_supplier_document',
     ],
     'data': [
         'views/stock_barcode_picking_views.xml',
         'views/stock_picking_move_views.xml',
         'views/stock_move_line_product_selector.xml',
+        'views/stock_picking_barcode_form.xml',
     ],
     'assets': {
         'web.assets_backend': [
