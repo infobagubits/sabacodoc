@@ -14,9 +14,11 @@
                 </xpath>
                 <!-- Adiciona origin (SO/PO number) sopra il nome del picking nel card -->
                 <xpath expr="//button[@name='action_open_picking_client_action']" position="before">
-                    <span t-if="record.origin.value" class="text-muted small d-block">
-                        <field name="origin"/>
-                    </span>
+                    <div t-if="record.origin.value" class="w-100 mb-1">
+                        <span class="text-primary fw-bold">
+                            <field name="origin"/>
+                        </span>
+                    </div>
                 </xpath>
                 <!-- Adiciona o campo de notas do purchase.order no final do card, após o footer -->
                 <!-- Posição: última coisa do card -->
