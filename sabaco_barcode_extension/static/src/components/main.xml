@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Estende il template MainComponent per mostrare origin (SO/PO) sopra il nome del picking -->
+    <t t-inherit="stock_barcode.MainComponent" t-inherit-mode="extension">
+        <!-- Aggiunge origin sopra il nome del picking nel header -->
+        <xpath expr="//button[hasclass('o_title')]//div[1]" position="before">
+            <div t-if="env.model.record.origin" class="text-muted small">
+                <t t-esc="env.model.record.origin"/>
+            </div>
+        </xpath>
+    </t>
+
+</templates>

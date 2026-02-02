@@ -13,6 +13,12 @@ class StockPicking(models.Model):
         help='Note from the related Purchase Order based on origin field'
     )
 
+    def _get_fields_stock_barcode(self):
+        """Estende i campi inviati al client barcode per includere origin (SO/PO number)"""
+        fields = super()._get_fields_stock_barcode()
+        fields.append('origin')
+        return fields
+
     @api.depends('origin')
     def _compute_purchase_order_note(self):
         """Compute the note from purchase.order based on origin field"""
