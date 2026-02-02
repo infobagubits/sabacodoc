@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Estende il form principale del scarto per aggiungere i campi quantità secondaria -->
+        <record id="stock_scrap_form_view_secondary" model="ir.ui.view">
+            <field name="name">stock.scrap.form.secondary</field>
+            <field name="model">stock.scrap</field>
+            <field name="inherit_id" ref="stock.stock_scrap_form_view"/>
+            <field name="arch" type="xml">
+                <!-- Aggiunge i campi quantità secondaria dopo scrap_qty -->
+                <xpath expr="//div[hasclass('o_row')][.//field[@name='scrap_qty']]" position="after">
+                    <label for="x_secondary_qty" invisible="not x_secondary_uom_id"/>
+                    <div class="o_row" invisible="not x_secondary_uom_id">
+                        <field name="x_secondary_qty" readonly="state == 'done'"/>
+                        <field name="x_secondary_uom_id" readonly="1"/>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Estende il form dialog del scarto (usato nel barcode/picking) -->
+        <record id="stock_scrap_form_view2_secondary" model="ir.ui.view">
+            <field name="name">stock.scrap.form2.secondary</field>
+            <field name="model">stock.scrap</field>
+            <field name="inherit_id" ref="stock.stock_scrap_form_view2"/>
+            <field name="arch" type="xml">
+                <!-- Aggiunge i campi quantità secondaria dopo scrap_qty nel dialog -->
+                <xpath expr="//div[hasclass('o_row')][.//field[@name='scrap_qty']]" position="after">
+                    <label for="x_secondary_qty" invisible="not x_secondary_uom_id"/>
+                    <div class="o_row" invisible="not x_secondary_uom_id">
+                        <field name="x_secondary_qty"/>
+                        <field name="x_secondary_uom_id" readonly="1"/>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Estende la lista del scarto per mostrare quantità secondaria -->
+        <record id="stock_scrap_tree_view_secondary" model="ir.ui.view">
+            <field name="name">stock.scrap.list.secondary</field>
+            <field name="model">stock.scrap</field>
+            <field name="inherit_id" ref="stock.stock_scrap_tree_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_uom_id']" position="after">
+                    <field name="x_secondary_qty" string="Qtà Sec." optional="show"/>
+                    <field name="x_secondary_uom_id" string="U.M. Sec." optional="show"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

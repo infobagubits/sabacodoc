@@ -29,6 +29,7 @@
         'views/stock_move_line_secondary_operations_list.xml',
         'views/stock_quant_views.xml',
         'views/stock_quant_simple_secondary_view.xml',
+        'views/stock_scrap_views.xml',
     ],
     'installable': True,
     'application': False,
