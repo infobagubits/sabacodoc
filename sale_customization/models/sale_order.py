@@ -1,10 +1,45 @@
-from odoo import models, fields, api
+from odoo import models, fields, api, _
 import logging
 
 _logger = logging.getLogger(__name__)
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
+
+    # Campo computado per mostrare avviso quando ci sono linee con importo 0
+    zero_amount_line_warning = fields.Char(
+        string="Avviso importo zero",
+        compute='_compute_zero_amount_line_warning',
+        store=False,
+    )
+
+    @api.depends('order_line', 'order_line.price_subtotal', 'order_line.product_uom_qty')
+    def _compute_zero_amount_line_warning(self):
+        """
+        Calcola se esistono linee con importo 0 e restituisce il messaggio di avviso.
+        """
+        for order in self:
+            order.zero_amount_line_warning = False
+            
+            # Cerca linee prodotto (non sezioni/note) con prezzo subtotal = 0 e quantità > 0
+            zero_lines = order.order_line.filtered(
+                lambda l: not l.display_type 
+                and l.product_id 
+                and l.product_uom_qty > 0 
+                and l.price_subtotal == 0
+            )
+            
+            if zero_lines:
+                product_names = ', '.join(zero_lines.mapped('product_id.name')[:5])
+                if len(zero_lines) > 5:
+                    product_names += f' (+{len(zero_lines) - 5} altri)'
+                
+                order.zero_amount_line_warning = _(
+                    'Attenzione! Ci sono %(count)s prodotti con importo 0: %(products)s'
+                ) % {
+                    'count': len(zero_lines),
+                    'products': product_names,
+                }
 
     @api.onchange('partner_id')
     def _onchange_partner_id_auto_products(self):

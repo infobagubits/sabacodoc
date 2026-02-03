@@ -7,6 +7,16 @@
         <field name="inherit_id" ref="sale.view_order_form" />
         <field name="arch" type="xml">
 
+            <!-- Banner di avviso per prodotti con importo 0 -->
+            <xpath expr="//header" position="after">
+                <field name="zero_amount_line_warning" invisible="1"/>
+                <div class="alert alert-warning text-center" role="alert" 
+                     invisible="not zero_amount_line_warning">
+                    <i class="fa fa-exclamation-triangle me-2"/>
+                    <field name="zero_amount_line_warning" readonly="1" nolabel="1" class="d-inline"/>
+                </div>
+            </xpath>
+
             <!-- Rimuovere il campo scadenza (validity_date) -->
             <xpath expr="//field[@name='validity_date']" position="replace" />
 
