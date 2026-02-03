@@ -13,19 +13,19 @@ class SaleOrder(models.Model):
         store=False,
     )
 
-    @api.depends('order_line', 'order_line.price_subtotal', 'order_line.product_uom_qty')
+    @api.depends('order_line', 'order_line.price_subtotal', 'order_line.product_id')
     def _compute_zero_amount_line_warning(self):
         """
         Calcola se esistono linee con importo 0 e restituisce il messaggio di avviso.
+        Mostra avviso per QUALSIASI linea prodotto con price_subtotal = 0.
         """
         for order in self:
             order.zero_amount_line_warning = False
             
-            # Cerca linee prodotto (non sezioni/note) con prezzo subtotal = 0 e quantità > 0
+            # Cerca TUTTE le linee prodotto (non sezioni/note) con importo = 0
             zero_lines = order.order_line.filtered(
                 lambda l: not l.display_type 
                 and l.product_id 
-                and l.product_uom_qty > 0 
                 and l.price_subtotal == 0
             )
             
