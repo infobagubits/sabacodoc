@@ -13,42 +13,48 @@ class StockPicking(models.Model):
         string="Data documento fornitore",
         help="Data del documento del fornitore"
     )
+    
+    # Campo computado per mostrare il banner di avviso duplicato
+    duplicate_supplier_document_warning = fields.Char(
+        string="Avviso documento duplicato",
+        compute='_compute_duplicate_supplier_document_warning',
+        store=False,
+    )
 
-    @api.onchange('supplier_document_number', 'partner_id')
-    def _onchange_check_duplicate_supplier_document(self):
+    @api.depends('supplier_document_number', 'partner_id', 'picking_type_id')
+    def _compute_duplicate_supplier_document_warning(self):
         """
-        Mostra un avviso se esiste già un altro movimento in ingresso
-        con lo stesso fornitore e numero documento fornitore.
+        Calcola se esiste un documento duplicato e restituisce il messaggio di avviso.
         """
-        if not self.supplier_document_number or not self.partner_id:
-            return
-        
-        # Verifica solo per operazioni di ricezione (incoming)
-        if self.picking_type_id.code != 'incoming':
-            return
-        
-        # Cerca duplicati
-        domain = [
-            ('id', '!=', self._origin.id if self._origin else False),
-            ('partner_id', '=', self.partner_id.id),
-            ('supplier_document_number', '=', self.supplier_document_number),
-            ('picking_type_id.code', '=', 'incoming'),
-            ('state', '!=', 'cancel'),
-        ]
-        
-        duplicates = self.env['stock.picking'].search(domain, limit=5)
-        
-        if duplicates:
-            duplicate_names = ', '.join(duplicates.mapped('name'))
-            return {
-                'warning': {
-                    'title': _('Documento fornitore duplicato'),
-                    'message': _(
-                        'Attenzione! Esiste già un movimento in ingresso con lo stesso '
-                        'fornitore "%s" e numero documento "%s".\n\n'
-                        'Documenti trovati: %s\n\n'
-                        'Verificare se non si tratta di un duplicato.'
-                    ) % (self.partner_id.name, self.supplier_document_number, duplicate_names),
-                    'type': 'notification',
-                }
-            } 
+        for picking in self:
+            picking.duplicate_supplier_document_warning = False
+            
+            if not picking.supplier_document_number or not picking.partner_id:
+                continue
+            
+            # Verifica solo per operazioni di ricezione (incoming)
+            if not picking.picking_type_id or picking.picking_type_id.code != 'incoming':
+                continue
+            
+            # Cerca duplicati
+            domain = [
+                ('id', '!=', picking.id),
+                ('partner_id', '=', picking.partner_id.id),
+                ('supplier_document_number', '=', picking.supplier_document_number),
+                ('picking_type_id.code', '=', 'incoming'),
+                ('state', '!=', 'cancel'),
+            ]
+            
+            duplicates = self.env['stock.picking'].search(domain, limit=5)
+            
+            if duplicates:
+                duplicate_names = ', '.join(duplicates.mapped('name'))
+                picking.duplicate_supplier_document_warning = _(
+                    'Attenzione! Esiste già un movimento in ingresso con lo stesso '
+                    'fornitore "%(partner)s" e numero documento "%(doc_num)s". '
+                    'Documenti trovati: %(duplicates)s'
+                ) % {
+                    'partner': picking.partner_id.name,
+                    'doc_num': picking.supplier_document_number,
+                    'duplicates': duplicate_names,
+                } 
