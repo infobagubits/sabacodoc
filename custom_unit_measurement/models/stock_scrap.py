@@ -68,16 +68,7 @@ class StockScrap(models.Model):
                             _logger.info(f"SCRAP do_scrap: Campo Studio encontrado, atualizando x_studio_quantita_secondaria")
                         line.with_context(_skip_secondary_qty_update=True).write(vals_to_write)
             
-            # Subtrai a quantidade secundária do estoque disponível do produto
-            if secondary_qty and scrap.product_id:
-                template = scrap.product_id.product_tmpl_id
-                uom = template.x_secondary_uom_id
-                
-                if template and uom:
-                    template.x_secondary_qty_available -= secondary_qty
-                    _logger.info(
-                        f"Scarto: Subtraído {secondary_qty} {uom.name} do produto {scrap.product_id.name}. "
-                        f"Novo total secundário: {template.x_secondary_qty_available}"
-                    )
+            # Nota: x_secondary_qty_available agora é calculado automaticamente
+            # Não é mais necessário atualizar manualmente
         
         return res
