@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Estende la vista form della Manufacturing Order per aggiungere packaging -->
+        <record id="mrp_production_form_view_packaging" model="ir.ui.view">
+            <field name="name">mrp.production.form.packaging</field>
+            <field name="model">mrp.production</field>
+            <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+            <field name="arch" type="xml">
+                
+                <!-- Aggiunge campi packaging dopo il div di product_qty e prima di bom_id -->
+                <xpath expr="//label[@for='bom_id']" position="before">
+                    <field name="product_variant_ids" invisible="1"/>
+                    <label for="product_packaging_qty" string="Qtà Confezioni"/>
+                    <div class="o_row">
+                        <field name="product_packaging_qty" readonly="state != 'draft'"/>
+                        <field name="product_packaging_id" 
+                               options="{'no_create': True, 'no_open': True}"
+                               readonly="state != 'draft'"/>
+                    </div>
+                </xpath>
+                
+            </field>
+        </record>
+        
+    </data>
+</odoo>
