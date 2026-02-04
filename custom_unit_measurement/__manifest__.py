@@ -1,6 +1,6 @@
 {
     'name': 'Custom Unit Measurement',
-    'version': '18.0.1.1.0',
+    'version': '18.0.1.2.0',
     'category': 'Inventory',
     'summary': 'Generic secondary unit of measure for products and stock management',
     'description': """
@@ -21,7 +21,7 @@
     'maintainer': 'Bagubits SRLS',
     'website': 'https://bagubits.it',
     'license': 'LGPL-3',
-    'depends': ['product', 'stock'],
+    'depends': ['product', 'stock', 'mrp'],
     'data': [
         'views/product_template_views.xml',
         'views/stock_picking_views.xml',
@@ -30,6 +30,7 @@
         'views/stock_quant_views.xml',
         'views/stock_quant_simple_secondary_view.xml',
         'views/stock_scrap_views.xml',
+        'views/mrp_bom_views.xml',
     ],
     'installable': True,
     'application': False,
