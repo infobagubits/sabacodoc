@@ -28,9 +28,10 @@
     'maintainer': 'Bagubits SRLS',
     'website': 'https://bagubits.it',
     'license': 'LGPL-3',
-    'depends': ['product', 'stock', 'sale', 'sale_management', 'custom_unit_measurement'],
+    'depends': ['product', 'stock', 'sale', 'sale_management', 'custom_unit_measurement', 'account'],
     'data': [
         'views/sale_order_views.xml',
+        'views/account_move_views.xml',
     ],
     'installable': True,
     'application': False,
