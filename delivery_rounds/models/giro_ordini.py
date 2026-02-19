@@ -38,7 +38,7 @@ class GiroOrdine(models.Model):
         'sale.order',
         'giro_id',
         string='Ordini del giro',
-        domain=[('stato_preparazione', '!=', 'stampato')]
+        domain=[ ('state', '!=', 'cancel'),('stato_preparazione', '!=', 'stampato')]
     )
 
     # Campo calcolato per il totale degli ordini
