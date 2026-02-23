@@ -1,62 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <data inherit_id="purchase.report_purchaseorder_document">
-    <data>
-        <!-- Remove taxes and subtotal columns -->
-        <xpath position="replace"
-            expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/thead/tr/th[@name='th_taxes']"
-            meta-name="th_taxes" meta-class="text-end" />
-        <xpath position="replace"
-            expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/thead/tr/th[@name='th_subtotal']"
-            meta-name="th_subtotal" meta-class="text-end" />
-        <xpath position="replace"
-            expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/tbody/t[2]/tr/t/td[6]"
-            meta-class="text-end" />
-        <xpath position="replace"
-            expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/tbody/t[2]/tr/t/td[4]"
-            meta-class="text-end" />
+    <!-- Remove taxes and subtotal columns -->
+    <xpath position="replace"
+        expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/thead/tr/th[@name='th_taxes']"
+        meta-name="th_taxes" meta-class="text-end" />
+    <xpath position="replace"
+        expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/thead/tr/th[@name='th_subtotal']"
+        meta-name="th_subtotal" meta-class="text-end" />
+    <xpath position="replace"
+        expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/tbody/t[2]/tr/t/td[6]"
+        meta-class="text-end" />
+    <xpath position="replace"
+        expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/tbody/t[2]/tr/t/td[4]"
+        meta-class="text-end" />
 
-        <!-- Replace discount column header with multiple discounts -->
-        <xpath position="replace"
-            expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/thead/tr/th[@name='th_discount']">
-            <t t-set="display_discount" t-value="any(l.discount for l in o.order_line)" />
-            <th t-if="display_discount" name="th_discount" class="text-end">
-                <strong>Sconto%</strong>
-            </th>
-        </xpath>
-        <xpath position="replace"
-            expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/tbody/t[2]/tr/t/td[4]">
-            <td t-if="line.discount" class="text-end">
-                <span class="text-align-bottom">
-                    <span
-                        t-esc="int(line.discount1) if float(line.discount1).is_integer() else line.discount1" />
-                    <t t-if="line.discount2">+<span
-                            t-esc="int(line.discount2) if float(line.discount2).is_integer() else line.discount2" /></t>
-                    <t t-if="line.discount3">+<span
-                            t-esc="int(line.discount3) if float(line.discount3).is_integer() else line.discount3" /></t>
-                </span>
-            </td>
-            <td t-if="not line.discount and display_discount" class="text-end">0</td>
-        </xpath>
+    <!-- Replace discount column header with multiple discounts -->
+    <xpath position="replace"
+        expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/thead/tr/th[@name='th_discount']">
+        <t t-set="display_discount" t-value="any(l.discount for l in o.order_line)" />
+        <th t-if="display_discount" name="th_discount" class="text-end">
+            <strong>Sconto%</strong>
+        </th>
+    </xpath>
+    <xpath position="replace"
+        expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/tbody/t[2]/tr/t/td[4]">
+        <td t-if="line.discount" class="text-end">
+            <span class="text-align-bottom">
+                <span
+                    t-esc="int(line.discount1) if float(line.discount1).is_integer() else line.discount1" />
+                <t t-if="line.discount2">+<span
+                        t-esc="int(line.discount2) if float(line.discount2).is_integer() else line.discount2" /></t>
+                <t t-if="line.discount3">+<span
+                        t-esc="int(line.discount3) if float(line.discount3).is_integer() else line.discount3" /></t>
+            </span>
+        </td>
+        <td t-if="not line.discount and display_discount" class="text-end">0</td>
+    </xpath>
 
-        <!-- Replace unit price format -->
-        <xpath position="after"
-            expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/tbody/t[2]/tr/t/td[2]"
-            meta-class="text-end">
-            <td class="text-end">€ <o-diff-hole for="79" />
+    <!-- Replace unit price format -->
+    <xpath position="after"
+        expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/tbody/t[2]/tr/t/td[2]"
+        meta-class="text-end">
+        <td class="text-end">€ <o-diff-hole for="79" />
         <span>/</span>
         <span
-                    t-field="line.product_uom" />
-            </td>
-        </xpath>
-        <xpath
-            expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/tbody/t[2]/tr/t//o-diff-hole[@for='79']"
-            position="replace">
-            <xpath position="move"
-                expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']//span[@t-field='line.price_unit']"
-                meta-t-field="line.price_unit" />
-        </xpath>
+                t-field="line.product_uom" />
+        </td>
+    </xpath>
+    <xpath
+        expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/tbody/t[2]/tr/t//o-diff-hole[@for='79']"
+        position="replace">
+        <xpath position="move"
+            expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']//span[@t-field='line.price_unit']"
+            meta-t-field="line.price_unit" />
+    </xpath>
 
-        <xpath position="replace"
-            expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/tbody/t[2]/tr/t/td[4]"
-            meta-class="text-end" />
-    </data>
+    <xpath position="replace"
+        expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/tbody/t[2]/tr/t/td[4]"
+        meta-class="text-end" />
 </data>

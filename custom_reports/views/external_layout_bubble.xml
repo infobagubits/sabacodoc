@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <data inherit_id="web.external_layout_bubble">
     <!-- Remove bubble image and Insert company details under logo -->
     <xpath expr="//t[@t-name='web.external_layout_bubble']/div" position="replace">
