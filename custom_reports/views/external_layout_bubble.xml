@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <template id="external_layout_bubble_custom"
+              inherit_id="web.external_layout_bubble">
+
+        <xpath expr="//div[contains(@class,'header')]/div[@class='d-flex justify-content-between']"
+               position="replace">
+
+            <div class="d-flex justify-content-between align-items-start">
+
+                <!-- LEFT COLUMN -->
+                <div class="d-flex flex-column">
+
+                    <!-- Logo -->
+                    <img t-if="company.logo"
+                         class="o_company_logo mb-2"
+                         t-att-src="image_data_uri(company.logo)"
+                         alt="Logo"/>
+
+                    <!-- Company Header under logo -->
+                    <div t-if="company.report_header"
+                         t-field="company.report_header"
+                         class="o_company_tagline fw-bold mb-3"/>
+
+                </div>
+
+                <!-- RIGHT COLUMN -->
+                <div name="company_address"
+                     class="text-end d-flex flex-column">
+
+                    <!-- Company Address -->
+                    <div t-if="company.is_company_details_empty"
+                         t-field="company.partner_id"
+                         t-options='{"widget": "contact", "fields": ["address","name"], "no_marker": true}'
+                         class="mb-2"/>
+
+                    <div t-else=""
+                         t-field="company.company_details"
+                         class="mb-2"/>
+
+                    <!-- VAT -->
+                    <div t-if="forced_vat">
+                        <t t-esc="company.country_id.vat_label or 'Tax ID'"/>:
+                        <span t-esc="forced_vat"/>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </xpath>
+
+    </template>
+
+</odoo>
