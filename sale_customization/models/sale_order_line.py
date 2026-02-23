@@ -31,6 +31,12 @@ class SaleOrderLine(models.Model):
         readonly=True
     )
 
+    @api.onchange('product_id')
+    def _onchange_product_id_set_qty_zero(self):
+        """Imposta quantità = 0 quando si seleziona un prodotto nella riga ordine di vendita."""
+        if self.product_id:
+            self.product_uom_qty = 0.0
+
     @api.depends('product_id', 'order_id.partner_id')
     def _compute_available_packaging_ids(self):
         """
