@@ -1,31 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<data inherit_id="web.external_layout_bubble">
-    <!-- Remove bubble image and Insert company details under logo -->
-    <xpath expr="//t[@t-name='web.external_layout_bubble']/div" position="replace">
+<odoo>
 
-        <div
-            t-attf-class="header o_company_#{company.id}_layout {{report_type == 'pdf' and 'pt-5'}}">
-            <div class="d-flex justify-content-between align-items-start">
-                <!-- LEFT COLUMN -->
-                <div class="d-flex flex-column">
-                    <img t-if="company.logo" class="o_company_logo mb-2"
-                        t-att-src="image_data_uri(company.logo)" alt="Logo" />
-                    <div t-if="company.is_company_details_empty" t-field="company.partner_id"
-                        t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;,&quot;name&quot;], &quot;no_marker&quot;: true}"
-                        class="mb-2" />
-                    <div t-else="" t-field="company.company_details" class="mb-2"
-                        style="line-height: 12px;" />
-                    <div t-if="forced_vat">
-                        <t t-esc="company.country_id.vat_label or 'Tax ID'" />: <span
-                            t-esc="forced_vat" />
+    <template id="external_layout_bubble_custom"
+        inherit_id="web.external_layout_bubble">
+        <!-- Remove bubble image and Insert company details under logo -->
+        <xpath expr="//t[@t-name='web.external_layout_bubble']/div" position="replace">
+
+            <div
+                t-attf-class="header o_company_#{company.id}_layout {{report_type == 'pdf' and 'pt-5'}}">
+                <div class="d-flex justify-content-between align-items-start">
+                    <!-- LEFT COLUMN -->
+                    <div class="d-flex flex-column">
+                        <img t-if="company.logo" class="o_company_logo mb-2"
+                            t-att-src="image_data_uri(company.logo)" alt="Logo" />
+                        <div t-if="company.is_company_details_empty" t-field="company.partner_id"
+                            t-options="{&quot;widget&quot;: &quot;contact&quot;, &quot;fields&quot;: [&quot;address&quot;,&quot;name&quot;], &quot;no_marker&quot;: true}"
+                            class="mb-2" />
+                        <div t-else="" t-field="company.company_details" class="mb-2"
+                            style="line-height: 12px;" />
+                        <div t-if="forced_vat">
+                            <t t-esc="company.country_id.vat_label or 'Tax ID'" />: <span
+                                t-esc="forced_vat" />
+                        </div>
+                    </div>
+                    <!-- RIGHT COLUMN -->
+                    <div name="company_address" class="text-end d-flex flex-column">
+
+
                     </div>
                 </div>
-                <!-- RIGHT COLUMN -->
-                <div name="company_address" class="text-end d-flex flex-column">
-
-
-                </div>
             </div>
-        </div>
-    </xpath>
-</data>
+        </xpath>
+    </template>
+</odoo>
