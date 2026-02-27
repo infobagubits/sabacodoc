@@ -3,14 +3,23 @@
 
     <template id="external_layout_bubble_custom"
         inherit_id="web.external_layout_bubble">
-        <!-- Remove bubble image and Insert company details under logo -->
+        <xpath expr="//t[@t-name='web.external_layout_bubble']" position="attributes">
+            <attribute name="style">font-size: 14px !important</attribute>
+        </xpath>
+        <xpath expr="//t[@t-call='web.address_layout']" position="replace" />
+        <xpath expr="//h2[@t-out='layout_document_title']" position="replace">
+            <h2 t-attf-class="{{not information_block and 'mb-4'}}" t-out="layout_document_title"
+                style="font-size: 16px" />
+        </xpath>
+
+        <!-- Remove bubble image from header and Insert company details under logo -->
         <xpath expr="//t[@t-name='web.external_layout_bubble']/div" position="replace">
 
             <div
                 t-attf-class="header o_company_#{company.id}_layout {{report_type == 'pdf' and 'pt-5'}}">
-                <div class="d-flex justify-content-between align-items-start">
+                <div class="row">
                     <!-- LEFT COLUMN -->
-                    <div class="d-flex flex-column">
+                    <div class="col-6">
                         <img t-if="company.logo" class="o_company_logo mb-2"
                             t-att-src="image_data_uri(company.logo)" alt="Logo" />
                         <div t-if="company.is_company_details_empty" t-field="company.partner_id"
@@ -24,10 +33,22 @@
                         </div>
                     </div>
                     <!-- RIGHT COLUMN -->
-                    <div name="company_address" class="text-end d-flex flex-column">
-
-
+                    <div name="company_address" class="col-5 offset-1">
+                        <t t-call="web.address_layout" />
                     </div>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//t[@t-name='web.external_layout_bubble']/div[3]" position="replace">
+            <div
+                t-attf-class="footer o_company_#{company.id}_layout {{report_type != 'pdf' and 'position-relative mt-auto mx-n5'}}">
+                <div
+                    t-attf-class="o_footer_content {{report_type != 'pdf' and 'position-absolute end-0 start-0 bottom-0 mx-5'}} pt-4 text-center">
+                    <div class="border-top pt-2" t-field="company.report_footer" />
+                    <span t-if="report_type == 'pdf' and display_name_in_footer" class="text-muted"
+                        t-out="str(o.name) + ', '">(document name)</span>
+                    <span t-if="report_type == 'pdf'" class="text-muted">Page <span class="page" />
+                        / <span class="topage" /></span>
                 </div>
             </div>
         </xpath>

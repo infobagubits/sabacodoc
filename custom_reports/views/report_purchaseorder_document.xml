@@ -17,6 +17,10 @@
             expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/tbody/t[2]/tr/t/td[4]"
             meta-class="text-end" />
 
+        <xpath expr="//div[hasclass('page')]" position="attributes">
+            <attribute name="style">font-size: 12px</attribute>
+        </xpath>
+
         <!-- Replace discount column header with multiple discounts -->
         <xpath position="replace"
             expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/thead/tr/th[@name='th_discount']">
