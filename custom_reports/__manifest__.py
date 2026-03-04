@@ -7,7 +7,9 @@
     "license": "LGPL-3",
     "depends": ["web"],
     "data": [
-        "views/external_layout_bubble.xml"
+        "views/external_layout_bubble.xml",
+        "views/report_purchaseorder_document.xml",
+        "views/address_layout.xml",
     ],
     "installable": True,
     "application": False
