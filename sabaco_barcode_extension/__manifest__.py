@@ -21,6 +21,8 @@
         'purchase_stock',
         'custom_unit_measurement',
         'stock_picking_supplier_document',
+        'product_expiry',
+        'stock_barcode_product_expiry',
     ],
     'data': [
         'views/stock_picking_search_views.xml',
@@ -28,6 +30,7 @@
         'views/stock_barcode_picking_views.xml',
         'views/stock_picking_move_views.xml',
         'views/stock_move_line_product_selector.xml',
+        'views/stock_lot_views.xml',
         'views/stock_picking_barcode_form.xml',
     ],
     'assets': {

@@ -106,5 +106,17 @@
                 </xpath>
             </field>
         </record>
+
+        <!-- Oculta Data di scadenza dalla schermata principale (form linea): il modulo stock_barcode_product_expiry la aggiunge qui; la vogliamo solo nel modal del lotto -->
+        <record id="view_stock_move_line_product_selector_hide_expiry" model="ir.ui.view">
+            <field name="name">stock.move.line.product.selector.hide.expiry</field>
+            <field name="model">stock.move.line</field>
+            <field name="inherit_id" ref="stock_barcode_product_expiry.stock_move_line_product_selector"/>
+            <field name="arch" type="xml">
+                <xpath expr="//div[.//field[@name='expiration_date']]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+            </field>
+        </record>
     </data>
 </odoo>
