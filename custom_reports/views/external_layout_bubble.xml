@@ -4,7 +4,7 @@
     <template id="external_layout_bubble_custom"
               inherit_id="web.external_layout_bubble">
 
-        <xpath expr="//div[contains(@class,'header')]/div[@class='d-flex justify-content-between']"
+        <xpath expr="//div[@name='company_address']/.."
                position="replace">
 
             <div class="d-flex justify-content-between align-items-start">

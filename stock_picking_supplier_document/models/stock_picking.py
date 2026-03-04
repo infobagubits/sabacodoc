@@ -1,4 +1,5 @@
 from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 
 
 class StockPicking(models.Model):
@@ -58,3 +59,16 @@ class StockPicking(models.Model):
                     'doc_num': picking.supplier_document_number,
                     'duplicates': duplicate_names,
                 } 
+
+    def button_validate(self):
+        """Blocca la convalida se la ricezione (incoming) non ha numero e data documento fornitore."""
+        incoming = self.filtered(
+            lambda p: p.picking_type_id.code == 'incoming' and p.state not in ('done', 'cancel')
+        )
+        for picking in incoming:
+            if not picking.supplier_document_number or not picking.supplier_document_date:
+                raise UserError(_(
+                    'Per convalidare la ricezione "%(name)s" è obbligatorio compilare '
+                    'il numero e la data del documento fornitore.'
+                ) % {'name': picking.name})
+        return super().button_validate()
