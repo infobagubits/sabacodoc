@@ -7,12 +7,14 @@ class StockPicking(models.Model):
 
     supplier_document_number = fields.Char(
         string="Num. documento fornitore",
-        help="Numero del documento del fornitore"
+        help="Numero del documento del fornitore",
+        copy=False,
     )
     
     supplier_document_date = fields.Date(
         string="Data documento fornitore",
-        help="Data del documento del fornitore"
+        help="Data del documento del fornitore",
+        copy=False,
     )
     
     # Campo computado per mostrare il banner di avviso duplicato
