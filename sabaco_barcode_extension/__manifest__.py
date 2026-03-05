@@ -32,6 +32,7 @@
         'views/stock_move_line_product_selector.xml',
         'views/stock_lot_views.xml',
         'views/stock_picking_barcode_form.xml',
+        'views/stock_picking_barcode_detail_views.xml',
     ],
     'assets': {
         'web.assets_backend': [
