@@ -13,13 +13,68 @@ class StockPicking(models.Model):
         help='Note from the related Purchase Order based on origin field'
     )
 
+    # Totais no popup barcode (quantità ricevute)
+    currency_id = fields.Many2one(
+        related='company_id.currency_id', string='Valuta', readonly=True)
+    totale_imponibile_barcode = fields.Monetary(
+        string='Totale imponibile',
+        compute='_compute_totals_barcode',
+        currency_field='currency_id',
+        help='Somma (quantità ricevuta × prezzo) per le righe del trasferimento.')
+    iva_barcode = fields.Monetary(
+        string='Iva',
+        compute='_compute_totals_barcode',
+        currency_field='currency_id',
+        help='Iva calcolata sulle quantità ricevute (da ordine di acquisto se presente).')
+    totale_ivato_barcode = fields.Monetary(
+        string='Totale ivato',
+        compute='_compute_totals_barcode',
+        currency_field='currency_id',
+        help='Totale imponibile + Iva (quantità ricevute).')
+
     def _get_fields_stock_barcode(self):
-        """Estende i campi inviati al client barcode per includere origin e documento fornitore"""
+        """Estende i campi inviati al client barcode per includere origin, documento fornitore e totali."""
         fields = super()._get_fields_stock_barcode()
         fields.append('origin')
         fields.append('supplier_document_number')
         fields.append('supplier_document_date')
+        fields.append('totale_imponibile_barcode')
+        fields.append('iva_barcode')
+        fields.append('totale_ivato_barcode')
+        fields.append('currency_id')
         return fields
+
+    @api.depends('move_ids', 'move_ids.quantity', 'move_ids.price_unit', 'move_ids.purchase_line_id', 'move_ids.purchase_line_id.taxes_id')
+    def _compute_totals_barcode(self):
+        """Totale imponibile, Iva e Totale ivato in base alle quantità ricevute (move.quantity)."""
+        for picking in self:
+            totale_imponibile = 0.0
+            totale_iva = 0.0
+            totale_ivato = 0.0
+            currency = picking.company_id.currency_id
+            for move in picking.move_ids:
+                qty = move.quantity
+                if not qty:
+                    continue
+                price_unit = move.price_unit or 0.0
+                if move.purchase_line_id and move.purchase_line_id.taxes_id:
+                    tax_res = move.purchase_line_id.taxes_id.compute_all(
+                        price_unit,
+                        currency=currency,
+                        quantity=qty,
+                        product=move.product_id,
+                        partner=picking.partner_id,
+                    )
+                    totale_imponibile += tax_res['total_excluded']
+                    totale_iva += tax_res['total_included'] - tax_res['total_excluded']
+                    totale_ivato += tax_res['total_included']
+                else:
+                    subtotal = qty * price_unit
+                    totale_imponibile += subtotal
+                    totale_ivato += subtotal
+            picking.totale_imponibile_barcode = totale_imponibile
+            picking.iva_barcode = totale_iva
+            picking.totale_ivato_barcode = totale_ivato
 
     @api.depends('origin')
     def _compute_purchase_order_note(self):

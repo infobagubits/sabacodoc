@@ -26,6 +26,13 @@
                 <xpath expr="//field[@name='move_ids']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
+                <!-- Totale imponibile, Iva, Totale ivato (quantità ricevute) -->
+                <xpath expr="//field[@name='origin']" position="after">
+                    <field name="currency_id" invisible="1"/>
+                    <field name="totale_imponibile_barcode" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    <field name="iva_barcode" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    <field name="totale_ivato_barcode" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                </xpath>
             </field>
         </record>
     </data>
