@@ -44,3 +44,15 @@ class SaleOrder(models.Model):
             'res_id': self.id,
             'target': 'current',  # Forza schermo intero
         }
+
+    def action_confirm(self):
+        res = super().action_confirm()
+        for order in self:
+            if order.giro_id and order.partner_id:
+                riga = self.env['giri.ordine.riga'].search([
+                    ('giro_id', '=', order.giro_id.id),
+                    ('partner_id', '=', order.partner_id.id),
+                ], limit=1)
+                if riga:
+                    riga.write({'stato': 'ordinato'})
+        return res
