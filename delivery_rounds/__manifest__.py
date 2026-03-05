@@ -10,6 +10,7 @@
     'license': 'LGPL-3',
     'depends': ['base', 'sale', 'mail', 'stock', 'partner_customer_supplier_extension'],
     'data': [
+        'data/cron.xml',
         'views/giro_ordini_views.xml',
         'views/sale_order_views.xml',
         'views/res_partner_views.xml',
