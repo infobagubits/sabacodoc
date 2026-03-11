@@ -20,6 +20,19 @@
         </field>
     </record>
 
+    <!-- Aspetto esteriore dei beni nella sezione Informazioni DDT (spedizioni) -->
+    <record id="view_picking_form_inherit_ddt_aspetto" model="ir.ui.view">
+        <field name="name">stock.picking.form.ddt.aspetto.esteriore</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="l10n_it_stock_ddt.view_picking_form_inherit_l10n_it_ddt"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='l10n_it_parcels']" position="after">
+                <field name="aspetto_esteriore_beni"
+                       readonly="state in ['cancel', 'done']"/>
+            </xpath>
+        </field>
+    </record>
+
     <!-- Ereditare la view di lista stock.picking per aggiungere nostri campi -->
     <record id="view_picking_list_inherit_giri_ordini" model="ir.ui.view">
         <field name="name">stock.picking.list.inherit.giri.ordini</field>

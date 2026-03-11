@@ -3,6 +3,17 @@ from odoo import models, fields, api
 class StockPicking(models.Model):
     _inherit = 'stock.picking'
 
+    # Aspetto esteriore dei beni (sezione DDT - spedizioni)
+    aspetto_esteriore_beni = fields.Selection(
+        [
+            ('pallet', 'Pallet'),
+            ('a_vista', 'A vista'),
+            ('scatole', 'Scatole'),
+        ],
+        string='Aspetto esteriore dei beni',
+        help='Aspetto esteriore dei beni nella spedizione (sezione Informazioni DDT).',
+    )
+
     # Campi correlati al giro di ordini
     giro_id = fields.Many2one(
         'giri.ordine', 

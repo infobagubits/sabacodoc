@@ -8,7 +8,7 @@
     'maintainer': 'Bagubits SRLS',
     'website': 'https://bagubits.it',
     'license': 'LGPL-3',
-    'depends': ['base', 'sale', 'mail', 'stock', 'partner_customer_supplier_extension'],
+    'depends': ['base', 'sale', 'mail', 'stock', 'partner_customer_supplier_extension', 'l10n_it_stock_ddt'],
     'data': [
         'data/cron.xml',
         'views/giro_ordini_views.xml',
