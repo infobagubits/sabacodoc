@@ -6,7 +6,7 @@
         <xpath expr="//t[@t-name='web.external_layout_bubble']" position="attributes">
             <attribute name="style">font-size: 14px !important</attribute>
         </xpath>
-        <xpath expr="//t[@t-call='web.address_layout']" position="replace" />
+        <!-- Non rimuovere //t[@t-call='web.address_layout']: rompe report che si aspettano quel nodo (es. DDT). -->
         <xpath expr="//h2[@t-out='layout_document_title']" position="replace">
             <h2 t-attf-class="{{not information_block and 'mb-4'}}" t-out="layout_document_title"
                 style="font-size: 16px" />

@@ -42,6 +42,7 @@ class StockPicking(models.Model):
         fields.append('iva_barcode')
         fields.append('totale_ivato_barcode')
         fields.append('currency_id')
+        fields.append('l10n_it_show_print_ddt_button')
         return fields
 
     @api.depends('move_ids', 'move_ids.quantity', 'move_ids.price_unit', 'move_ids.purchase_line_id', 'move_ids.purchase_line_id.taxes_id')
@@ -55,7 +56,7 @@ class StockPicking(models.Model):
             for move in picking.move_ids:
                 qty = move.quantity
                 if not qty:
-                    continue
+                    continue 
                 price_unit = move.price_unit or 0.0
                 if move.purchase_line_id and move.purchase_line_id.taxes_id:
                     tax_res = move.purchase_line_id.taxes_id.compute_all(
