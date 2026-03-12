@@ -14,6 +14,7 @@
                 'contact_display': 'partner_address',
                 'search_default_ready_or_waiting': 1,
                 'search_default_to_do_transfers': 1,
+                'order': 'date_done desc, id desc',
             }</field>
             <field name="help" type="html">
                 <p class="o_view_nocontent_smiling_face">
