@@ -39,6 +39,16 @@
                     <field name="iva_barcode" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                     <field name="totale_ivato_barcode" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                 </xpath>
+                <!-- Sezione Informazioni aggiuntive (Other Information) del trasferimento -->
+                <xpath expr="//form/group" position="after">
+                    <group string="Informazioni aggiuntive" name="other_infos">
+                        <field name="picking_type_code" invisible="1"/>
+                        <field name="move_type" invisible="picking_type_code == 'incoming'" readonly="state in ['cancel', 'done']"/>
+                        <field name="user_id" widget="many2one_avatar_user" domain="[('share', '=', False)]" readonly="state in ['cancel', 'done']"/>
+                        <field name="group_id" groups="base.group_no_one"/>
+                        <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}" force_save="1"/>
+                    </group>
+                </xpath>
             </field>
         </record>
     </data>
