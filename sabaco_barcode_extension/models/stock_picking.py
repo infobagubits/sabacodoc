@@ -94,3 +94,17 @@ class StockPicking(models.Model):
             else:
                 picking.purchase_order_note = False
 
+    def action_assign(self):
+        """Se chiamato dal popup barcode (context from_barcode_form), dopo la riserva
+        restituisce l'azione cliente per riaprire lo stesso picking nel barcode, così
+        i dati (quantità riservate) si aggiornano senza uscire e rientrare."""
+        result = super().action_assign()
+        if self.env.context.get('from_barcode_form') and len(self) == 1:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'stock_barcode_client_action',
+                'res_model': 'stock.picking',
+                'context': {'active_id': self.id},
+            }
+        return result
+

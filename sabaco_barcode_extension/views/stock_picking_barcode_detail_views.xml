@@ -12,6 +12,7 @@
                 <xpath expr="//button[@name='action_view_reception_report']" position="after">
                     <button name="action_assign" string="Controlla disponibilità" type="object"
                         class="btn btn-primary"
+                        context="{'from_barcode_form': 1}"
                         groups="base.group_user"/>
                     <field name="l10n_it_show_print_ddt_button" invisible="1"/>
                     <button name="%(l10n_it_stock_ddt.action_report_ddt)d" type="action" string="Stampa DDT"
