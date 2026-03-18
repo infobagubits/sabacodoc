@@ -56,6 +56,29 @@
                         <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}" force_save="1"/>
                     </group>
                 </xpath>
+                <!-- Sezione Informazioni spedizione (solo OUT, campi da stock_delivery) -->
+                <xpath expr="//group[@name='other_infos']" position="after">
+                    <group string="Informazioni spedizione" name="carrier_data_barcode" invisible="picking_type_code != 'outgoing'">
+                        <field name="is_return_picking" invisible="1"/>
+                        <field name="carrier_id" readonly="state in ('done', 'cancel')" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="delivery_type" invisible="1"/>
+                        <field name="carrier_tracking_ref" readonly="state in ('done', 'cancel')"/>
+                        <field name="weight" readonly="state in ('done', 'cancel')"/>
+                        <field name="weight_uom_name" invisible="1"/>
+                        <field name="shipping_weight" readonly="state in ('done', 'cancel')"/>
+                    </group>
+                </xpath>
+                <!-- Sezione Informazioni DDT (solo IT e OUT, campi da l10n_it_stock_ddt) -->
+                <xpath expr="//group[@name='carrier_data_barcode']" position="after">
+                    <group string="Informazioni DDT" name="ddt_info_barcode" invisible="country_code != 'IT' or picking_type_code != 'outgoing'">
+                        <field name="country_code" invisible="1"/>
+                        <field name="l10n_it_ddt_number" readonly="1"/>
+                        <field name="l10n_it_transport_reason" readonly="state in ['cancel', 'done']"/>
+                        <field name="l10n_it_transport_method" readonly="state in ['cancel', 'done']"/>
+                        <field name="l10n_it_transport_method_details" readonly="state in ['cancel', 'done']"/>
+                        <field name="l10n_it_parcels" readonly="state in ['cancel', 'done']"/>
+                    </group>
+                </xpath>
             </field>
         </record>
     </data>

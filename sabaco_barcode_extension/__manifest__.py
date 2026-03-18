@@ -24,6 +24,7 @@
         'product_expiry',
         'stock_barcode_product_expiry',
         'l10n_it_stock_ddt',
+        'stock_delivery',
     ],
     'data': [
         'views/stock_picking_search_views.xml',
