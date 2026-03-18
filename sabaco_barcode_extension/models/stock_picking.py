@@ -43,6 +43,7 @@ class StockPicking(models.Model):
         fields.append('totale_ivato_barcode')
         fields.append('currency_id')
         fields.append('l10n_it_show_print_ddt_button')
+        fields.append('picking_type_code')
         return fields
 
     @api.depends('move_ids', 'move_ids.quantity', 'move_ids.price_unit', 'move_ids.purchase_line_id', 'move_ids.purchase_line_id.taxes_id')

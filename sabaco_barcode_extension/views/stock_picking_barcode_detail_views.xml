@@ -8,15 +8,17 @@
             <field name="model">stock.picking</field>
             <field name="inherit_id" ref="stock_barcode.stock_picking_barcode"/>
             <field name="arch" type="xml">
-                <!-- Azione Controlla disponibilità (check availability) nelle azioni del trasferimento - sempre visibile -->
+                <!-- Controlla disponibilità e Stampa DDT solo per movimenti OUT (consegne) -->
                 <xpath expr="//button[@name='action_view_reception_report']" position="after">
+                    <field name="picking_type_code" invisible="1"/>
                     <button name="action_assign" string="Controlla disponibilità" type="object"
                         class="btn btn-primary"
                         context="{'from_barcode_form': 1}"
+                        invisible="picking_type_code != 'outgoing'"
                         groups="base.group_user"/>
                     <field name="l10n_it_show_print_ddt_button" invisible="1"/>
                     <button name="%(l10n_it_stock_ddt.action_report_ddt)d" type="action" string="Stampa DDT"
-                        invisible="not l10n_it_show_print_ddt_button"
+                        invisible="picking_type_code != 'outgoing' or not l10n_it_show_print_ddt_button"
                         groups="base.group_user"/>
                 </xpath>
                 <xpath expr="//field[@name='state']" position="attributes">
