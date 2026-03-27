@@ -45,16 +45,20 @@ class PurchaseOrderLine(models.Model):
     )
 
     @api.onchange('product_id')
-    def _onchange_product_id_purchase_uom_free(self):
+    def onchange_product_id(self):
         """
-        Preenche automaticamente o campo purchase_uom_free com o valor do campo
-        x_studio_unita_di_acquisto_libera do produto quando um produto é selecionado
+        Override: esegue la logica standard poi imposta quantità = 0 e purchase_uom_free.
+        L'onchange standard chiama _suggest_quantity() che imposta product_qty a 1.0;
+        sovrascrivendo qui e impostando 0 dopo super() si garantisce quantità default 0.
         """
+        super().onchange_product_id()
+        if self.product_id:
+            self.product_qty = 0.0
         if self.product_id and hasattr(self.product_id, 'x_studio_unita_di_acquisto_libera'):
             self.purchase_uom_free = self.product_id.x_studio_unita_di_acquisto_libera
         else:
             self.purchase_uom_free = False
-    
+
     def _get_weekday_name(self, date):
         """
         Restituisce il nome del giorno della settimana in italiano

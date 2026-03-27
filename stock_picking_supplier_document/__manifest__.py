@@ -10,7 +10,7 @@
         
         Questi campi sono visibili solo per i trasferimenti in entrata (Ricezioni).
     """,
-    'author': 'Sviluppo Personalizzato',
+    'author': 'Bagubits SRLS',
     'depends': ['stock'],
     'data': [
         'views/stock_picking_views.xml',

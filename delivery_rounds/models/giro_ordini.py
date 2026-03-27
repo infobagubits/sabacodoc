@@ -38,7 +38,7 @@ class GiroOrdine(models.Model):
         'sale.order',
         'giro_id',
         string='Ordini del giro',
-        domain=[('stato_preparazione', '!=', 'stampato')]
+        domain=[ ('state', '!=', 'cancel'),('stato_preparazione', '!=', 'stampato')]
     )
 
     # Campo calcolato per il totale degli ordini
@@ -55,6 +55,50 @@ class GiroOrdine(models.Model):
             total = sum(order.amount_total for order in record.order_ids.filtered(
                 lambda o: o.state != 'cancel' and o.stato_preparazione != 'stampato'))
             record.total_ordini = total
+
+    # Mappatura weekday Python (0=lunedì, 6=domenica) -> valore giorno_consegna
+    _GIORNO_CONSEGNA_BY_WEEKDAY = {
+        0: 'lunedi',
+        1: 'martedi',
+        2: 'mercoledi',
+        3: 'giovedi',
+        4: 'venerdi',
+        5: 'sabato',
+        6: 'domenica',
+    }
+
+    @api.model
+    def _cron_reset_stato_da_chiamare(self):
+        """
+        Ogni giorno: per i giri il cui giorno di consegna è oggi o ieri,
+        imposta tutte le righe (contatti) a stato "Da chiamare".
+        Es.: giro lunedì → lunedì sera o martedì tutti i contatti tornano "Da chiamare".
+        Usa il timezone dell'utente (cron) per il "oggi" e sudo() per evitare limiti di permessi.
+        """
+        from datetime import datetime
+        try:
+            import pytz
+        except ImportError:
+            pytz = None
+
+        # Data "oggi" nel timezone dell'utente (res.users.tz) o UTC
+        tz_name = self.env.user.tz or 'UTC'
+        if pytz:
+            tz = pytz.timezone(tz_name)
+            today = datetime.now(tz).date()
+        else:
+            today = datetime.now().date()
+
+        weekday_today = today.weekday()  # 0=lunedì, 6=domenica
+        weekday_yesterday = (weekday_today - 1) % 7
+        giorni_to_reset = [
+            self._GIORNO_CONSEGNA_BY_WEEKDAY[weekday_today],
+            self._GIORNO_CONSEGNA_BY_WEEKDAY[weekday_yesterday],
+        ]
+        giri = self.sudo().search([('giorno_consegna', 'in', giorni_to_reset)])
+        for giro in giri:
+            if giro.riga_ids:
+                giro.riga_ids.sudo().write({'stato': 'da_chiamare'})
 
 class GiroOrdineRiga(models.Model):
     _name = 'giri.ordine.riga'
@@ -75,7 +119,7 @@ class GiroOrdineRiga(models.Model):
         ('sospeso', 'Sospeso'),
         ('non_vuole', 'Non vuole niente'),
         ('ordinato', 'Ordinato')
-    ], string='Stato')
+    ], string='Stato', default='da_chiamare')
     note = fields.Text(string='Note')
 
     ordini_aperti = fields.Integer(string='Ordini aperti', compute='_compute_ordini_aperti', store=False)

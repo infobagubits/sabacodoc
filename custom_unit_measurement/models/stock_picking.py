@@ -20,29 +20,5 @@ class StockPicking(models.Model):
             picking.has_secondary = any(move.x_secondary_active for move in picking.move_ids_without_package)
     
     
-    def button_validate(self):
-        res = super().button_validate()
-
-        for picking in self:
-            _logger.info(f"✔ Validando picking ID {picking.id}, tipo: {picking.picking_type_code}")
-            for move in picking.move_ids_without_package:
-                product = move.product_id
-                qty = move.x_secondary_qty
-                template = product.product_tmpl_id
-                uom = template.x_secondary_uom_id
-
-                _logger.info(f"Produto: {product.name}, Qtd Secundária: {qty}, U.M.: {uom.name if uom else '-'}")
-
-                if not template or not uom:
-                    _logger.warning("⚠ Produto sem unidade secundária, ignorado.")
-                    continue
-
-                if picking.picking_type_code == 'incoming':
-                    template.x_secondary_qty_available += qty
-                    _logger.info(f"Somou {qty} → Novo total: {template.x_secondary_qty_available}")
-
-                elif picking.picking_type_code == 'outgoing':
-                    template.x_secondary_qty_available -= qty
-                    _logger.info(f"Subtraiu {qty} → Novo total: {template.x_secondary_qty_available}")
-
-        return res
+    # Método removido: x_secondary_qty_available agora é calculado automaticamente
+    # Não é mais necessário atualizar manualmente na validação do picking

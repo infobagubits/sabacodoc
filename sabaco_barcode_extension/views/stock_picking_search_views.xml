@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Estende la search view di stock.picking per aggiungere filtro combinato -->
+        <record id="stock_picking_search_barcode_extension" model="ir.ui.view">
+            <field name="name">stock.picking.search.barcode.extension</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+            <field name="arch" type="xml">
+                <!-- Aggiunge filtro "Pronto o In attesa" dopo il filtro "available" -->
+                <xpath expr="//filter[@name='available']" position="after">
+                    <filter name="ready_or_waiting" 
+                            string="Pronto o In attesa" 
+                            domain="[('state', 'in', ('assigned', 'waiting', 'confirmed'))]"
+                            help="Trasferimenti pronti o in attesa"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

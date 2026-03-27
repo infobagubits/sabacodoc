@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Nel modulo barcode, nella schermata dettaglio picking (Abbandona/Conferma),
+             nasconde Stato, Priorità, Ubicazione, Movimenti di magazzino: resta solo contatto, date, documento, bottoni. -->
+        <record id="view_stock_picking_barcode_form_hide_fields" model="ir.ui.view">
+            <field name="name">stock.picking.barcode.form.hide.detail.fields</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock_barcode.stock_picking_barcode"/>
+            <field name="arch" type="xml">
+                <!-- Controlla disponibilità e Stampa DDT solo per movimenti OUT (consegne) -->
+                <xpath expr="//button[@name='action_view_reception_report']" position="after">
+                    <field name="picking_type_code" invisible="1"/>
+                    <button name="action_assign" string="Controlla disponibilità" type="object"
+                        class="btn btn-primary"
+                        context="{'from_barcode_form': 1}"
+                        invisible="picking_type_code != 'outgoing'"
+                        groups="base.group_user"/>
+                    <field name="l10n_it_show_print_ddt_button" invisible="1"/>
+                    <button name="%(l10n_it_stock_ddt.action_report_ddt)d" type="action" string="Stampa DDT"
+                        invisible="picking_type_code != 'outgoing' or not l10n_it_show_print_ddt_button"
+                        groups="base.group_user"/>
+                </xpath>
+                <xpath expr="//field[@name='state']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='priority']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='location_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='location_dest_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='owner_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='move_ids']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <!-- Totale imponibile, Iva, Totale ivato (quantità ricevute) -->
+                <xpath expr="//field[@name='origin']" position="after">
+                    <field name="currency_id" invisible="1"/>
+                    <field name="totale_imponibile_barcode" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    <field name="iva_barcode" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                    <field name="totale_ivato_barcode" readonly="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                </xpath>
+                <!-- Sezione Informazioni aggiuntive (Other Information) del trasferimento -->
+                <xpath expr="//form/group" position="after">
+                    <group string="Informazioni aggiuntive" name="other_infos">
+                        <field name="picking_type_code" invisible="1"/>
+                        <field name="move_type" invisible="picking_type_code == 'incoming'" readonly="state in ['cancel', 'done']"/>
+                        <field name="user_id" widget="many2one_avatar_user" domain="[('share', '=', False)]" readonly="state in ['cancel', 'done']"/>
+                        <field name="group_id" groups="base.group_no_one"/>
+                        <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}" force_save="1"/>
+                    </group>
+                </xpath>
+                <!-- Sezione Informazioni spedizione (solo OUT, campi da stock_delivery) -->
+                <xpath expr="//group[@name='other_infos']" position="after">
+                    <group string="Informazioni spedizione" name="carrier_data_barcode" invisible="picking_type_code != 'outgoing'">
+                        <field name="is_return_picking" invisible="1"/>
+                        <field name="carrier_id" readonly="state in ('done', 'cancel')" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="delivery_type" invisible="1"/>
+                        <field name="carrier_tracking_ref" readonly="state in ('done', 'cancel')"/>
+                        <field name="weight" readonly="state in ('done', 'cancel')"/>
+                        <field name="weight_uom_name" invisible="1"/>
+                        <field name="shipping_weight" readonly="state in ('done', 'cancel')"/>
+                    </group>
+                </xpath>
+                <!-- Sezione Informazioni DDT (solo IT e OUT, campi da l10n_it_stock_ddt) -->
+                <xpath expr="//group[@name='carrier_data_barcode']" position="after">
+                    <group string="Informazioni DDT" name="ddt_info_barcode" invisible="country_code != 'IT' or picking_type_code != 'outgoing'">
+                        <field name="country_code" invisible="1"/>
+                        <field name="l10n_it_ddt_number" readonly="1"/>
+                        <field name="l10n_it_transport_reason" readonly="state in ['cancel', 'done']"/>
+                        <field name="l10n_it_transport_method" readonly="state in ['cancel', 'done']"/>
+                        <field name="l10n_it_transport_method_details" readonly="state in ['cancel', 'done']"/>
+                        <field name="l10n_it_parcels" readonly="state in ['cancel', 'done']"/>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

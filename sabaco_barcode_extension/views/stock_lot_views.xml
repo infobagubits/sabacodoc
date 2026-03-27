@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Data di scadenza nel modal "Crea Numero di lotto/serie" (prima pagina del form stock.lot) -->
+        <record id="view_stock_lot_form_barcode_expiry" model="ir.ui.view">
+            <field name="name">stock.lot.form.barcode.expiry</field>
+            <field name="model">stock.lot</field>
+            <field name="inherit_id" ref="stock.view_production_lot_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='ref']" position="after">
+                    <field name="use_expiration_date" invisible="1"/>
+                    <field name="expiration_date" string="Data di scadenza" invisible="not use_expiration_date"/>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Rimuove il campo Data di scadenza dalla lista/schermata principale (solo nel modulo barcode) -->
+        <record id="view_stock_move_line_detailed_operation_tree_hide_expiry" model="ir.ui.view">
+            <field name="name">stock.move.line.detailed.tree.hide.expiry</field>
+            <field name="model">stock.move.line</field>
+            <field name="inherit_id" ref="product_expiry.view_stock_move_line_detailed_operation_tree_expiry"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='expiration_date']" position="attributes">
+                    <attribute name="column_invisible">True</attribute>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

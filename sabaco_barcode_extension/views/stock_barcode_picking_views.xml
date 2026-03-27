@@ -12,6 +12,19 @@
                     <field name="origin"/>
                     <field name="purchase_order_note"/>
                 </xpath>
+                <!-- Sostituisce il bottone del nome per aggiungere origin sopra -->
+                <xpath expr="//button[@name='action_open_picking_client_action']" position="replace">
+                    <div class="d-flex flex-column ms-1">
+                        <!-- Origin (SO/PO number) sopra il nome -->
+                        <span t-if="record.origin.value" class="text-primary small">
+                            <field name="origin"/>
+                        </span>
+                        <!-- Nome del picking (bottone originale) -->
+                        <button class="btn btn-link p-0 text-black text-start" name="action_open_picking_client_action" type="object">
+                            <field name="name" class="fw-bold fs-5"/>
+                        </button>
+                    </div>
+                </xpath>
                 <!-- Adiciona o campo de notas do purchase.order no final do card, após o footer -->
                 <!-- Posição: última coisa do card -->
                 <xpath expr="//t[@t-name='card']//footer" position="after">

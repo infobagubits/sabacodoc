@@ -7,6 +7,17 @@
             <field name="model">stock.picking</field>
             <field name="inherit_id" ref="stock.view_picking_form"/>
             <field name="arch" type="xml">
+                <!-- Banner di avviso per documento fornitore duplicato -->
+                <xpath expr="//header" position="after">
+                    <field name="duplicate_supplier_document_warning" invisible="1"/>
+                    <div class="alert alert-warning text-center" role="alert" 
+                         invisible="not duplicate_supplier_document_warning">
+                        <i class="fa fa-exclamation-triangle me-2"/>
+                        <field name="duplicate_supplier_document_warning" readonly="1" nolabel="1" class="d-inline"/>
+                    </div>
+                </xpath>
+                
+                <!-- Campi documento fornitore -->
                 <xpath expr="//field[@name='picking_type_id']" position="after">
                     <field name="supplier_document_number" 
                            invisible="picking_type_code != 'incoming'" 
