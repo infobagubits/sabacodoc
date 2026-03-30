@@ -59,37 +59,43 @@ class StockMoveLine(models.Model):
         digits=(16, 10),  # Armazena com 10 decimais para precisão nos cálculos
     )
     
-    # Campo para exibição com arredondamento (NÃO armazenado = não causa loops)
+    # Campo para exibição com arredondamento — inverse permite edição no UI
     product_packaging_qty_display = fields.Float(
         string='Qtà Confezione',
         compute='_compute_packaging_qty_display',
-        digits=(16, 2),  # Exibe com 2 decimais
-        store=False,  # IMPORTANTE: não armazenar para evitar loops
+        inverse='_inverse_packaging_qty_display',
+        digits=(16, 2),
+        store=False,
     )
-    
+
     @api.depends('product_packaging_qty')
     def _compute_packaging_qty_display(self):
-        """Calcula o valor arredondado para exibição."""
         for line in self:
             line.product_packaging_qty_display = line.product_packaging_qty
-    
+
+    def _inverse_packaging_qty_display(self):
+        for line in self:
+            line.product_packaging_qty = line.product_packaging_qty_display
+
     @api.onchange('quantity', 'product_packaging_id')
     def _onchange_quantity(self):
-        """
-        Quando altera quantidade total o confezione, calcula automaticamente
-        a quantidade de confezioni.
-        
-        product_packaging_qty = quantity / product_packaging_id.qty
-        Mantém exatidão: 192.500 KG ÷ 180 = 1,0694444444 confezioni
-        
-        NOTA: Questo è l'UNICO onchange per evitare loop infiniti.
-        La quantità totale (quantity) NON viene mai calcolata automaticamente
-        da product_packaging_qty per prevenire cicli di ricalcolo.
-        """
-        if self.product_packaging_id and self.quantity and self.product_packaging_id.qty:
-            self.product_packaging_qty = self.quantity / self.product_packaging_id.qty
+        """quantity → recalcola product_packaging_qty."""
+        if self.product_packaging_id and self.product_packaging_id.qty:
+            new_pkg = self.quantity / self.product_packaging_id.qty
+            if abs(new_pkg - (self.product_packaging_qty or 0.0)) > 0.00001:
+                self.product_packaging_qty = new_pkg
         elif not self.product_packaging_id:
             self.product_packaging_qty = 0.0
+
+    @api.onchange('product_packaging_qty_display')
+    def _onchange_packaging_qty_display(self):
+        """product_packaging_qty_display → recalcola quantity (senso inverso)."""
+        if (self.product_packaging_id
+                and self.product_packaging_id.qty
+                and self.product_packaging_qty_display is not False):
+            new_qty = self.product_packaging_qty_display * self.product_packaging_id.qty
+            if abs(new_qty - (self.quantity or 0.0)) > 0.00001:
+                self.quantity = new_qty
     
     @api.model
     def create(self, vals):
