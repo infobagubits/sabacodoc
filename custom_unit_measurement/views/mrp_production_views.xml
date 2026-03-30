@@ -20,6 +20,18 @@
                                readonly="state != 'draft'"/>
                     </div>
                 </xpath>
+
+                <!-- Nasconde campi nel form MO: Data pianificata e Responsabile -->
+                <!-- In Odoo 18 il campo corrispondente alla data pianificata è `date_start` -->
+                <xpath expr="//label[@for='date_start']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='date_start']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='user_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
                 
             </field>
         </record>
