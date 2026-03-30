@@ -15,6 +15,37 @@ class StockMoveLine(models.Model):
         store=False,
     )
     
+    is_uom_weight = fields.Boolean(
+        string='UdM Peso',
+        compute='_compute_is_uom_weight',
+        store=False,
+    )
+
+    @api.depends('product_uom_id')
+    def _compute_is_uom_weight(self):
+        """Retorna True se a UdM da linha contém 'kg' no nome (case-insensitive).
+        Usa comparação por nome porque o UoM 'KG' customizado pode estar
+        em categoria diferente da categoria padrão de peso do Odoo.
+        """
+        cr = self.env.cr
+        uom_ids = list({line.product_uom_id.id for line in self if line.product_uom_id.id})
+        if not uom_ids:
+            for line in self:
+                line.is_uom_weight = False
+            return
+
+        # name é JSONB no Odoo 18 → cast para text antes de LOWER/LIKE
+        cr.execute(
+            "SELECT id FROM uom_uom "
+            "WHERE id = ANY(%s) AND LOWER(name::text) LIKE '%%kg%%'",
+            (uom_ids,)
+        )
+        kg_ids = {r[0] for r in cr.fetchall()}
+
+        for line in self:
+            uom_id = line.product_uom_id.id if line.product_uom_id else False
+            line.is_uom_weight = bool(uom_id and uom_id in kg_ids)
+
     product_packaging_id = fields.Many2one(
         'product.packaging',
         string='Confezione',

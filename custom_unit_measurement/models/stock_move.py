@@ -47,9 +47,7 @@ class StockMove(models.Model):
         store=True,
         readonly=True
     )
-    
-    
-    
+
     @api.depends('x_secondary_qty', 'product_id.x_secondary_qty_available')
     def _compute_exceeds_secondary_qty(self):
         # Calcula se a quantidade secundária excede o estoque disponível para movimentos de saída
