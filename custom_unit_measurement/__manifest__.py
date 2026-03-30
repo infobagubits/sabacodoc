@@ -1,6 +1,6 @@
 {
     'name': 'Custom Unit Measurement',
-    'version': '18.0.1.5.0',
+    'version': '18.0.1.5.1',
     'category': 'Inventory',
     'summary': 'Generic secondary unit of measure for products and stock management',
     'description': """
