@@ -12,6 +12,18 @@
                 <field name="sequenza_consegna"/>
             </xpath>
 
+            <!-- Ordine creato dal giro: mostra Salva/Abbandona nel header vicino a Conferma -->
+            <xpath expr="//form/header/button[@name='action_confirm'][1]" position="after">
+                <button string="Salva"
+                        special="save"
+                        class="btn btn-secondary"
+                        invisible="not giro_id or state in ('done','cancel')"/>
+                <button string="Abbandona"
+                        special="cancel"
+                        class="btn btn-secondary"
+                        invisible="not giro_id or state in ('done','cancel')"/>
+            </xpath>
+
         </field>
     </record>
 </odoo>
