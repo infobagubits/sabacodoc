@@ -19,11 +19,12 @@
                 
                 <!-- Campi documento fornitore -->
                 <xpath expr="//field[@name='picking_type_id']" position="after">
+                    <field name="is_reso_picking" invisible="1"/>
                     <field name="supplier_document_number" 
-                           invisible="picking_type_code != 'incoming'" 
+                           invisible="picking_type_code != 'incoming' or is_reso_picking" 
                            readonly="state in ['cancel', 'done']"/>
                     <field name="supplier_document_date" 
-                           invisible="picking_type_code != 'incoming'" 
+                           invisible="picking_type_code != 'incoming' or is_reso_picking" 
                            readonly="state in ['cancel', 'done']"/>
                 </xpath>
             </field>
