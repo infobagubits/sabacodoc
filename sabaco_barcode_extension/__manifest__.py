@@ -27,6 +27,7 @@
         'stock_delivery',
     ],
     'data': [
+        'report/ddt_report_inherit.xml',
         'views/stock_picking_search_views.xml',
         'views/stock_barcode_action.xml',
         'views/stock_barcode_picking_views.xml',

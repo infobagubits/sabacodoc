@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        Override del template DDT: quando il trasferimento è un reso
+        (almeno un move con origin_returned_move_id), mostra "Reso" come
+        Ragione trasporto nel PDF, indipendentemente dal valore salvato nel campo.
+    -->
+    <template id="report_ddt_view_sabaco_reso" inherit_id="l10n_it_stock_ddt.report_ddt_view">
+        <xpath expr="//span[@t-field='o.l10n_it_transport_reason']" position="replace">
+            <t t-set="is_reso" t-value="any(m.origin_returned_move_id for m in o.move_ids)"/>
+            <t t-if="is_reso">
+                <span>Reso</span>
+            </t>
+            <t t-else="">
+                <span t-field="o.l10n_it_transport_reason"/>
+            </t>
+        </xpath>
+    </template>
+</odoo>
