@@ -32,6 +32,15 @@
                 <xpath expr="//field[@name='user_id']" position="attributes">
                     <attribute name="invisible">1</attribute>
                 </xpath>
+
+                <!-- Quantità secondaria sui componenti (consumi) -->
+                <xpath expr="//field[@name='move_raw_ids']//field[@name='quantity']" position="after">
+                    <field name="x_secondary_active" column_invisible="1"/>
+                    <field name="x_secondary_qty" string="Qtà sec." optional="show"
+                           invisible="not x_secondary_active" groups="uom.group_uom"/>
+                    <field name="x_secondary_uom_id" string="UdM sec" optional="show"
+                           readonly="1" invisible="not x_secondary_active" groups="uom.group_uom"/>
+                </xpath>
                 
             </field>
         </record>
