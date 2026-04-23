@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        
+
         <!-- Estende la vista form della Bill of Materials per aggiungere packaging -->
         <record id="mrp_bom_form_view_packaging" model="ir.ui.view">
             <field name="name">mrp.bom.form.packaging</field>
             <field name="model">mrp.bom</field>
-            <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+            <field name="inherit_id" ref="mrp.mrp_bom_form_view" />
             <field name="arch" type="xml">
-                
+
                 <!-- Aggiunge campi packaging dopo il div di product_qty -->
-                <xpath expr="//group/group/div[hasclass('o_row')][.//field[@name='product_qty']]" position="after">
-                    <field name="product_variant_ids" invisible="1"/>
-                    <label for="product_packaging_qty" string="Qtà Confezioni"/>
+                <xpath expr="//group/group/div[hasclass('o_row')][.//field[@name='product_qty']]"
+                    position="after">
+                    <field name="product_variant_ids" invisible="1" />
+                    <label for="product_packaging_qty" string="Qtà Confezioni" />
                     <div class="o_row">
-                        <field name="product_packaging_qty"/>
-                        <field name="product_packaging_id" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="product_packaging_qty" />
+                        <field name="product_packaging_id"
+                            options="{'no_create': True, 'no_open': True}" ="UdM confezione"/>
                     </div>
                 </xpath>
-                
+
             </field>
         </record>
-        
+
     </data>
 </odoo>

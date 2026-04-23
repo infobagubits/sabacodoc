@@ -65,5 +65,21 @@
         <xpath position="replace"
             expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/table/tbody/t[2]/tr/t/td[4]"
             meta-class="text-end" />
+
+        <xpath position="replace" expr="//div[@id='informations']/div[@t-if='o.user_id']">
+            <div t-if="o.purchase_order_for" class="col">
+                <strong>Ordine per</strong>
+                <div t-field="o.purchase_order_for" />
+            </div>
+        </xpath>
+        <xpath position="replace"
+            expr="/t[@t-name='purchase.report_purchaseorder_document']//t[@t-call='web.external_layout']/div/strong">
+            <strong t-if="o.payment_term_id">Termini di pagamento: </strong>
+        </xpath>
+        <xpath position="replace" expr="//span[@t-field='o.payment_term_id']">
+            <t t-if="o.payment_term_id">
+                <span t-field="o.payment_term_id" class="mt-4" />
+            </t>
+        </xpath>
     </template>
 </odoo>
