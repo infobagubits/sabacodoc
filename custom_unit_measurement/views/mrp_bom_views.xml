@@ -17,7 +17,8 @@
                     <div class="o_row">
                         <field name="product_packaging_qty" />
                         <field name="product_packaging_id"
-                            options="{'no_create': True, 'no_open': True}" ="UdM confezione"/>
+                            options="{'no_create': True, 'no_open': True}"
+                            placeholder="UdM confezione" />
                     </div>
                 </xpath>
 
