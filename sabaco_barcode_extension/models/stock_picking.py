@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from odoo import api, fields, models
+from odoo.tools.float_utils import float_is_zero
+
+SABACO_SKIP_PARCELS_RECOMPUTE = 'sabaco_skip_parcels_recompute'
 
 
 class StockPicking(models.Model):
@@ -60,6 +63,70 @@ class StockPicking(models.Model):
         fields.append('l10n_it_transport_method_details')
         fields.append('l10n_it_parcels')
         return fields
+
+    def _sabaco_apply_l10n_it_parcels_from_move_lines(self):
+        """Colli (l10n_it_parcels): somma confezioni sulle stock.move.line.
+
+        - Se la riga ha ``product_packaging_qty`` > 0 (Quantità confezione salvata, es. custom_unit_measurement),
+          usa quello.
+        - Altrimenti, se il ``stock.move`` ha ``product_packaging_id``, usa la stessa logica del core Odoo
+          (``_compute_qty`` su quantity + UoM riga) → numero di colli/confezioni, non i pezzi grezzi.
+        - Altrimenti somma ``quantity`` (fallback).
+
+        Solo trasferimenti in uscita con vettore; sovrascrive sempre il valore.
+        """
+        if not self:
+            return
+        if 'l10n_it_parcels' not in self.env['stock.picking']._fields:
+            return
+        pickings_out = self.filtered(
+            lambda p: p.picking_type_code == 'outgoing' and p.carrier_id
+        )
+        if pickings_out:
+            self.env['stock.move.line'].flush_model()
+        for picking in self:
+            if picking.picking_type_code != 'outgoing' or not picking.carrier_id:
+                continue
+            total = 0.0
+            lines = self.env['stock.move.line'].search([('picking_id', '=', picking.id)])
+            for ml in lines:
+                line_pkg = ml.product_packaging_qty
+                if line_pkg and not float_is_zero(
+                    line_pkg,
+                    precision_rounding=ml.product_uom_id.rounding
+                    if ml.product_uom_id else 0.0001,
+                ):
+                    total += float(line_pkg)
+                elif ml.move_id.product_packaging_id:
+                    total += float(
+                        ml.move_id.product_packaging_id._compute_qty(
+                            ml.quantity or 0.0, ml.product_uom_id
+                        )
+                    )
+                else:
+                    total += float(ml.quantity or 0.0)
+            parcels = max(1, int(round(total))) if total > 0 else 1
+            picking.with_context(**{SABACO_SKIP_PARCELS_RECOMPUTE: True}).write({
+                'l10n_it_parcels': parcels,
+            })
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        records._sabaco_apply_l10n_it_parcels_from_move_lines()
+        return records
+
+    def write(self, vals):
+        res = super().write(vals)
+        if self.env.context.get(SABACO_SKIP_PARCELS_RECOMPUTE):
+            return res
+        self._sabaco_apply_l10n_it_parcels_from_move_lines()
+        return res
+
+    def _action_done(self):
+        res = super()._action_done()
+        self._sabaco_apply_l10n_it_parcels_from_move_lines()
+        return res
 
     @api.depends('move_ids', 'move_ids.quantity', 'move_ids.price_unit', 'move_ids.purchase_line_id', 'move_ids.purchase_line_id.taxes_id')
     def _compute_totals_barcode(self):

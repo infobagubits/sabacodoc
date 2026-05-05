@@ -22,11 +22,13 @@
                 <field name="x_secondary_uom_id" string="UdM sec" />
             </xpath>
 
-            <!-- Aggiungere campi packaging dopo quantity -->
+            <!-- Campos packaging: valor oculto por linha quando UdM é peso (KG) -->
             <xpath expr="//field[@name='quantity']" position="before">
+                <field name="is_uom_weight" column_invisible="True" />
                 <field name="product_packaging_qty_display" string="Quantità Confezione"
-                    readonly="0" />
-                <field name="product_packaging_id" string="Confezione" />
+                    readonly="0" invisible="is_uom_weight" />
+                <field name="product_packaging_id" string="Confezione"
+                    invisible="is_uom_weight" />
             </xpath>
         </field>
     </record>

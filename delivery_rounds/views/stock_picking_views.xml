@@ -4,18 +4,18 @@
     <record id="view_picking_form_inherit_giri_ordini" model="ir.ui.view">
         <field name="name">stock.picking.form.inherit.giri.ordini</field>
         <field name="model">stock.picking</field>
-        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="inherit_id" ref="stock.view_picking_form" />
         <field name="arch" type="xml">
             <!-- Aggiunge campi dopo location_id -->
             <xpath expr="//field[@name='location_id']" position="after">
-                <field name="giro_id" 
-                       readonly="1" 
-                       invisible="not sale_id or not sale_id.giro_id"
-                       string="Giro di Consegna"/>
-                <field name="sequenza_consegna" 
-                       readonly="1" 
-                       invisible="not sale_id or not sale_id.giro_id"
-                       string="Sequenza di Consegna"/>
+                <field name="giro_id"
+                    readonly="1"
+                    invisible="not sale_id or not sale_id.giro_id"
+                    string="Giro di Consegna" />
+                <field name="sequenza_consegna"
+                    readonly="1"
+                    invisible="not sale_id or not sale_id.giro_id"
+                    string="Sequenza di Consegna" />
             </xpath>
         </field>
     </record>
@@ -24,11 +24,11 @@
     <record id="view_picking_form_inherit_ddt_aspetto" model="ir.ui.view">
         <field name="name">stock.picking.form.ddt.aspetto.esteriore</field>
         <field name="model">stock.picking</field>
-        <field name="inherit_id" ref="l10n_it_stock_ddt.view_picking_form_inherit_l10n_it_ddt"/>
+        <field name="inherit_id" ref="l10n_it_stock_ddt.view_picking_form_inherit_l10n_it_ddt" />
         <field name="arch" type="xml">
             <xpath expr="//field[@name='l10n_it_parcels']" position="after">
                 <field name="aspetto_esteriore_beni"
-                       readonly="state in ['cancel', 'done']"/>
+                    readonly="state in ['cancel']" />
             </xpath>
         </field>
     </record>
@@ -37,19 +37,19 @@
     <record id="view_picking_list_inherit_giri_ordini" model="ir.ui.view">
         <field name="name">stock.picking.list.inherit.giri.ordini</field>
         <field name="model">stock.picking</field>
-        <field name="inherit_id" ref="stock.vpicktree"/>
+        <field name="inherit_id" ref="stock.vpicktree" />
         <field name="arch" type="xml">
-            
+
             <!-- Aggiunge i nostri campi dopo partner_id -->
             <xpath expr="//field[@name='partner_id']" position="after">
-                <field name="giro_id" 
-                       string="Giro di Consegna"
-                       optional="show"
-                       invisible="not sale_id or not sale_id.giro_id"/>
-                <field name="sequenza_consegna" 
-                       string="Sequenza di Consegna"
-                       optional="show"
-                       invisible="not sale_id or not sale_id.giro_id"/>
+                <field name="giro_id"
+                    string="Giro di Consegna"
+                    optional="show"
+                    invisible="not sale_id or not sale_id.giro_id" />
+                <field name="sequenza_consegna"
+                    string="Sequenza di Consegna"
+                    optional="show"
+                    invisible="not sale_id or not sale_id.giro_id" />
             </xpath>
         </field>
     </record>

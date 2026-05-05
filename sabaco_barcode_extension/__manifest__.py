@@ -1,6 +1,6 @@
 {
     'name': 'Sabaco Barcode Extension',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.2',
     'category': 'Inventory',
     'summary': 'Estensione per visualizzazione note nei cards barcode operations',
     'description': """
@@ -27,6 +27,7 @@
         'stock_delivery',
     ],
     'data': [
+        'report/ddt_report_inherit.xml',
         'views/stock_picking_search_views.xml',
         'views/stock_barcode_action.xml',
         'views/stock_barcode_picking_views.xml',

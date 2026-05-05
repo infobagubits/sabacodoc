@@ -86,6 +86,24 @@ class StockMoveLine(models.Model):
             except (ZeroDivisionError, TypeError):
                 line.calcolatrice_risultato = 0.0
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        lines = super().create(vals_list)
+        lines.mapped('picking_id')._sabaco_apply_l10n_it_parcels_from_move_lines()
+        return lines
+
+    def write(self, vals):
+        pickings_before = self.mapped('picking_id')
+        res = super().write(vals)
+        (pickings_before | self.mapped('picking_id'))._sabaco_apply_l10n_it_parcels_from_move_lines()
+        return res
+
+    def unlink(self):
+        pickings = self.mapped('picking_id')
+        res = super().unlink()
+        pickings._sabaco_apply_l10n_it_parcels_from_move_lines()
+        return res
+
     def _get_fields_stock_barcode(self):
         """Estende os campos disponíveis no contexto JavaScript do barcode"""
         fields = super()._get_fields_stock_barcode()

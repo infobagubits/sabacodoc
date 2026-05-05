@@ -16,7 +16,20 @@ class StockPicking(models.Model):
         help="Data del documento del fornitore",
         copy=False,
     )
-    
+
+    is_reso_picking = fields.Boolean(
+        string="È un reso",
+        compute='_compute_is_reso_picking',
+        store=False,
+    )
+
+    @api.depends('move_ids.origin_returned_move_id')
+    def _compute_is_reso_picking(self):
+        for picking in self:
+            picking.is_reso_picking = any(
+                m.origin_returned_move_id for m in picking.move_ids
+            )
+
     # Campo computado per mostrare il banner di avviso duplicato
     duplicate_supplier_document_warning = fields.Char(
         string="Avviso documento duplicato",
@@ -63,9 +76,12 @@ class StockPicking(models.Model):
                 } 
 
     def button_validate(self):
-        """Blocca la convalida se la ricezione (incoming) non ha numero e data documento fornitore."""
+        """Blocca la convalida se la ricezione (incoming) non ha numero e data documento fornitore.
+        I resi (picking con origin_returned_move_id) sono esclusi dalla verifica."""
         incoming = self.filtered(
-            lambda p: p.picking_type_id.code == 'incoming' and p.state not in ('done', 'cancel')
+            lambda p: p.picking_type_id.code == 'incoming'
+            and p.state not in ('done', 'cancel')
+            and not p.is_reso_picking
         )
         for picking in incoming:
             if not picking.supplier_document_number or not picking.supplier_document_date:

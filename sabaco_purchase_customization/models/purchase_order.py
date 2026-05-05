@@ -6,10 +6,10 @@ class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
     purchase_order_for = fields.Selection([
-        ('Famù - negozio', 'Famù - negozio'),
-        ('Famù - bistrot', 'Famù - bistrot'),
-        ('Famù - parco', 'Famù - parco'),
-        ('Famù - magazzino centrale', 'Famù - magazzino centrale')
+        ('Famù - Negozio', 'Famù - Negozio'),
+        ('Famù - Bistrò', 'Famù - Bistrò'),
+        ('Famù - Parco', 'Famù - Parco'),
+        ('Famù - Magazzino Centrale', 'Famù - Magazzino Centrale')
     ])
     
     def write(self, vals):

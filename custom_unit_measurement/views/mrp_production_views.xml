@@ -1,28 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <data>
-        
+
         <!-- Estende la vista form della Manufacturing Order per aggiungere packaging -->
         <record id="mrp_production_form_view_packaging" model="ir.ui.view">
             <field name="name">mrp.production.form.packaging</field>
             <field name="model">mrp.production</field>
-            <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+            <field name="inherit_id" ref="mrp.mrp_production_form_view" />
             <field name="arch" type="xml">
-                
+
                 <!-- Aggiunge campi packaging dopo il div di product_qty e prima di bom_id -->
                 <xpath expr="//label[@for='bom_id']" position="before">
-                    <field name="product_variant_ids" invisible="1"/>
-                    <label for="product_packaging_qty" string="Qtà Confezioni"/>
+                    <field name="product_variant_ids" invisible="1" />
+                    <label for="product_packaging_qty" string="Qtà Confezioni" />
                     <div class="o_row">
-                        <field name="product_packaging_qty" readonly="state != 'draft'"/>
-                        <field name="product_packaging_id" 
-                               options="{'no_create': True, 'no_open': True}"
-                               readonly="state != 'draft'"/>
+                        <field name="product_packaging_qty" readonly="state != 'draft'" />
+                        <field name="product_packaging_id"
+                            options="{'no_create': True, 'no_open': True}"
+                            readonly="state != 'draft'" placeholder="UdM confezione" />
                     </div>
                 </xpath>
-                
+
+                <!-- Nasconde campi nel form MO: Data pianificata e Responsabile -->
+                <!-- In Odoo 18 il campo corrispondente alla data pianificata è `date_start` -->
+                <xpath expr="//label[@for='date_start']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='date_start']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='user_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <!-- Quantità secondaria sui componenti (consumi) -->
+                <xpath expr="//field[@name='move_raw_ids']//field[@name='quantity']"
+                    position="after">
+                    <field name="x_secondary_active" column_invisible="1" />
+                    <field name="x_secondary_qty" string="Qtà sec." optional="show"
+                        invisible="not x_secondary_active" groups="uom.group_uom" />
+                    <field name="x_secondary_uom_id" string="UdM sec" optional="show"
+                        readonly="1" invisible="not x_secondary_active" groups="uom.group_uom" />
+                </xpath>
+
             </field>
         </record>
-        
+
     </data>
 </odoo>

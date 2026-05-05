@@ -17,7 +17,7 @@ msgstr ""
 
 #. module: sabaco_purchase_customization
 #: model:ir.model.fields.selection,name:sabaco_purchase_customization.selection__purchase_order__purchase_order_for__famù_-_bistrot
-msgid "Famù - bistrot"
+msgid "Famù - bistrò"
 msgstr ""
 
 #. module: sabaco_purchase_customization

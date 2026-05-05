@@ -9,6 +9,7 @@
     "data": [
         "views/external_layout_bubble.xml",
         "views/report_purchaseorder_document.xml",
+        "views/report_saleorder_document.xml",
         "views/address_layout.xml",
     ],
     "installable": True,
