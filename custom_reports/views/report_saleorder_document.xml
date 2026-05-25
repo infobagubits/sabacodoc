@@ -3,6 +3,22 @@
 
     <template id="report_saleorder_document_custom"
         inherit_id="sale.report_saleorder_document">
+        <xpath expr="//div[hasclass('page')]" position="attributes">
+            <attribute name="style">font-size: 12px</attribute>
+        </xpath>
 
+        <xpath expr="//div[@t-if='doc.user_id.name']" position="replace" />
+        <!-- Replace unit price format -->
+        <xpath position="replace" expr="//td[@name='td_priceunit']" meta-class="text-end">
+            <td name="td_priceunit" class="text-end text-nowrap">
+                <span>€ </span>
+                <span t-if="line.discount &lt; 0"
+                    t-out="(1 - line.discount / 100.0) * line.price_unit"
+                    t-options="{&quot;widget&quot;: &quot;float&quot;, &quot;decimal_precision&quot;: &quot;Product Price&quot;}" />
+                <span t-else="" t-field="line.price_unit" />
+                <span>/</span>
+                <span t-field="line.product_uom" />
+            </td>
+        </xpath>
     </template>
 </odoo>
