@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_move_form_edi_pdf_btn" model="ir.ui.view">
+        <field name="name">account.move.form.edi.pdf.button</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <!-- Fatture attive: XML da l10n_it_edi_attachment_name -->
+                <button name="action_generate_edi_pdf"
+                    string="PDF Fattura Elettronica"
+                    type="object"
+                    class="oe_stat_button"
+                    icon="fa-file-pdf-o"
+                    invisible="move_type not in ('out_invoice', 'out_refund') or state != 'posted'"
+                    title="Genera il PDF visivo della fattura elettronica dall'XML EDI"
+                />
+                <!-- Fatture passive: XML da l10n_it_edi_attachment_file -->
+                <button name="action_generate_edi_pdf"
+                    string="PDF Fattura Elettronica"
+                    type="object"
+                    class="oe_stat_button"
+                    icon="fa-file-pdf-o"
+                    invisible="move_type not in ('in_invoice', 'in_refund') or state != 'posted'"
+                    title="Genera il PDF visivo della fattura elettronica ricevuta"
+                />
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
