@@ -9,11 +9,43 @@ import lxml.etree as ET
 from odoo import models, api, fields, _
 from odoo.exceptions import UserError
 
+try:
+    # Estrazione XML dall'involucro PKCS#7/CAdES dei file .p7m firmati,
+    # riusando la stessa logica del modulo ufficiale l10n_it_edi.
+    from odoo.addons.l10n_it_edi.tools.remove_signature import remove_signature
+except Exception:  # pragma: no cover - modulo non disponibile
+    remove_signature = None
+
 _logger = logging.getLogger(__name__)
 
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        moves = super().create(vals_list)
+        # Le fatture passive importate dal cassetto fiscale vengono spesso create
+        # con l'XML già presente nei vals di creazione (non in una write successiva):
+        # in quel caso il trigger su write() non scatterebbe mai. Qui generiamo il
+        # PDF subito dopo la create, anche se la fattura è ancora in bozza.
+        for move, vals in zip(moves, vals_list):
+            trigger_file = 'l10n_it_edi_attachment_file' in vals
+            trigger_name = 'l10n_it_edi_attachment_name' in vals
+            if not (trigger_file or trigger_name):
+                continue
+            if move.move_type in ('out_invoice', 'out_refund') and not trigger_name:
+                continue
+            if move.move_type in ('in_invoice', 'in_refund') and not trigger_file:
+                continue
+            try:
+                move._auto_generate_edi_pdf()
+            except Exception as e:
+                _logger.warning(
+                    "Generazione automatica PDF EDI fallita in create per account.move id=%s: %s",
+                    move.id, e,
+                )
+        return moves
 
     def write(self, vals):
         res = super().write(vals)
@@ -23,6 +55,8 @@ class AccountMove(models.Model):
             for move in self:
                 # Fatture vendita: reagire solo a l10n_it_edi_attachment_name
                 # Fatture acquisto: reagire solo a l10n_it_edi_attachment_file
+                # Nessun controllo sullo stato: il PDF viene generato anche in bozza,
+                # è sufficiente che l'XML EDI sia disponibile.
                 if move.move_type in ('out_invoice', 'out_refund') and not trigger_name:
                     continue
                 if move.move_type in ('in_invoice', 'in_refund') and not trigger_file:
@@ -128,6 +162,34 @@ class AccountMove(models.Model):
             "Su Odoo.sh dovrebbe essere gia' installato."
         ))
 
+    def _normalize_edi_xml(self, raw):
+        """
+        Normalizza un contenuto grezzo in bytes XML della fattura elettronica.
+
+        Le fatture elettroniche ricevute sono spesso firmate digitalmente
+        (file '.xml.p7m'): in quel caso il contenuto è un involucro PKCS#7/CAdES
+        binario, non un XML che inizia con '<'. Qui rimuoviamo la firma riusando
+        la stessa logica del modulo ufficiale l10n_it_edi.
+        Ritorna i bytes XML, oppure None se non è possibile ottenerli.
+        """
+        if not raw:
+            return None
+        if raw.strip().startswith(b'<'):
+            return raw
+        # Contenuto firmato (.p7m): estrai l'XML dall'involucro PKCS#7
+        if remove_signature is not None:
+            try:
+                unwrapped = remove_signature(raw)
+            except Exception as e:
+                _logger.warning(
+                    "Rimozione firma .p7m fallita (account.move id=%s): %s", self.id, e,
+                )
+                unwrapped = None
+            if unwrapped and unwrapped.strip().startswith(b'<'):
+                _logger.info("XML estratto dall'involucro firmato .p7m (id=%s)", self.id)
+                return unwrapped
+        return None
+
     def _get_edi_xml_bytes(self):
         """
         Restituisce i bytes dell'XML della fattura elettronica.
@@ -136,18 +198,23 @@ class AccountMove(models.Model):
           1. l10n_it_edi_attachment_id  → Many2one diretto a ir.attachment
           2. l10n_it_edi_attachment_file → campo Binary (attive e passive)
           3. Cerca ir.attachment per l10n_it_edi_attachment_name (fatture attive)
-          4. Fallback: qualsiasi ir.attachment .xml collegato alla fattura
+          4. Fallback: qualsiasi ir.attachment .xml/.p7m collegato alla fattura
+
+        Ogni contenuto viene passato per _normalize_edi_xml() così da gestire
+        anche i file firmati (.xml.p7m).
         """
         self.ensure_one()
 
         # 1. Tentativo diretto tramite Many2one l10n_it_edi_attachment_id
         att = getattr(self, 'l10n_it_edi_attachment_id', None)
         if att and att.datas:
-            _logger.info(
-                "XML trovato via l10n_it_edi_attachment_id: %s (account.move id=%s)",
-                att.name, self.id,
-            )
-            return base64.b64decode(att.datas)
+            xml = self._normalize_edi_xml(base64.b64decode(att.datas))
+            if xml:
+                _logger.info(
+                    "XML trovato via l10n_it_edi_attachment_id: %s (account.move id=%s)",
+                    att.name, self.id,
+                )
+                return xml
 
         # 2. Tentativo tramite campo Binary l10n_it_edi_attachment_file
         xml_file = getattr(self, 'l10n_it_edi_attachment_file', None)
@@ -156,9 +223,10 @@ class AccountMove(models.Model):
                 raw = base64.b64decode(xml_file)
             except Exception:
                 raw = xml_file if isinstance(xml_file, bytes) else xml_file.encode('utf-8')
-            if raw.strip().startswith(b'<'):
+            xml = self._normalize_edi_xml(raw)
+            if xml:
                 _logger.info("XML trovato via l10n_it_edi_attachment_file (id=%s)", self.id)
-                return raw
+                return xml
 
         # 3. Per fatture attive: cerca ir.attachment tramite nome
         if self.move_type in ('out_invoice', 'out_refund'):
@@ -174,20 +242,33 @@ class AccountMove(models.Model):
                         ('name', '=', xml_name),
                     ], limit=1, order='id desc')
                 if att and att.datas:
-                    _logger.info("XML attivo trovato via l10n_it_edi_attachment_name: %s", xml_name)
-                    return base64.b64decode(att.datas)
+                    xml = self._normalize_edi_xml(base64.b64decode(att.datas))
+                    if xml:
+                        _logger.info("XML attivo trovato via l10n_it_edi_attachment_name: %s", xml_name)
+                        return xml
 
-        # 4. Fallback: qualsiasi ir.attachment .xml sulla fattura
-        att = self.env['ir.attachment'].search([
+        # 4. Fallback: qualsiasi ir.attachment .xml/.p7m sulla fattura.
+        #    Gli allegati del file EDI ricevuto hanno res_field impostato e
+        #    vengono esclusi di default dalla search: includiamo entrambi i casi.
+        base_domain = [
             ('res_model', '=', 'account.move'),
             ('res_id', '=', self.id),
-            ('name', 'ilike', '.xml'),
-        ], limit=1, order='id desc')
-        if att and att.datas:
-            raw = base64.b64decode(att.datas)
-            if raw.strip().startswith(b'<'):
+            '|', ('name', 'ilike', '.xml'), ('name', 'ilike', '.p7m'),
+        ]
+        atts = self.env['ir.attachment'].search(
+            base_domain, order='id desc',
+        )
+        # Allegati legati a un campo (res_field), esclusi dalla search standard
+        atts |= self.env['ir.attachment'].search(
+            base_domain + [('res_field', '!=', False)], order='id desc',
+        )
+        for att in atts:
+            if not att.datas:
+                continue
+            xml = self._normalize_edi_xml(base64.b64decode(att.datas))
+            if xml:
                 _logger.info("XML trovato via ir.attachment su account.move: %s", att.name)
-                return raw
+                return xml
 
         _logger.warning(
             "Nessun XML EDI trovato per account.move id=%s (move_type=%s). "
