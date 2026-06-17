@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="planning_view_form_sabaco_role_first" model="ir.ui.view">
+        <field name="name">planning.slot.form.sabaco.role.first</field>
+        <field name="model">planning.slot</field>
+        <field name="inherit_id" ref="planning.planning_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='role_id']" position="replace"/>
+            <xpath expr="//field[@name='resource_id']" position="before">
+                <field name="role_id" context="{'search_default_resource_ids': resource_id}" placeholder="e.g. Bartender"/>
+            </xpath>
+            <xpath expr="//field[@name='resource_id']" position="attributes">
+                <attribute name="domain">['&amp;', '|', ('company_id', '=', False), ('company_id', '=', company_id), ('resource_type', '=', 'user'), ('role_ids', 'in', role_id)]</attribute>
+                <attribute name="readonly">not start_datetime or not end_datetime or not role_id</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>
