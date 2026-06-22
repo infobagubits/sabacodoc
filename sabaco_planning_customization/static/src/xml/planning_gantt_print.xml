@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="sabaco_planning_customization.PlanningGanttView.Buttons"
+        t-inherit="planning.PlanningGanttView.Buttons"
+        t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('btn-group')]" position="inside">
+            <button t-if="sabacoShowSchedulePrint"
+                class="btn btn-secondary o_gantt_button_print_schedule"
+                title="Stampa programma per ruolo (PDF)"
+                data-hotkey="p"
+                t-on-click="() => this.sabacoPrintScheduleByRole()">
+                <i class="fa fa-print me-1"/>
+                PDF
+            </button>
+        </xpath>
+    </t>
+
+</templates>

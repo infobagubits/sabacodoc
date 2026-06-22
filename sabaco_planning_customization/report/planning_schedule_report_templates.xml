@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="paperformat_planning_schedule_by_role" model="report.paperformat">
+        <field name="name">Programma per ruolo (landscape)</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">40</field>
+        <field name="margin_bottom">20</field>
+        <field name="margin_left">8</field>
+        <field name="margin_right">8</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">35</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_planning_schedule_by_role" model="ir.actions.report">
+        <field name="name">Programma per ruolo</field>
+        <field name="model">planning.schedule.print.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">sabaco_planning_customization.schedule_by_role_document</field>
+        <field name="report_file">sabaco_planning_customization.schedule_by_role_document</field>
+        <field name="print_report_name">'Programma per ruolo - %s' % (object.date)</field>
+        <field name="paperformat_id" ref="paperformat_planning_schedule_by_role"/>
+    </record>
+
+    <template id="schedule_by_role_document">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <style>
+                    /* Reset border-radius em todo o documento */
+                    *, *:before, *:after { border-radius: 0 !important; -webkit-border-radius: 0 !important; box-sizing: border-box; }
+
+                    .s-report { font-size: 10px; color: #212529; font-family: Arial, sans-serif; }
+                    .s-report h2 { font-size: 15px; margin: 0 0 2px 0; color: #212529; }
+                    .s-date { font-size: 9px; color: #666; margin-bottom: 6px; }
+
+                    /*
+                     * Todas as tabelas usam a MESMA largura de coluna label (130px).
+                     * Com table-layout:fixed e width:100%, a coluna timeline
+                     * ocupa o restante e fica idêntica em todas as tabelas.
+                     */
+                    .s-tbl {
+                        width: 100%;
+                        table-layout: fixed;
+                        border-collapse: collapse;
+                        margin: 0;
+                        border-spacing: 0;
+                    }
+                    .s-tbl col.s-col-lbl { width: 100px; }
+
+                    /* Células genéricas */
+                    .s-tbl td, .s-tbl th {
+                        border: 1px solid #aaa;
+                        padding: 0;
+                        margin: 0;
+                        vertical-align: middle;
+                    }
+
+                    /* ── Cabeçalho de horas ── */
+                    .s-hdr-lbl {
+                        background-color: #e9ecef;
+                        border: 1px solid #aaa;
+                    }
+                    .s-hour-grid {
+                        width: 100%;
+                        table-layout: fixed;
+                        border-collapse: collapse;
+                        margin: 0;
+                    }
+                    .s-hour-hdr {
+                        text-align: center;
+                        font-size: 10px;
+                        font-weight: 700;
+                        color: #212529;
+                        background-color: #e9ecef;
+                        padding: 5px 0;
+                        border-right: 1px solid #aaa;
+                    }
+                    .s-hour-hdr:last-child { border-right: none; }
+
+                    /* ── Div de bloco por ruolo: PAGE-BREAK aqui funciona ── */
+                    .s-role-block {
+                        page-break-inside: avoid !important;
+                        -webkit-page-break-inside: avoid !important;
+                        break-inside: avoid !important;
+                        /* sem display:block — evita quebrar layout de tabela */
+                    }
+
+                    /* ── Linha título ruolo ── */
+                    .s-role-lbl {
+                        font-size: 10px;
+                        font-weight: 700;
+                        color: #212529;
+                        padding: 4px 6px 4px 10px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        /* borda esquerda colorida definida inline */
+                        border-top: 2px solid #aaa;
+                        border-bottom: 1px solid #aaa;
+                    }
+                    .s-role-tl {
+                        padding: 0;
+                        border-top: 2px solid #aaa;
+                        border-bottom: 1px solid #aaa;
+                    }
+
+                    /* ── Grid de horas dentro das linhas ── */
+                    .s-row-wrap { position: relative; }
+                    .s-cell-grid {
+                        width: 100%;
+                        table-layout: fixed;
+                        border-collapse: collapse;
+                        margin: 0;
+                    }
+                    .s-cell-col {
+                        border-right: 1px solid #ddd;
+                        padding: 0;
+                    }
+                    .s-cell-col:last-child { border-right: none; }
+
+                    /* Texto totais por hora na linha ruolo */
+                    .s-sum-pill {
+                        position: absolute;
+                        top: 0;
+                        height: 26px;
+                        line-height: 26px;
+                        text-align: center;
+                        font-size: 7px;
+                        font-weight: 700;
+                        color: #212529;
+                        overflow: hidden;
+                        white-space: nowrap;
+                    }
+
+                    /* ── Linha recurso ── */
+                    .s-res-lbl {
+                        font-size: 9px;
+                        color: #212529;
+                        padding: 3px 6px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    /* ── Pills ── */
+                    .s-pill {
+                        position: absolute;
+                        height: 20px;
+                        top: 4px;
+                        padding: 1px 3px;
+                        overflow: hidden;
+                        font-size: 7px;
+                        font-weight: 600;
+                        color: #212529;
+                        line-height: 18px;
+                        white-space: nowrap;
+                        border: 1px solid rgba(0,0,0,0.18);
+                        border-radius: 0 !important;
+                    }
+                    .s-pill.is-draft {
+                        background-image: repeating-linear-gradient(
+                            -45deg, transparent 0, transparent 6px,
+                            rgba(255,255,255,0.55) 6px, rgba(255,255,255,0.55) 12px
+                        );
+                    }
+
+                    /* ── Linha Totale ── */
+                    .s-total-lbl {
+                        font-size: 10px;
+                        font-weight: 700;
+                        color: #212529;
+                        padding: 4px 6px;
+                        white-space: nowrap;
+                        border-top: 2px solid #495057 !important;
+                    }
+                    .s-total-tl {
+                        padding: 0;
+                        border-top: 2px solid #495057 !important;
+                        vertical-align: bottom;
+                    }
+                    .s-total-grid {
+                        width: 100%;
+                        table-layout: fixed;
+                        border-collapse: collapse;
+                        height: 44px;
+                        vertical-align: bottom;
+                    }
+                    .s-total-col {
+                        vertical-align: bottom;
+                        border-right: 1px solid #ddd;
+                        padding: 0 1px;
+                    }
+                    .s-total-col:last-child { border-right: none; }
+                    .s-total-bar {
+                        display: block;
+                        width: 100%;
+                        text-align: center;
+                        font-size: 7px;
+                        font-weight: 700;
+                        color: #fff;
+                        line-height: 13px;
+                    }
+                </style>
+
+                <div class="s-report">
+                    <h2>Programma per ruolo</h2>
+                    <div class="s-date"><t t-esc="report_date_label"/></div>
+
+                    <t t-if="not role_groups">
+                        <p style="color:#666;">Nessun turno per questa data.</p>
+                    </t>
+
+                    <t t-if="role_groups">
+
+                        <!-- ① Cabeçalho horas -->
+                        <table class="s-tbl o_ignore_layout_styling" style="table-layout:fixed; width:100%;">
+                            <colgroup>
+                                <col style="width:100px;"/>
+                                <col style="width:100%;"/>
+                            </colgroup>
+                            <tbody>
+                                <tr>
+                                    <th style="width:100px; background-color:#e9ecef; border:1px solid #aaa; padding:0;"/>
+                                    <th style="width:100%; padding:0; border:1px solid #aaa; background-color:#e9ecef;">
+                                        <table class="s-hour-grid">
+                                            <tr>
+                                                <td t-foreach="hours" t-as="hour" class="s-hour-hdr">
+                                                    <t t-esc="hour"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </th>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- ② Um bloco div por ruolo — page-break-inside:avoid funciona em div -->
+                        <t t-foreach="role_groups" t-as="role_group">
+                            <div class="s-role-block">
+                                <table class="s-tbl o_ignore_layout_styling" style="table-layout:fixed; width:100%;">
+                                    <colgroup>
+                                        <col style="width:100px;"/>
+                                        <col style="width:100%;"/>
+                                    </colgroup>
+                                    <tbody>
+                                        <!-- Riga titolo ruolo -->
+                                        <tr>
+                                            <td class="s-role-lbl"
+                                                t-attf-style="width:100px; border-left:4px solid #{role_group['color_hex']}; background-color:#{role_group['color_row_bg']};">
+                                                <t t-esc="role_group['name']"/>
+                                            </td>
+                                            <td class="s-role-tl" style="width:100%;">
+                                                <div class="s-row-wrap" style="height:26px; position:relative;">
+                                                    <table class="s-cell-grid">
+                                                        <tr>
+                                                            <td t-foreach="hours" t-as="hour" class="s-cell-col"
+                                                                style="height:26px;"/>
+                                                        </tr>
+                                                    </table>
+                                                    <t t-foreach="role_group['summary_slots']" t-as="slot">
+                                                        <div class="s-sum-pill"
+                                                             t-attf-style="left:#{slot['left']}%; width:#{slot['width']}%;">
+                                                            <t t-esc="slot['duration_label']"/>
+                                                        </div>
+                                                    </t>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <!-- Righe risorse -->
+                                        <tr t-foreach="role_group['rows']" t-as="row">
+                                            <td class="s-res-lbl" style="width:100px;">
+                                                <t t-esc="row['name']"/>
+                                            </td>
+                                            <td style="width:100%; padding:0; border:1px solid #aaa;">
+                                                <div class="s-row-wrap"
+                                                     style="position:relative;"
+                                                     t-attf-style="height:#{row['row_height']}px;">
+                                                    <table class="s-cell-grid">
+                                                        <tr>
+                                                            <td t-foreach="hours" t-as="hour" class="s-cell-col"
+                                                                t-attf-style="height:#{row['row_height']}px;"/>
+                                                        </tr>
+                                                    </table>
+                                                    <t t-foreach="row['slots']" t-as="slot">
+                                                        <div t-attf-class="s-pill #{'is-draft' if slot['is_draft'] else ''}"
+                                                             t-attf-style="left:#{slot['left']}%; width:#{slot['width']}%; top:#{slot['top_px']}px; background-color:#{slot['color_subtle']};">
+                                                            <t t-esc="slot['duration_label']"/>
+                                                            <t t-if="slot['employee_name']"> <t t-esc="slot['employee_name']"/></t>
+                                                        </div>
+                                                    </t>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </t>
+
+                        <!-- ③ Linha Totale -->
+                        <table class="s-tbl o_ignore_layout_styling" style="table-layout:fixed; width:100%;">
+                            <colgroup>
+                                <col style="width:100px;"/>
+                                <col style="width:100%;"/>
+                            </colgroup>
+                            <tbody>
+                                <tr>
+                                    <td class="s-total-lbl" style="width:100px;">
+                                        <t t-esc="total_row['name']"/>
+                                    </td>
+                                    <td class="s-total-tl" style="width:100%;">
+                                        <table class="s-total-grid">
+                                            <tr>
+                                                <td t-foreach="total_row['hours']" t-as="hour_total" class="s-total-col">
+                                                    <span t-if="hour_total['has_value']"
+                                                          class="s-total-bar"
+                                                          t-attf-style="height:#{hour_total['bar_height_px']}px; background-color:#{total_row['color_hex']};">
+                                                        <t t-esc="hour_total['label']"/>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

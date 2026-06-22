@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_planning_schedule_print_wizard_user,planning.schedule.print.wizard.user,model_planning_schedule_print_wizard,planning.group_planning_user,1,1,1,1
+access_planning_schedule_print_wizard_manager,planning.schedule.print.wizard.manager,model_planning_schedule_print_wizard,planning.group_planning_manager,1,1,1,1
