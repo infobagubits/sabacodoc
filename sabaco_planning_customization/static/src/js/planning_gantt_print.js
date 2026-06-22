@@ -6,7 +6,10 @@ import { PlanningGanttController } from "@planning/views/planning_gantt/planning
 
 patch(PlanningGanttController.prototype, {
     get sabacoShowSchedulePrint() {
-        return Boolean(this.model.searchParams.context?.planning_groupby_role);
+        const groupByRole = Boolean(this.model.searchParams.context?.planning_groupby_role);
+        const { startDate, stopDate } = this.model.metaData;
+        const isSingleDay = startDate && stopDate && startDate.hasSame(stopDate, "day");
+        return groupByRole && isSingleDay;
     },
 
     async sabacoPrintScheduleByRole() {
