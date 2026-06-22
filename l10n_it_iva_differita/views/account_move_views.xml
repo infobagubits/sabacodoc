@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         Fattura fornitore: aggiungiamo campo "Iva differita" sotto "ref"
+         e un pulsante smart-button per aprire la registrazione collegata.
+         ═══════════════════════════════════════════════════════════════════ -->
+    <record id="view_move_form_iva_differita" model="ir.ui.view">
+        <field name="name">account.move.form.iva.differita</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+
+            <!-- 1. Campo nascosto (deve essere caricato prima degli altri) -->
+            <xpath expr="//field[@name='ref']" position="before">
+                <field name="iva_differita_move_id" invisible="1"/>
+            </xpath>
+
+            <!-- 2. Checkbox sotto il campo "ref" -->
+            <xpath expr="//field[@name='ref']" position="after">
+                <field
+                    name="iva_differita"
+                    widget="boolean_toggle"
+                    string="IVA differita"
+                    invisible="move_type not in ('in_invoice', 'in_refund')"
+                    readonly="state != 'draft'"
+                />
+            </xpath>
+
+            <!-- 3. Smart button - usa type="object" per evitare dipendenze su external ID -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button
+                    class="oe_stat_button"
+                    name="action_open_iva_differita_move"
+                    type="object"
+                    icon="fa-exchange"
+                    invisible="iva_differita_move_id == False or move_type not in ('in_invoice', 'in_refund')"
+                >
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Reg. IVA</span>
+                        <span class="o_stat_text">differita</span>
+                    </div>
+                </button>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
