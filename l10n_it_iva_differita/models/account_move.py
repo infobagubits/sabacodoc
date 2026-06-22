@@ -1,5 +1,4 @@
-import calendar
-from datetime import date
+import datetime
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -63,10 +62,10 @@ class AccountMove(models.Model):
         return account, journal
 
     @staticmethod
-    def _last_day_of_previous_month(ref_date: date) -> date:
+    def _last_day_of_previous_month(ref_date):
         """Restituisce l'ultimo giorno del mese precedente a ref_date."""
         first_of_current = ref_date.replace(day=1)
-        last_prev = first_of_current - __import__('datetime').timedelta(days=1)
+        last_prev = first_of_current - datetime.timedelta(days=1)
         return last_prev
 
     # ── Override action_post ──────────────────────────────────────────────────
@@ -192,6 +191,22 @@ class AccountMove(models.Model):
         if rep_lines:
             return rep_lines[0].account_id
         return False
+
+    # ── Azione smart button ───────────────────────────────────────────────────
+
+    def action_open_iva_differita_move(self):
+        """Apre la registrazione di storno IVA differita collegata."""
+        self.ensure_one()
+        if not self.iva_differita_move_id:
+            return False
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Registrazione IVA differita'),
+            'res_model': 'account.move',
+            'res_id': self.iva_differita_move_id.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
 
     # ── Annullamento / reset ──────────────────────────────────────────────────
 
