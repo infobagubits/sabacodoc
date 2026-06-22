@@ -109,7 +109,7 @@
                     }
 
                     /* ── Grid de horas dentro das linhas ── */
-                    .s-row-wrap { position: relative; }
+                    .s-row-wrap { position: relative; overflow: hidden; }
                     .s-cell-grid {
                         width: 100%;
                         table-layout: fixed;
@@ -190,14 +190,18 @@
                         vertical-align: bottom;
                     }
                     .s-total-col {
+                        position: relative;
                         vertical-align: bottom;
+                        height: 44px;
                         border-right: 1px solid #ddd;
                         padding: 0 1px;
                     }
                     .s-total-col:last-child { border-right: none; }
                     .s-total-bar {
-                        display: block;
-                        width: 100%;
+                        position: absolute;
+                        left: 1px;
+                        right: 1px;
+                        bottom: 0;
                         text-align: center;
                         font-size: 7px;
                         font-weight: 700;
