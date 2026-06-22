@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         Fattura fornitore: aggiungiamo campo "Iva differita" sotto "ref"
+         e un pulsante smart-button per aprire la registrazione collegata.
+         ═══════════════════════════════════════════════════════════════════ -->
+    <record id="view_move_form_iva_differita" model="ir.ui.view">
+        <field name="name">account.move.form.iva.differita</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+
+            <!-- 1. Checkbox sotto il campo "ref" ─────────────────────────── -->
+            <xpath expr="//field[@name='ref']" position="after">
+                <field
+                    name="iva_differita"
+                    widget="boolean_toggle"
+                    attrs="{
+                        'invisible': [('move_type', 'not in', ['in_invoice', 'in_refund'])],
+                        'readonly':  [('state', '!=', 'draft')]
+                    }"
+                    string="IVA differita"
+                />
+            </xpath>
+
+            <!-- 2. Smart button per la registrazione di storno ─────────────
+                 Lo aggiungiamo nel blocco dei pulsanti statistici (stat buttons).
+                 Il blocco esiste solo se c'è già almeno un button_box,
+                 quindi usiamo position="inside" sul button_box esistente.     -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button
+                    class="oe_stat_button"
+                    name="%(action_iva_differita_storno)d"
+                    type="action"
+                    icon="fa-exchange"
+                    attrs="{
+                        'invisible': [
+                            '|',
+                            ('move_type', 'not in', ['in_invoice', 'in_refund']),
+                            ('iva_differita_move_id', '=', False)
+                        ]
+                    }"
+                >
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Reg. IVA</span>
+                        <span class="o_stat_text">differita</span>
+                    </div>
+                </button>
+            </xpath>
+
+            <!-- 3. Campo nascosto per collegamento (non mostrato in vista) ── -->
+            <xpath expr="//field[@name='ref']" position="before">
+                <field name="iva_differita_move_id" invisible="1"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         Action per aprire la registrazione di storno dalla fattura
+         ═══════════════════════════════════════════════════════════════════ -->
+    <record id="action_iva_differita_storno" model="ir.actions.act_window">
+        <field name="name">Registrazione IVA differita</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">form</field>
+        <field name="domain">[('id', '=', iva_differita_move_id)]</field>
+        <field name="context">{'default_move_type': 'entry'}</field>
+    </record>
+
+</odoo>
