@@ -87,16 +87,17 @@
                         border-collapse: collapse;
                         margin: 0;
                     }
-                    .s-hour-hdr {
+                    /* seletor mais específico que ".s-tbl td" senão padding:0 genérico vence */
+                    .s-tbl td.s-hour-hdr {
                         text-align: center;
                         font-size: 10px;
                         font-weight: 700;
                         color: #212529;
                         background-color: #e9ecef;
-                        padding: 5px 0;
+                        padding: 8px 2px;
                         border-right: 1px solid #aaa;
                     }
-                    .s-hour-hdr:last-child { border-right: none; }
+                    .s-tbl td.s-hour-hdr:last-child { border-right: none; }
 
                     /* ── Div de bloco por ruolo: PAGE-BREAK aqui funciona ── */
                     .s-role-block {
@@ -107,11 +108,12 @@
                     }
 
                     /* ── Linha título ruolo ── */
-                    .s-role-lbl {
+                    /* seletor mais específico que ".s-tbl td" senão padding:0 genérico vence */
+                    .s-tbl td.s-role-lbl {
                         font-size: 10px;
                         font-weight: 700;
                         color: #212529;
-                        padding: 4px 6px 4px 10px;
+                        padding: 5px 10px 5px 12px;
                         white-space: nowrap;
                         overflow: hidden;
                         text-overflow: ellipsis;
@@ -154,10 +156,10 @@
                     }
 
                     /* ── Linha recurso ── */
-                    .s-res-lbl {
+                    .s-tbl td.s-res-lbl {
                         font-size: 9px;
                         color: #212529;
-                        padding: 3px 6px;
+                        padding: 4px 12px;
                         white-space: nowrap;
                         overflow: hidden;
                         text-overflow: ellipsis;
@@ -302,12 +304,6 @@
                                                                 style="height:26px;"/>
                                                         </tr>
                                                     </table>
-                                                    <t t-foreach="role_group['summary_slots']" t-as="slot">
-                                                        <div class="s-sum-pill"
-                                                             t-attf-style="left:#{slot['left']}%; width:#{slot['width']}%;">
-                                                            <t t-esc="slot['duration_label']"/>
-                                                        </div>
-                                                    </t>
                                                 </div>
                                             </td>
                                         </tr>
@@ -340,34 +336,6 @@
                                 </table>
                             </div>
                         </t>
-
-                        <!-- ③ Linha Totale -->
-                        <table class="s-tbl o_ignore_layout_styling" style="table-layout:fixed; width:100%;">
-                            <colgroup>
-                                <col style="width:100px;"/>
-                                <col style="width:100%;"/>
-                            </colgroup>
-                            <tbody>
-                                <tr>
-                                    <td class="s-total-lbl" style="width:100px;">
-                                        <t t-esc="total_row['name']"/>
-                                    </td>
-                                    <td class="s-total-tl" style="width:100%;">
-                                        <table class="s-total-grid">
-                                            <tr>
-                                                <td t-foreach="total_row['hours']" t-as="hour_total" class="s-total-col">
-                                                    <span t-if="hour_total['has_value']"
-                                                          class="s-total-bar"
-                                                          t-attf-style="height:#{hour_total['bar_height_px']}px; background-color:#{total_row['color_hex']};">
-                                                        <t t-esc="hour_total['label']"/>
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
 
                     </t>
                 </div>

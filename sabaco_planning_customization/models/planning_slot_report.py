@@ -435,17 +435,11 @@ class PlanningSlot(models.Model):
             if not rows and role_slots:
                 append_row(open_shifts_label, role_slots)
 
-            summary_slots = self._sabaco_build_role_summary_slots(
-                role_slots, day_start, day_end, tz,
-                work_intervals, flexible_hours, color_hex,
-            )
-
             return {
                 'name': role.name if role else undefined_role_label,
                 'color_hex': color_hex,
                 'color_subtle': self._sabaco_mix_with_white(color_hex, ratio=0.55),
                 'color_row_bg': self._sabaco_mix_with_white(color_hex, ratio=0.75),
-                'summary_slots': summary_slots,
                 'rows': rows,
             }
 
@@ -462,15 +456,10 @@ class PlanningSlot(models.Model):
         if undefined_slots:
             role_groups.append(build_role_group(None, undefined_slots))
 
-        total_row = self._sabaco_build_total_row(
-            slots, day_start, day_end, tz, work_intervals, flexible_hours
-        )
-
         return {
             'report_date': report_date,
             'report_date_label': format_date(self.env, report_date),
             'hours': list(VISIBLE_HOURS),
             'role_groups': role_groups,
-            'total_row': total_row,
             'company': self.env.company,
         }
