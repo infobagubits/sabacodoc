@@ -7,12 +7,12 @@
         <field name="page_height">0</field>
         <field name="page_width">0</field>
         <field name="orientation">Landscape</field>
-        <field name="margin_top">90</field>
-        <field name="margin_bottom">20</field>
+        <field name="margin_top">8</field>
+        <field name="margin_bottom">12</field>
         <field name="margin_left">8</field>
         <field name="margin_right">8</field>
         <field name="header_line" eval="False"/>
-        <field name="header_spacing">35</field>
+        <field name="header_spacing">0</field>
         <field name="dpi">90</field>
     </record>
 
@@ -28,7 +28,7 @@
 
     <template id="schedule_by_role_document">
         <t t-call="web.html_container">
-            <t t-call="web.external_layout">
+            <div class="page">
                 <style>
                     /* Reset border-radius em todo o documento */
                     *, *:before, *:after { border-radius: 0 !important; -webkit-border-radius: 0 !important; box-sizing: border-box; }
@@ -36,6 +36,23 @@
                     .s-report { font-size: 10px; color: #212529; font-family: Arial, sans-serif; }
                     .s-report h2 { font-size: 15px; margin: 0 0 2px 0; color: #212529; }
                     .s-date { font-size: 9px; color: #666; margin-bottom: 6px; }
+
+                    /* ── Header da empresa (no corpo, fluxo normal — sem header wkhtmltopdf) ── */
+                    .s-head {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin: 0 0 18px 0;
+                        border-bottom: 1px solid #ccc;
+                    }
+                    .s-head td {
+                        border: none;
+                        padding: 0 0 8px 0;
+                        vertical-align: top;
+                    }
+                    .s-head-logo { width: 130px; }
+                    .s-logo { max-height: 58px; max-width: 125px; }
+                    .s-co-name { font-size: 13px; font-weight: 700; color: #212529; }
+                    .s-co-addr { font-size: 9px; color: #444; line-height: 13px; }
 
                     /*
                      * Todas as tabelas usam a MESMA largura de coluna label (130px).
@@ -211,6 +228,26 @@
                 </style>
 
                 <div class="s-report">
+
+                    <!-- Header empresa (fluxo normal, separado da planilha) -->
+                    <table class="s-head">
+                        <tr>
+                            <td class="s-head-logo">
+                                <img t-if="company.logo" class="s-logo"
+                                     t-att-src="image_data_uri(company.logo)" alt="Logo"/>
+                            </td>
+                            <td class="s-head-co">
+                                <div class="s-co-name"><t t-esc="company.name"/></div>
+                                <div class="s-co-addr">
+                                    <t t-esc="company.partner_id.street"/><t t-if="company.partner_id.city">, <t t-esc="company.partner_id.zip"/> <t t-esc="company.partner_id.city"/></t><t t-if="company.partner_id.country_id"> - <t t-esc="company.partner_id.country_id.name"/></t>
+                                </div>
+                                <div class="s-co-addr">
+                                    <t t-if="company.partner_id.vat">P.IVA <t t-esc="company.partner_id.vat"/></t><t t-if="company.phone"> | tel <t t-esc="company.phone"/></t><t t-if="company.email"> | <t t-esc="company.email"/></t>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+
                     <h2>Programma per ruolo</h2>
                     <div class="s-date"><t t-esc="report_date_label"/></div>
 
@@ -334,7 +371,7 @@
 
                     </t>
                 </div>
-            </t>
+            </div>
         </t>
     </template>
 </odoo>
