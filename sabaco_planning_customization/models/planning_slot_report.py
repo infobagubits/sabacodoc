@@ -14,6 +14,11 @@ ODOO_GANTT_COLORS = [
     '#41a9a2', '#304be0', '#ee2f8a', '#61c36e', '#9872e6',
 ]
 DAY_MINUTES = 24 * 60
+# Eixo de horas visível no relatório: madrugada 00–05 removida (pedido cliente).
+DISPLAY_START_HOUR = 6
+VISIBLE_HOURS = list(range(DISPLAY_START_HOUR, 24))      # 06..23 → 18 colunas
+VISIBLE_START_MIN = DISPLAY_START_HOUR * 60              # 360
+VISIBLE_TOTAL_MIN = (24 - DISPLAY_START_HOUR) * 60       # 1080
 PILL_HEIGHT_PX = 22
 PILL_LEVEL_STEP_PX = 24
 ROW_PADDING_PX = 4
@@ -237,8 +242,13 @@ class PlanningSlot(models.Model):
 
         start_minutes = (visible_start - day_start).total_seconds() / 60
         end_minutes = (visible_end - day_start).total_seconds() / 60
-        left = (start_minutes / DAY_MINUTES) * 100
-        width = ((end_minutes - start_minutes) / DAY_MINUTES) * 100
+        # Recorta para a faixa visível (06:00–24:00); turno inteiro na madrugada → não exibe
+        start_minutes = max(start_minutes, VISIBLE_START_MIN)
+        end_minutes = max(end_minutes, VISIBLE_START_MIN)
+        if end_minutes <= start_minutes:
+            return None
+        left = ((start_minutes - VISIBLE_START_MIN) / VISIBLE_TOTAL_MIN) * 100
+        width = ((end_minutes - start_minutes) / VISIBLE_TOTAL_MIN) * 100
         first_hour, last_hour_excl = self._sabaco_visible_hour_bounds(
             visible_start, visible_end, day_start
         )
@@ -302,17 +312,18 @@ class PlanningSlot(models.Model):
             for hour_index, hours in hourly.items():
                 hour_totals[hour_index] += hours
 
-        hour_width = 100 / 24
+        hour_width = 100 / len(VISIBLE_HOURS)
         color_subtle = self._sabaco_mix_with_white(color_hex, ratio=0.55)
         summary_slots = []
-        for hour_index, value in enumerate(hour_totals):
+        for col_index, hour_index in enumerate(VISIBLE_HOURS):
+            value = hour_totals[hour_index]
             if value <= 0:
                 continue
             summary_slots.append({
-                'left': hour_index * hour_width,
+                'left': col_index * hour_width,
                 'width': hour_width,
-                'first_grid_col': hour_index + 1,
-                'last_grid_col_excl': hour_index + 2,
+                'first_grid_col': col_index + 1,
+                'last_grid_col_excl': col_index + 2,
                 'color_hex': color_hex,
                 'color_subtle': color_subtle,
                 'color_strong': color_hex,
@@ -336,11 +347,13 @@ class PlanningSlot(models.Model):
             for hour_index, hours in hourly.items():
                 hour_totals[hour_index] += hours
 
-        max_total = max(hour_totals) if any(hour_totals) else 0
+        visible_totals = [hour_totals[h] for h in VISIBLE_HOURS]
+        max_total = max(visible_totals) if any(visible_totals) else 0
         total_color = '#9f628f'
         max_bar_height = 44
         hours_data = []
-        for hour_index, value in enumerate(hour_totals):
+        for hour_index in VISIBLE_HOURS:
+            value = hour_totals[hour_index]
             bar_height = (
                 int(round(value / max_total * max_bar_height))
                 if max_total > 0 and value > 0
@@ -456,7 +469,7 @@ class PlanningSlot(models.Model):
         return {
             'report_date': report_date,
             'report_date_label': format_date(self.env, report_date),
-            'hours': list(range(24)),
+            'hours': list(VISIBLE_HOURS),
             'role_groups': role_groups,
             'total_row': total_row,
             'company': self.env.company,
