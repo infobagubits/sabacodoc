@@ -1,51 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Aggiunge i campi di configurazione IVA differita nelle Impostazioni
-         di Contabilità, nella sezione "Imposte" o in una sezione dedicata. -->
     <record id="res_config_settings_view_form_iva_differita" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.iva.differita</field>
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <!-- Priorità bassa: siamo in coda rispetto alle viste base -->
+        <field name="priority">20</field>
         <field name="arch" type="xml">
 
-            <xpath expr="//div[@id='account_tax']" position="after">
-                <div class="o_setting_box" id="iva_differita_settings">
-                    <div class="o_setting_left_pane"/>
-                    <div class="o_setting_right_pane">
-                        <span class="o_form_label fw-bold">IVA differita</span>
-                        <div class="text-muted">
-                            Configura il conto e il giornale usati per la gestione
-                            dell'IVA differita sulle fatture fornitore.
-                        </div>
-                        <div class="content-group mt-3">
-                            <div class="row mt-2">
-                                <label
-                                    for="account_iva_differita_id"
-                                    class="col-lg-4 o_light_label"
-                                    string="Conto IVA differita"
-                                />
-                                <field
-                                    name="account_iva_differita_id"
-                                    class="col-lg-8"
-                                    placeholder="Seleziona il conto..."
-                                />
-                            </div>
-                            <div class="row mt-2">
-                                <label
-                                    for="journal_iva_differita_id"
-                                    class="col-lg-4 o_light_label"
-                                    string="Giornale Operazioni varie"
-                                />
-                                <field
-                                    name="journal_iva_differita_id"
-                                    class="col-lg-8"
-                                    placeholder="Seleziona il giornale..."
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <!--
+                In Odoo 18 la vista res.config.settings usa il QWeb component
+                con tag <app>, <block>, <setting>. Ci aggiungiamo in coda
+                all'app Accounting.
+            -->
+            <xpath expr="//app[@string='Accounting']" position="inside">
+                <block title="IVA Differita" id="iva_differita_settings">
+                    <setting string="Conto IVA differita"
+                             help="Conto patrimoniale usato come IVA sospesa/differita sulle fatture fornitore.">
+                        <field name="account_iva_differita_id"
+                               placeholder="Seleziona il conto..."/>
+                    </setting>
+                    <setting string="Giornale per storno IVA differita"
+                             help="Giornale (Operazioni varie) usato per le registrazioni automatiche di storno.">
+                        <field name="journal_iva_differita_id"
+                               placeholder="Seleziona il giornale..."/>
+                    </setting>
+                </block>
             </xpath>
 
         </field>
