@@ -137,6 +137,9 @@ class AccountMove(models.Model):
         # Recuperiamo il conto IVA "originale" dalla tassa stessa.
         # Se la tassa ha un conto di repartizione specifico lo usiamo,
         # altrimenti fallback al primo account_id trovato nella tassa.
+        # Distribuzione analitica: aggregata dalle righe prodotto della fattura
+        analytic_distribution = self._get_aggregated_analytic_distribution()
+
         storno_line_vals = []
         for line in iva_lines:
             tax = line.tax_line_id
@@ -150,6 +153,7 @@ class AccountMove(models.Model):
                 )
 
             amount = abs(line.balance)
+            analytic = line.analytic_distribution or analytic_distribution or False
             # Su fattura fornitore la riga IVA ha balance negativo (avere)
             # Storno: Dare = Credito IVA, Avere = IVA differita
             storno_line_vals.append({
@@ -158,6 +162,7 @@ class AccountMove(models.Model):
                 'debit': amount,
                 'credit': 0.0,
                 'tax_line_id': False,
+                'analytic_distribution': analytic,
             })
             storno_line_vals.append({
                 'account_id': account_differita.id,
@@ -165,6 +170,7 @@ class AccountMove(models.Model):
                 'debit': 0.0,
                 'credit': amount,
                 'tax_line_id': False,
+                'analytic_distribution': analytic,
             })
 
         move_vals = {
@@ -180,6 +186,22 @@ class AccountMove(models.Model):
         # Confermiamo automaticamente la registrazione di storno
         storno_move.action_post()
         return storno_move
+
+    def _get_aggregated_analytic_distribution(self):
+        """Restituisce una distribuzione analitica aggregata (media pesata)
+        dalle righe prodotto della fattura, da usare sulle righe dello storno."""
+        self.ensure_one()
+        product_lines = self.line_ids.filtered(
+            lambda l: l.display_type == 'product' and l.analytic_distribution
+        )
+        if not product_lines:
+            return False
+        # Se tutte le righe hanno la stessa distribuzione, la restituiamo direttamente
+        distributions = [l.analytic_distribution for l in product_lines]
+        if all(d == distributions[0] for d in distributions):
+            return distributions[0]
+        # Altrimenti usiamo la distribuzione della prima riga come fallback
+        return distributions[0]
 
     def _get_credito_iva_account(self, tax):
         """Restituisce il conto Credito IVA associato alla tassa,

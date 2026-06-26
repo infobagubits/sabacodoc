@@ -10,7 +10,6 @@ class ResConfigSettings(models.TransientModel):
         string='Conto IVA differita',
         related='company_id.account_iva_differita_id',
         readonly=False,
-        domain="[('company_id', '=', company_id)]",
         help="Conto patrimoniale utilizzato come IVA differita (es. 'IVA sospesa').",
     )
 
@@ -20,6 +19,5 @@ class ResConfigSettings(models.TransientModel):
         string='Giornale IVA differita',
         related='company_id.journal_iva_differita_id',
         readonly=False,
-        domain="[('company_id', '=', company_id), ('type', '=', 'general')]",
         help="Giornale usato per le registrazioni automatiche di storno IVA differita.",
     )

@@ -4,7 +4,7 @@
     <record id="res_config_settings_view_form_iva_differita" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.iva.differita</field>
         <field name="model">res.config.settings</field>
-        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="inherit_id" ref="account.res_config_settings_view_form" />
         <!-- Priorità bassa: siamo in coda rispetto alle viste base -->
         <field name="priority">20</field>
         <field name="arch" type="xml">
@@ -14,17 +14,19 @@
                 con tag <app>, <block>, <setting>. Ci aggiungiamo in coda
                 all'app Accounting.
             -->
-            <xpath expr="//app[@string='Accounting']" position="inside">
+            <xpath expr="//app[@name='account']" position="inside">
                 <block title="IVA Differita" id="iva_differita_settings">
                     <setting string="Conto IVA differita"
-                             help="Conto patrimoniale usato come IVA sospesa/differita sulle fatture fornitore.">
+                        help="Conto patrimoniale usato come IVA sospesa/differita sulle fatture fornitore.">
                         <field name="account_iva_differita_id"
-                               placeholder="Seleziona il conto..."/>
+                            placeholder="Seleziona il conto..."
+                            domain="[('company_ids', 'in', [company_id])]" />
                     </setting>
                     <setting string="Giornale per storno IVA differita"
-                             help="Giornale (Operazioni varie) usato per le registrazioni automatiche di storno.">
+                        help="Giornale (Operazioni varie) usato per le registrazioni automatiche di storno.">
                         <field name="journal_iva_differita_id"
-                               placeholder="Seleziona il giornale..."/>
+                            placeholder="Seleziona il giornale..."
+                            domain="[('company_id', '=', company_id), ('type', '=', 'general')]" />
                     </setting>
                 </block>
             </xpath>
