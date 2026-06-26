@@ -3,7 +3,9 @@
     'version': '18.0.1.0.0',
     "summary": "Customize reports",
     "category": "Reporting",
-    "author": "Bagubits Srls",
+    'author': 'Bagubits SRLS',
+    'maintainer': 'Bagubits SRLS',
+    'website': 'https://bagubits.it',
     "license": "LGPL-3",
     "depends": ["web"],
     "data": [

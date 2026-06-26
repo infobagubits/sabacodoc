@@ -8,7 +8,9 @@
         applicando il foglio di stile XSLT (AssoSoftware) all'XML EDI già prodotto da Odoo.
         Il PDF viene salvato come allegato sulla fattura.
     """,
-    'author': 'Custom',
+    'author': 'Bagubits SRLS',
+    'maintainer': 'Bagubits SRLS',
+    'website': 'https://bagubits.it',
     'depends': ['l10n_it_edi', 'account'],
     'data': [
         'views/account_move_views.xml',

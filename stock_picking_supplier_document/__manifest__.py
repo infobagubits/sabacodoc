@@ -11,6 +11,8 @@
         Questi campi sono visibili solo per i trasferimenti in entrata (Ricezioni).
     """,
     'author': 'Bagubits SRLS',
+    'maintainer': 'Bagubits SRLS',
+    'website': 'https://bagubits.it',
     'depends': ['stock'],
     'data': [
         'views/stock_picking_views.xml',
