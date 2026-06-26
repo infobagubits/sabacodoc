@@ -62,11 +62,10 @@ class AccountMove(models.Model):
         return account, journal
 
     @staticmethod
-    def _last_day_of_previous_month(ref_date):
-        """Restituisce l'ultimo giorno del mese precedente a ref_date."""
-        first_of_current = ref_date.replace(day=1)
-        last_prev = first_of_current - datetime.timedelta(days=1)
-        return last_prev
+    def _last_day_of_month(ref_date):
+        """Restituisce l'ultimo giorno del mese di ref_date."""
+        next_month = ref_date.replace(day=1) + datetime.timedelta(days=32)
+        return next_month.replace(day=1) - datetime.timedelta(days=1)
 
     # ── Override action_post ──────────────────────────────────────────────────
 
@@ -123,9 +122,9 @@ class AccountMove(models.Model):
         self.ensure_one()
         account_differita, journal = self._get_iva_differita_config()
 
-        # Data della registrazione = ultimo giorno del mese precedente
+        # Data della registrazione = ultimo giorno del mese della data fattura
         ref_date = self.invoice_date or self.date or fields.Date.context_today(self)
-        storno_date = self._last_day_of_previous_month(ref_date)
+        storno_date = self._last_day_of_month(ref_date)
 
         # Raccogliamo le righe di tipo tax sulla fattura confermata
         iva_lines = self.line_ids.filtered(
