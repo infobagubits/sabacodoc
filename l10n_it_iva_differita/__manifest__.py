@@ -11,7 +11,9 @@
           nel giornale "Operazioni varie" con data l'ultimo giorno del mese precedente,
           che storna il conto IVA differita e accredita il Credito IVA.
     """,
-    'author': 'Custom',
+    'author': 'Bagubits SRLS',
+    'maintainer': 'Bagubits SRLS',
+    'website': 'https://bagubits.it',
     'depends': ['account', 'l10n_it'],
     'data': [
         'security/ir.model.access.csv',
