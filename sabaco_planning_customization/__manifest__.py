@@ -1,6 +1,6 @@
 {
     'name': 'Sabaco — Personalizzazione Pianificazione',
-    'version': '18.0.1.3.5',
+    'version': '18.0.1.3.6',
     'category': 'Human Resources/Planning',
     'summary': 'Ruolo prima di risorsa, filtro dipendenti e stampa PDF programma per ruolo',
     'description': """
@@ -22,7 +22,7 @@
         'views/planning_slot_views.xml',
     ],
     'assets': {
-        'web.assets_backend': [
+        'web.assets_backend_lazy': [
             'sabaco_planning_customization/static/src/js/planning_gantt_print.js',
             'sabaco_planning_customization/static/src/xml/planning_gantt_print.xml',
         ],
