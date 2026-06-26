@@ -1,0 +1,20 @@
+/*
+ * Nasconde la pill consolidata (totale ore aggregato) sulle righe di
+ * gruppo del gantt SOLO quando la scala attiva e' "day".
+ *
+ * La classe o_pill_hide_group_totals viene aggiunta/rimossa dal JS
+ * (planning_gantt_pill_time.js) in base alla scala corrente, percio'
+ * in scala settimana / mese / anno i totali restano visibili.
+ */
+
+.o_pill_hide_group_totals .o_gantt_group_pill {
+    display: none !important;
+}
+
+/* In alternativa, per tenere la barra e togliere SOLO il numero in scala
+   giorno, usa questa al posto della regola sopra:
+
+.o_pill_hide_group_totals .o_gantt_group_pill .o_gantt_pill_title {
+    display: none !important;
+}
+*/

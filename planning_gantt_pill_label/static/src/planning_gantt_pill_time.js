@@ -1,37 +1,46 @@
 /** @odoo-module **/
 
 import { patch } from "@web/core/utils/patch";
-import { PlanningGanttRenderer } from "@planning/views/planning_gantt/planning_gantt_renderer";
+import { GanttRenderer } from "@web_gantt/gantt_renderer";
+import { useEffect } from "@odoo/owl";
 
-/*
- * pill_label nativo mostra l'orario sulle barre SOLO nelle scale "week" e
- * "month". Nella scala "day" (zoom con le ore come colonne) gli orari non
- * vengono mai scritti. Questo patch aggiunge "HH:mm - HH:mm" all'etichetta
- * della pill quando la scala attiva e' "day".
- */
-patch(PlanningGanttRenderer.prototype, {
-    getDisplayName(pill) {
-        // Recupera l'etichetta standard (nome del turno, ecc.).
-        const baseName =
-            typeof super.getDisplayName === "function"
-                ? super.getDisplayName(pill)
-                : pill.displayName || "";
+patch(GanttRenderer.prototype, {
+    setup() {
+        super.setup();
+        // A ogni render marca il contenitore del gantt con una classe
+        // quando la scala attiva e' "day". Il CSS usa questa classe per
+        // nascondere i totali di gruppo SOLO in scala giorno.
+        useEffect(() => {
+            const md = this.model.metaData;
+            const isDay = !!(md.scale && md.scale.id === "day");
+            const roots = document.querySelectorAll(
+                ".o_gantt_renderer, .o_gantt_view"
+            );
+            for (const root of roots) {
+                root.classList.toggle("o_pill_hide_group_totals", isDay);
+            }
+        });
+    },
 
+    enrichPill(pill) {
+        const result = super.enrichPill(pill);
         const md = this.model.metaData;
         const scaleId = md.scale && md.scale.id;
-        if (scaleId !== "day") {
-            return baseName;
+        if (scaleId === "day") {
+            const start = pill.record[md.dateStartField];
+            const stop = pill.record[md.dateStopField];
+            if (start && stop && start.toFormat) {
+                const times = `${start.toFormat("HH:mm")} - ${stop.toFormat("HH:mm")}`;
+                if (result) {
+                    const base = (result.displayName || "").toString();
+                    result.displayName = base && !base.includes(times) ? `${times} · ${base}` : times;
+                }
+                if ("displayName" in pill) {
+                    const base2 = (pill.displayName || "").toString();;
+                    pill.displayName = base2 && !base2.includes(times) ? `${times} · ${base2}` : times;
+                }
+            }
         }
-
-        const start = pill.record[md.dateStartField];
-        const stop = pill.record[md.dateStopField];
-        if (!start || !stop) {
-            return baseName;
-        }
-
-        const fmt = "HH:mm"; // usa "h:mm a" se preferisci il formato 12h
-        const times = `${start.toFormat(fmt)} - ${stop.toFormat(fmt)}`;
-
-        return baseName ? `${times} · ${baseName}` : times;
+        return result;
     },
 });

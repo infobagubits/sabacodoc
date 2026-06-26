@@ -10,6 +10,7 @@
     "assets": {
         "web.assets_backend": [
             "planning_gantt_pill_label/static/src/planning_gantt_pill_time.js",
+            "planning_gantt_pill_label/static/src/planning_gantt_pill_time.css",
         ],
     },
     "license": "LGPL-3",
