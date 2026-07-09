@@ -5,6 +5,7 @@ import re
 from lxml import etree
 
 from odoo import api, fields, models, _
+from odoo.exceptions import UserError
 from odoo.tools import float_compare
 from odoo.tools.misc import formatLang
 
@@ -28,6 +29,33 @@ class AccountMove(models.Model):
         string='Avviso totale XML',
         compute='_compute_xml_total_mismatch_warning',
     )
+
+    def action_post(self):
+        """Blocca la conferma di fatture con righe prodotto prive di imposta."""
+        for move in self:
+            if move.move_type not in ('out_invoice', 'in_invoice'):
+                continue
+
+            missing = move.invoice_line_ids.filtered(
+                lambda l: l.display_type not in ('line_section', 'line_note')
+                and l.product_id
+                and not l.tax_ids
+            )
+            if missing:
+                product_names = ', '.join(missing.mapped('product_id.name')[:5])
+                if len(missing) > 5:
+                    product_names += f' (+{len(missing) - 5} altri)'
+
+                raise UserError(_(
+                    'Impossibile confermare la fattura %(move)s: '
+                    'ci sono %(count)s righe prodotto senza imposta: %(products)s'
+                ) % {
+                    'move': move.display_name,
+                    'count': len(missing),
+                    'products': product_names,
+                })
+
+        return super().action_post()
 
     def _sabaco_normalize_edi_xml(self, raw):
         """Normalizza contenuto grezzo in bytes XML (gestisce file .p7m firmati)."""
