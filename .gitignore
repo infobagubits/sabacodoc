@@ -1,0 +1,53 @@
+
+# ============================================================
+# SDD Workflow by Matheus Bello — arquivos do agente
+# Uso interno do workflow. NÃO versionar no repo do cliente.
+# ============================================================
+
+# Estado do workflow (todo o diretório)
+.sdd/
+
+# Contexto do workflow (compat: instalações antigas na raiz)
+spec.md
+issues.md
+progress.md
+language.md
+
+# Instruções do agente
+CLAUDE.md
+
+# Arquitetura e referências do workflow
+references/
+
+# Comandos do Claude Code (SDD)
+.claude/
+
+# Atalhos de invocação do agente
+agente.sh
+agente.bat
+
+# Controle de versão do workflow
+VERSION
+.agent-version
+
+# Manuais do workflow
+MANUAL.md
+MANUAL-ODOO.md
+
+# Graphify — reconstruído automaticamente via git hook
+graphify-out/
+
+# ============================================================
+# Odoo — artefatos que não devem ir para o repositório
+# ============================================================
+__pycache__/
+*.py[cod]
+*.pot~
+*.mo
+.idea/
+.vscode/
+*.swp
+.DS_Store
+.env
+.env.*
+*.log
