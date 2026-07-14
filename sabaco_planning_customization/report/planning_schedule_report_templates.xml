@@ -66,7 +66,7 @@
                         margin: 0;
                         border-spacing: 0;
                     }
-                    .s-tbl col.s-col-lbl { width: 100px; }
+                    .s-tbl col.s-col-lbl { width: 160px; }
 
                     /* Células genéricas */
                     .s-tbl td, .s-tbl th {
@@ -157,7 +157,7 @@
 
                     /* ── Linha recurso ── */
                     .s-tbl td.s-res-lbl {
-                        font-size: 9px;
+                        font-size: 11px;
                         color: #212529;
                         padding: 4px 12px;
                         white-space: nowrap;
@@ -262,12 +262,12 @@
                         <!-- ① Cabeçalho horas -->
                         <table class="s-tbl o_ignore_layout_styling" style="table-layout:fixed; width:100%;">
                             <colgroup>
-                                <col style="width:100px;"/>
+                                <col style="width:160px;"/>
                                 <col style="width:100%;"/>
                             </colgroup>
                             <tbody>
                                 <tr>
-                                    <th style="width:100px; background-color:#e9ecef; border:1px solid #aaa; padding:0;"/>
+                                    <th style="width:160px; background-color:#e9ecef; border:1px solid #aaa; padding:0;"/>
                                     <th style="width:100%; padding:0; border:1px solid #aaa; background-color:#e9ecef;">
                                         <table class="s-hour-grid">
                                             <tr>
@@ -286,14 +286,14 @@
                             <div class="s-role-block">
                                 <table class="s-tbl o_ignore_layout_styling" style="table-layout:fixed; width:100%;">
                                     <colgroup>
-                                        <col style="width:100px;"/>
+                                        <col style="width:160px;"/>
                                         <col style="width:100%;"/>
                                     </colgroup>
                                     <tbody>
                                         <!-- Riga titolo ruolo -->
                                         <tr>
                                             <td class="s-role-lbl"
-                                                t-attf-style="width:100px; border-left:4px solid #{role_group['color_hex']}; background-color:#{role_group['color_row_bg']};">
+                                                t-attf-style="width:160px; border-left:4px solid #{role_group['color_hex']}; background-color:#{role_group['color_row_bg']};">
                                                 <t t-esc="role_group['name']"/>
                                             </td>
                                             <td class="s-role-tl" style="width:100%;">
@@ -309,7 +309,7 @@
                                         </tr>
                                         <!-- Righe risorse -->
                                         <tr t-foreach="role_group['rows']" t-as="row">
-                                            <td class="s-res-lbl" style="width:100px;">
+                                            <td class="s-res-lbl" style="width:160px;">
                                                 <t t-esc="row['name']"/>
                                             </td>
                                             <td style="width:100%; padding:0; border:1px solid #aaa;">
@@ -325,8 +325,7 @@
                                                     <t t-foreach="row['slots']" t-as="slot">
                                                         <div t-attf-class="s-pill #{'is-draft' if slot['is_draft'] else ''}"
                                                              t-attf-style="left:#{slot['left']}%; width:#{slot['width']}%; top:#{slot['top_px']}px; background-color:#{slot['color_subtle']};">
-                                                            <t t-esc="slot['duration_label']"/>
-                                                            <t t-if="slot['employee_name']"> <t t-esc="slot['employee_name']"/></t>
+                                                            <t t-esc="slot['time_range_label']"/>
                                                         </div>
                                                     </t>
                                                 </div>

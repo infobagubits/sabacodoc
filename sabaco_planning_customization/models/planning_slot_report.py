@@ -70,6 +70,14 @@ class PlanningSlot(models.Model):
         return f'{hours_part:02d}:{minutes_part:02d}'
 
     @api.model
+    def _sabaco_format_time_label(self, minutes):
+        """Converte minutos-do-dia (0–1440) em rótulo HH:MM."""
+        total_minutes = int(round(minutes))
+        total_minutes = min(max(total_minutes, 0), DAY_MINUTES)
+        hours_part, minutes_part = divmod(total_minutes, 60)
+        return f'{hours_part:02d}:{minutes_part:02d}'
+
+    @api.model
     def _sabaco_slot_display_name(self, slot):
         if slot.employee_id:
             return slot.employee_id.name
@@ -268,6 +276,10 @@ class PlanningSlot(models.Model):
             'is_draft': slot.state == 'draft',
             'duration_label': self._sabaco_format_duration_label(duration_hours),
             'employee_name': self._sabaco_slot_display_name(slot),
+            'time_range_label': '%s - %s' % (
+                self._sabaco_format_time_label(start_minutes),
+                self._sabaco_format_time_label(end_minutes),
+            ),
             'top_px': ROW_PADDING_PX,
         }
 
