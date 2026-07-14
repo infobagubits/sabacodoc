@@ -6,7 +6,8 @@
         <field name="arch" type="xml">
             <form string="Stampa programma per ruolo">
                 <group>
-                    <field name="date"/>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
                 </group>
                 <footer>
                     <button name="action_print_pdf" type="object" string="Stampa PDF" class="btn-primary" data-hotkey="q"/>
