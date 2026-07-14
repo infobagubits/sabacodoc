@@ -5,7 +5,6 @@ from datetime import datetime, time, timedelta
 import pytz
 
 from babel.dates import format_date as babel_format_date
-from markupsafe import Markup
 
 from odoo import _, api, fields, models
 from odoo.tools import float_utils
@@ -471,11 +470,7 @@ class PlanningSlot(models.Model):
             role_groups.append(build_role_group(None, undefined_slots))
 
         weekday_it = babel_format_date(report_date, format='EEEE', locale='it_IT')
-        label_text = f"{weekday_it.capitalize()} - {report_date.strftime('%d/%m/%Y')}"
-        # wkhtmltopdf pode interpretar o HTML como latin-1 e corromper acentos
-        # (ex.: "Venerdì" → "VenerdÃ¬"). Emite os não-ASCII como entidades numéricas
-        # HTML e marca como Markup para o QWeb renderizar cru, independente do charset.
-        report_date_label = Markup(label_text.encode('ascii', 'xmlcharrefreplace').decode('ascii'))
+        report_date_label = f"{weekday_it.capitalize()} - {report_date.strftime('%d/%m/%Y')}"
 
         return {
             'report_date': report_date,
