@@ -22,7 +22,7 @@
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">sabaco_planning_customization.schedule_by_role_document</field>
         <field name="report_file">sabaco_planning_customization.schedule_by_role_document</field>
-        <field name="print_report_name">'Programma per ruolo - %s' % (object.date)</field>
+        <field name="print_report_name">'Programma per ruolo - %s' % (object.date_from)</field>
         <field name="paperformat_id" ref="paperformat_planning_schedule_by_role"/>
     </record>
 
@@ -228,7 +228,8 @@
                     }
                 </style>
 
-                <div class="s-report">
+                <t t-foreach="days" t-as="day">
+                <div class="s-report" t-attf-style="#{'page-break-before: always;' if day_index &gt; 0 else ''}">
 
                     <!-- Header empresa (fluxo normal, separado da planilha) -->
                     <table class="s-head">
@@ -249,13 +250,13 @@
                         </tr>
                     </table>
 
-                    <h2><t t-esc="report_date_label"/></h2>
+                    <h2><t t-esc="day['report_date_label']"/></h2>
 
-                    <t t-if="not role_groups">
+                    <t t-if="not day['role_groups']">
                         <p style="color:#666;">Nessun turno per questa data.</p>
                     </t>
 
-                    <t t-if="role_groups">
+                    <t t-if="day['role_groups']">
 
                         <!-- ① Cabeçalho horas -->
                         <table class="s-tbl o_ignore_layout_styling" style="table-layout:fixed; width:100%;">
@@ -269,7 +270,7 @@
                                     <th style="width:100%; padding:0; border:1px solid #aaa; background-color:#e9ecef;">
                                         <table class="s-hour-grid">
                                             <tr>
-                                                <td t-foreach="hours" t-as="hour" class="s-hour-hdr">
+                                                <td t-foreach="day['hours']" t-as="hour" class="s-hour-hdr">
                                                     <t t-esc="hour"/>
                                                 </td>
                                             </tr>
@@ -280,7 +281,7 @@
                         </table>
 
                         <!-- ② Um bloco div por ruolo — page-break-inside:avoid funciona em div -->
-                        <t t-foreach="role_groups" t-as="role_group">
+                        <t t-foreach="day['role_groups']" t-as="role_group">
                             <div class="s-role-block">
                                 <table class="s-tbl o_ignore_layout_styling" style="table-layout:fixed; width:100%;">
                                     <colgroup>
@@ -298,7 +299,7 @@
                                                 <div class="s-row-wrap" style="height:26px; position:relative;">
                                                     <table class="s-cell-grid">
                                                         <tr>
-                                                            <td t-foreach="hours" t-as="hour" class="s-cell-col"
+                                                            <td t-foreach="day['hours']" t-as="hour" class="s-cell-col"
                                                                 style="height:26px;"/>
                                                         </tr>
                                                     </table>
@@ -316,7 +317,7 @@
                                                      t-attf-style="height:#{row['row_height']}px;">
                                                     <table class="s-cell-grid">
                                                         <tr>
-                                                            <td t-foreach="hours" t-as="hour" class="s-cell-col"
+                                                            <td t-foreach="day['hours']" t-as="hour" class="s-cell-col"
                                                                 t-attf-style="height:#{row['row_height']}px;"/>
                                                         </tr>
                                                     </table>
@@ -336,6 +337,7 @@
 
                     </t>
                 </div>
+                </t>
             </div>
         </t>
     </template>
