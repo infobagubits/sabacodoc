@@ -34,8 +34,7 @@
                     *, *:before, *:after { border-radius: 0 !important; -webkit-border-radius: 0 !important; box-sizing: border-box; }
 
                     .s-report { font-size: 10px; color: #212529; font-family: Arial, sans-serif; }
-                    .s-report h2 { font-size: 15px; margin: 0 0 2px 0; color: #212529; }
-                    .s-date { font-size: 9px; color: #666; margin-bottom: 6px; }
+                    .s-report h2 { font-size: 15px; margin: 0 0 6px 0; color: #212529; }
 
                     /* ── Header da empresa (no corpo, fluxo normal — sem header wkhtmltopdf) ── */
                     .s-head {
@@ -250,8 +249,7 @@
                         </tr>
                     </table>
 
-                    <h2>Programma per ruolo</h2>
-                    <div class="s-date"><t t-esc="report_date_label"/></div>
+                    <h2><t t-esc="report_date_label"/></h2>
 
                     <t t-if="not role_groups">
                         <p style="color:#666;">Nessun turno per questa data.</p>
