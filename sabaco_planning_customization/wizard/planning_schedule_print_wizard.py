@@ -40,7 +40,8 @@ class PlanningSchedulePrintWizard(models.TransientModel):
         })
 
     @api.model
-    def action_print_pdf_from_gantt(self, date_str):
-        date = fields.Date.from_string(date_str)
-        wizard = self.create({'date_from': date, 'date_to': date})
+    def action_print_pdf_from_gantt(self, date_str, date_to_str=None):
+        date_from = fields.Date.from_string(date_str)
+        date_to = fields.Date.from_string(date_to_str) if date_to_str else date_from
+        wizard = self.create({'date_from': date_from, 'date_to': date_to})
         return wizard.action_print_pdf()
