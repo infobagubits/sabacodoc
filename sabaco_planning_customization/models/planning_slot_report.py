@@ -4,8 +4,9 @@ from datetime import datetime, time, timedelta
 
 import pytz
 
+from babel.dates import format_date as babel_format_date
+
 from odoo import _, api, fields, models
-from odoo.tools.misc import format_date
 from odoo.tools import float_utils
 
 # Palette Odoo Gantt ($o-colors)
@@ -468,9 +469,12 @@ class PlanningSlot(models.Model):
         if undefined_slots:
             role_groups.append(build_role_group(None, undefined_slots))
 
+        weekday_it = babel_format_date(report_date, format='EEEE', locale='it_IT')
+        report_date_label = f"{weekday_it.capitalize()} - {report_date.strftime('%d/%m/%Y')}"
+
         return {
             'report_date': report_date,
-            'report_date_label': format_date(self.env, report_date),
+            'report_date_label': report_date_label,
             'hours': list(VISIBLE_HOURS),
             'role_groups': role_groups,
             'company': self.env.company,
