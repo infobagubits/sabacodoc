@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_position_form_rc" model="ir.ui.view">
+        <field name="name">account.fiscal.position.form.rc.selfinvoice</field>
+        <field name="model">account.fiscal.position</field>
+        <field name="inherit_id" ref="account.view_account_position_form"/>
+        <field name="arch" type="xml">
+            <sheet position="inside">
+                <group string="Reverse charge - Autofattura separata">
+                    <field name="l10n_it_rc_enabled"/>
+                    <field name="l10n_it_rc_default"
+                           invisible="not l10n_it_rc_enabled"/>
+                    <field name="l10n_it_rc_journal_id"
+                           invisible="not l10n_it_rc_enabled"
+                           required="l10n_it_rc_enabled"/>
+                    <field name="l10n_it_rc_transitory_account_id"
+                           invisible="not l10n_it_rc_enabled"
+                           required="l10n_it_rc_enabled"/>
+                    <field name="l10n_it_rc_receivable_account_id"
+                           invisible="not l10n_it_rc_enabled"
+                           required="l10n_it_rc_enabled"/>
+                </group>
+            </sheet>
+        </field>
+    </record>
+</odoo>

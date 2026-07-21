@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_rc" model="ir.ui.view">
+        <field name="name">account.move.form.rc.selfinvoice</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <!-- Smart buttons -->
+            <div name="button_box" position="inside">
+                <button name="l10n_it_rc_action_open_self_invoice"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-text-o"
+                        invisible="not l10n_it_rc_self_invoice_id">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Autofattura</span>
+                    </div>
+                </button>
+                <button name="l10n_it_rc_action_open_origin"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-text-o"
+                        invisible="not l10n_it_rc_origin_invoice_id">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Fattura origine</span>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Flag reverse charge sulle fatture fornitore -->
+            <field name="fiscal_position_id" position="after">
+                <field name="l10n_it_rc_is_reverse_charge"
+                       invisible="move_type not in ('in_invoice', 'in_refund')"/>
+                <field name="l10n_it_rc_is_self_invoice" invisible="1"/>
+                <field name="l10n_it_rc_self_invoice_id" invisible="1"/>
+                <field name="l10n_it_rc_origin_invoice_id" invisible="1"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Sblocca la selezione di tutti i TipoDocumento (inclusi TD16-19)
+         sul campo standard l10n_it_document_type, neutralizzando eventuali
+         domini che filtrano i tipi di vendita. -->
+    <record id="view_move_form_rc_unlock_td" model="ir.ui.view">
+        <field name="name">account.move.form.rc.unlock.td</field>
+        <field name="model">account.move</field>
+        <field name="priority">999</field>
+        <field name="inherit_id" ref="l10n_it_edi_ndd.account_invoice_form_l10n_it"/>
+        <field name="arch" type="xml">
+            <field name="l10n_it_document_type" position="attributes">
+                <attribute name="domain">[]</attribute>
+            </field>
+        </field>
+    </record>
+</odoo>

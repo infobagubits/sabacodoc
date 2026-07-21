@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Garantisce che i TipoDocumento di integrazione reverse charge
+         (TD16, TD17, TD18, TD19) esistano nel database. Idempotente:
+         crea solo quelli mancanti, senza duplicare i record standard. -->
+    <function model="account.move" name="_l10n_it_rc_ensure_document_types"/>
+</odoo>
