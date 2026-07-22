@@ -21,6 +21,7 @@
     'assets': {
         'web.assets_backend': [
             'sabaco_account_ui/static/src/js/x2many_list_allow_selectors.js',
+            'sabaco_account_ui/static/src/js/analytic_no_duplicates.js',
         ],
     },
     'installable': True,
