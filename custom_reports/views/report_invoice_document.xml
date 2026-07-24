@@ -25,5 +25,20 @@
             </div>
         </xpath>
 
+        <!--
+            MELHORIA-005 — Mostra la data accanto al numero fattura e rimuove
+            la barra "dati aggiuntivi" (#informations) sotto il titolo.
+        -->
+
+        <!-- 4) Data accanto al numero fattura: "FATT/2026/0001 del 24/07/2026". -->
+        <xpath expr="//span[@t-field='o.name']" position="after">
+            <t t-if="o.invoice_date">
+                <span> del </span><span t-field="o.invoice_date">2023-09-12</span>
+            </t>
+        </xpath>
+
+        <!-- 5) Rimuove l'intera barra dati aggiuntivi (Invoice Date, Due Date, ecc.). -->
+        <xpath expr="//div[@id='informations']" position="replace"/>
+
     </template>
 </odoo>
