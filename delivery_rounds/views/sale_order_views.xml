@@ -4,6 +4,7 @@
         <field name="name">sale.order.form.giro</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="groups_id" eval="[(4, ref('group_delivery_rounds_user'))]"/>
         <field name="arch" type="xml">
 
             <!-- Inserimento dei campi prima del campo validity_date -->

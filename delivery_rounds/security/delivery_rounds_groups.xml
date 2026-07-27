@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Categoria di permessi: appare nella scheda "Autorizzazioni di accesso" di res.users -->
+    <record id="module_category_delivery_rounds" model="ir.module.category">
+        <field name="name">Giri Ordini</field>
+        <field name="description">Gestione dei giri di consegna e dei clienti sul giro.</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <!-- Livello 1: Utente — opera sui giri (legge, crea, modifica) ma non elimina il giro -->
+    <record id="group_delivery_rounds_user" model="res.groups">
+        <field name="name">Utente</field>
+        <field name="category_id" ref="module_category_delivery_rounds"/>
+        <field name="comment">Può consultare e gestire i giri di consegna e i clienti sul giro.</field>
+    </record>
+
+    <!-- Livello 2: Responsabile — eredita Utente e può eliminare i giri -->
+    <record id="group_delivery_rounds_manager" model="res.groups">
+        <field name="name">Responsabile</field>
+        <field name="category_id" ref="module_category_delivery_rounds"/>
+        <field name="comment">Oltre alle autorizzazioni di Utente, può eliminare i giri di consegna.</field>
+        <field name="implied_ids" eval="[(4, ref('group_delivery_rounds_user'))]"/>
+        <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+</odoo>

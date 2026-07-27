@@ -5,6 +5,7 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="priority">99</field>
+        <field name="groups_id" eval="[(4, ref('group_delivery_rounds_user'))]"/>
         <field name="arch" type="xml">
             <field name="vat" position="after">
                 <field name="is_customer" invisible="1"/>

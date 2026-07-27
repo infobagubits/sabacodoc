@@ -5,6 +5,7 @@
         <field name="name">stock.picking.form.inherit.giri.ordini</field>
         <field name="model">stock.picking</field>
         <field name="inherit_id" ref="stock.view_picking_form" />
+        <field name="groups_id" eval="[(4, ref('group_delivery_rounds_user'))]"/>
         <field name="arch" type="xml">
             <!-- Aggiunge campi dopo location_id -->
             <xpath expr="//field[@name='location_id']" position="after">
@@ -38,6 +39,7 @@
         <field name="name">stock.picking.list.inherit.giri.ordini</field>
         <field name="model">stock.picking</field>
         <field name="inherit_id" ref="stock.vpicktree" />
+        <field name="groups_id" eval="[(4, ref('group_delivery_rounds_user'))]"/>
         <field name="arch" type="xml">
 
             <!-- Aggiunge i nostri campi dopo partner_id -->

@@ -239,13 +239,21 @@ class GiroOrdineRiga(models.Model):
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    giro_id = fields.Many2one('giri.ordine', string='Giro')
-    sequenza_consegna = fields.Integer(string='Sequenza consegna')
+    giro_id = fields.Many2one(
+        'giri.ordine',
+        string='Giro',
+        groups='delivery_rounds.group_delivery_rounds_user',
+    )
+    sequenza_consegna = fields.Integer(
+        string='Sequenza consegna',
+        groups='delivery_rounds.group_delivery_rounds_user',
+    )
     stato_preparazione = fields.Selection([
         ('da_preparare', 'Da preparare'),
         ('preparato', 'Preparato'),
         ('stampato', 'Stampato')
-    ], string='Stato preparazione', default='da_preparare', tracking=True)
+    ], string='Stato preparazione', default='da_preparare', tracking=True,
+        groups='delivery_rounds.group_delivery_rounds_user')
 
     @api.onchange('giro_id')
     def _onchange_giro_id(self):

@@ -95,7 +95,8 @@
     </record>
 
     <!-- MENUS -->
-    <menuitem id="menu_giri_root" name="Giri Ordini" sequence="10"/>
+    <menuitem id="menu_giri_root" name="Giri Ordini" sequence="10"
+              groups="delivery_rounds.group_delivery_rounds_user"/>
     <menuitem id="menu_giri_ordine_consulta" name="Consulta Giri" parent="menu_giri_root" action="action_giri_ordine_list" sequence="10"/>
 
     <!-- Herdar a view do pedido de venda -->
@@ -105,7 +106,7 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='validity_date']" position="before">
-                <field name="stato_preparazione"/>
+                <field name="stato_preparazione" groups="delivery_rounds.group_delivery_rounds_user"/>
             </xpath>
             
             <!-- Remove o campo commitment_date da posição original -->
@@ -124,6 +125,7 @@
         <field name="name">sale.order.list.select.inherit.giri.ordini</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="groups_id" eval="[(4, ref('group_delivery_rounds_user'))]"/>
         <field name="arch" type="xml">
             <filter name="my_sale_orders_filter" position="after">
                 <separator/>
@@ -143,6 +145,7 @@
         <field name="name">sale.order.tree.inherit.giri.ordini</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_quotation_tree"/>
+        <field name="groups_id" eval="[(4, ref('group_delivery_rounds_user'))]"/>
         <field name="arch" type="xml">
             <field name="state" position="before">
                 <field name="stato_preparazione"/>

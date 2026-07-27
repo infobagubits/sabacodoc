@@ -4,8 +4,15 @@ class SaleOrder(models.Model):
     _inherit = 'sale.order'
     _order = 'sequenza_consegna, id'
 
-    giro_id = fields.Many2one('giri.ordine', string="Giro di Consegna")
-    sequenza_consegna = fields.Integer(string="Sequenza di Consegna")
+    giro_id = fields.Many2one(
+        'giri.ordine',
+        string="Giro di Consegna",
+        groups='delivery_rounds.group_delivery_rounds_user',
+    )
+    sequenza_consegna = fields.Integer(
+        string="Sequenza di Consegna",
+        groups='delivery_rounds.group_delivery_rounds_user',
+    )
     
     x_preparazione = fields.Selection([
         ('da_preparare', 'Da preparare'),
