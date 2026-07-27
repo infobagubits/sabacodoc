@@ -1,8 +1,11 @@
 {
     'name': 'Calcolo cespiti su base percentuale',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.1.0',
     'category': 'Accounting',
-    'summary': 'Ammortamento cespiti con percentuale fiscale italiana (art. 102 TUIR): primo anno al 50%',
+    'summary': (
+        'Ammortamento cespiti con percentuale fiscale italiana (art. 102 TUIR): primo anno al 50%. '
+        'Eccezione: conti cespite che iniziano per 03 usano la rata piena (100%) già dal primo anno.'
+    ),
     'author': 'Bagubits SRLS',
     'maintainer': 'Bagubits SRLS',
     'website': 'https://bagubits.it',
