@@ -9,10 +9,11 @@ class SaleOrder(models.Model):
         string="Giro di Consegna",
         groups='delivery_rounds.group_delivery_rounds_user',
     )
-    sequenza_consegna = fields.Integer(
-        string="Sequenza di Consegna",
-        groups='delivery_rounds.group_delivery_rounds_user',
-    )
+    # NB: nessun `groups=` qui. Il campo è usato in `_order`, e l'ORM verifica i diritti di
+    # lettura sui campi dell'ordinamento: con `groups=` qualsiasi utente senza il permesso
+    # riceve AccessError anche solo aprendo la lista degli ordini di vendita.
+    # Il campo resta comunque nascosto nelle view tramite `groups=` sui nodi.
+    sequenza_consegna = fields.Integer(string="Sequenza di Consegna")
     
     x_preparazione = fields.Selection([
         ('da_preparare', 'Da preparare'),

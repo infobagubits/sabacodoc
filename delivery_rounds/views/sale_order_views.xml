@@ -4,24 +4,27 @@
         <field name="name">sale.order.form.giro</field>
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
-        <field name="groups_id" eval="[(4, ref('group_delivery_rounds_user'))]"/>
         <field name="arch" type="xml">
 
             <!-- Inserimento dei campi prima del campo validity_date -->
             <xpath expr="//group[@name='order_details']/field[@name='validity_date']" position="before">
-                <field name="giro_id" options="{'no_create': True}" placeholder="Seleziona un giro"/>
-                <field name="sequenza_consegna"/>
+                <field name="giro_id" options="{'no_create': True}" placeholder="Seleziona un giro"
+                       groups="delivery_rounds.group_delivery_rounds_user"/>
+                <field name="sequenza_consegna" groups="delivery_rounds.group_delivery_rounds_user"/>
             </xpath>
 
-            <!-- Ordine creato dal giro: mostra Salva/Abbandona nel header vicino a Conferma -->
+            <!-- Ordine creato dal giro: mostra Salva/Abbandona nel header vicino a Conferma.
+                 I bottoni usano giro_id nel modifier: vanno nascosti con lo stesso gruppo del campo. -->
             <xpath expr="//form/header/button[@name='action_confirm'][1]" position="after">
                 <button string="Salva"
                         special="save"
                         class="btn btn-secondary"
+                        groups="delivery_rounds.group_delivery_rounds_user"
                         invisible="not giro_id or state in ('done','cancel')"/>
                 <button string="Abbandona"
                         special="cancel"
                         class="btn btn-secondary"
+                        groups="delivery_rounds.group_delivery_rounds_user"
                         invisible="not giro_id or state in ('done','cancel')"/>
             </xpath>
 

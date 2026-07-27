@@ -244,10 +244,8 @@ class SaleOrder(models.Model):
         string='Giro',
         groups='delivery_rounds.group_delivery_rounds_user',
     )
-    sequenza_consegna = fields.Integer(
-        string='Sequenza consegna',
-        groups='delivery_rounds.group_delivery_rounds_user',
-    )
+    # Senza `groups=`: il campo è in `_order` di sale.order (vedi models/sale_order.py)
+    sequenza_consegna = fields.Integer(string='Sequenza consegna')
     stato_preparazione = fields.Selection([
         ('da_preparare', 'Da preparare'),
         ('preparato', 'Preparato'),

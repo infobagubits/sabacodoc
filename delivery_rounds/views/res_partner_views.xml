@@ -5,14 +5,14 @@
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="priority">99</field>
-        <field name="groups_id" eval="[(4, ref('group_delivery_rounds_user'))]"/>
         <field name="arch" type="xml">
             <field name="vat" position="after">
                 <field name="is_customer" invisible="1"/>
             </field>
 
             <xpath expr="//page[@name='internal_notes']" position="after">
-                <page string="Giri" name="giri" invisible="not is_customer">
+                <page string="Giri" name="giri" invisible="not is_customer"
+                      groups="delivery_rounds.group_delivery_rounds_user">
                     <field name="giri_ordine_ids" nolabel="1" readonly="1">
                         <list>
                             <field name="giro_id" string="Giro" widget="many2one" options="{'no_create': True, 'no_open': True}"/>
@@ -22,7 +22,8 @@
                         </list>
                     </field>
                 </page>
-                <page string="Ordini Aperti" name="ordini_aperti" invisible="not is_customer">
+                <page string="Ordini Aperti" name="ordini_aperti" invisible="not is_customer"
+                      groups="delivery_rounds.group_delivery_rounds_user">
                     <field name="ordini_aperti_ids" nolabel="1" readonly="1">
                         <list>
                             <field name="name" string="Numero"/>
