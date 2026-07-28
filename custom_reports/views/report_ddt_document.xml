@@ -87,5 +87,25 @@
             <attribute name="style">font-size: 12px</attribute>
         </xpath>
 
+        <!--
+            8) Titolo del documento allineato a quello dell'Ordine di acquisto.
+            Il DDT è l'unico report che NON valorizza layout_document_title: disegna
+            un <h1> proprio dentro il div.page, quindi restava nero e più grande.
+            Acquisto/vendita/fattura passano dal <h2> del layout, che eredita
+            `color: <primary_color>` dalla regola `.o_company_#_layout h2` generata
+            da web.styles_company_report.
+            Basta quindi passare da h1 a h2: il colore arancione dell'azienda
+            arriva dal CSS, senza inchiodare #AF6019 nel template — se il cliente
+            cambia primary_color, il titolo lo segue. Il 16px rispecchia quello
+            applicato al titolo del layout in external_layout_bubble.xml.
+            La posizione non cambia: il titolo resta sotto i blocchi indirizzo.
+            Il testo diventa un letterale italiano (come "Prezzo unit.", "IVA" e
+            "Lotti:" ai punti 1-3): cambiando il tag si perde il legame con la
+            traduzione it_IT del core.
+        -->
+        <xpath expr="//h1[span[@t-esc='o.l10n_it_ddt_number']]" position="replace">
+            <h2 style="font-size: 16px">Documento di trasporto <span t-esc="o.l10n_it_ddt_number"/></h2>
+        </xpath>
+
     </template>
 </odoo>
