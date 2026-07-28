@@ -10,8 +10,12 @@
     <template id="report_ddt_view_sabaco_lots_price_tax"
               inherit_id="l10n_it_stock_ddt.report_ddt_view">
 
-        <!-- 1) Intestazione — colonna "Prezzo unit.", subito dopo "Quantity". -->
-        <xpath expr="//table[@name='document_details']/thead/tr/th[2]" position="after">
+        <!--
+            1) Intestazione — colonna "Prezzo unit.", tra "Quantity" e "Disc.%".
+            Ancora semantica (il <t t-if="display_discount"> del thead) e non
+            posizionale: th[2] dipenderebbe dall'ordine delle colonne del core.
+        -->
+        <xpath expr="//table[@name='document_details']/thead/tr/t[@t-if='display_discount']" position="before">
             <th class="text-end"><strong>Prezzo unit.</strong></th>
         </xpath>
 
@@ -39,8 +43,10 @@
             (trasferimenti interni, ingressi, DDT manuali), come già fa il core
             nella colonna "Total Value". La valuta è quella dell'azienda, la
             stessa usata dal core nella medesima tabella.
+            Ancora: la td che contiene lo <span t-field="move.quantity"/> — la
+            classe o_td_quantity NON esiste in questa versione del core.
         -->
-        <xpath expr="//td[@class='o_td_quantity']" position="after">
+        <xpath expr="//td[span[@t-field='move.quantity']]" position="after">
             <td class="text-end">
                 <t t-set="sabaco_price_unit"
                    t-value="move.sale_line_id.price_unit if move.sale_line_id else move.product_id.lst_price"/>
