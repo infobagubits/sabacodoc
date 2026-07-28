@@ -107,5 +107,52 @@
             <h2 style="font-size: 16px">Documento di trasporto <span t-esc="o.l10n_it_ddt_number"/></h2>
         </xpath>
 
+        <!--
+            MELHORIA-011 — Indirizzo del cliente nell'intestazione, indirizzo del
+            magazzino subito sotto.
+            Il DDT era l'unico report che non valorizzava `address`: la colonna
+            destra dell'intestazione di external_layout_bubble.xml usciva vuota e
+            i due indirizzi stavano affiancati dentro il corpo. Valorizzando
+            `address` (cliente) e `information_block` (magazzino) si riusa
+            address_layout_custom, che li impila già in colonna singola sotto
+            "Spett.le" — nessuna struttura nuova.
+        -->
+
+        <!--
+            9) Valorizza le variabili che il layout si aspetta.
+            Il punto di inserimento sta DOPO la catena t-if/t-elif/t-else del core
+            (delivery_from/delivery_to sono quindi già in scope) e DENTRO il corpo
+            del t-call="web.external_layout": è così che il core propaga `address`
+            al layout (stesso idioma di account.report_invoice_document).
+            I t-options sono copiati dal core senza modifiche, così cliente e
+            magazzino restano identici a quelli stampati finora.
+            `sabaco_address_header_only` è la flag letta dalla guardia di
+            address_layout.xml: senza di essa il blocco uscirebbe due volte,
+            perché web.address_layout viene chiamato sia nell'intestazione
+            (external_layout_bubble.xml) sia nel corpo del layout bubble del core.
+        -->
+        <xpath expr="//div[hasclass('page')]" position="before">
+            <t t-set="sabaco_address_header_only" t-value="True"/>
+            <t t-set="address">
+                <div t-esc="delivery_to"
+                     t-options='{"widget": "contact", "fields": ["address", "name", "phone", "vat"], "no_marker": True, "phone_icons": True}'/>
+            </t>
+            <t t-set="information_block">
+                <span><strong>Indirizzo Magazzino:</strong></span>
+                <div t-esc="delivery_from"
+                     t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                <p t-if="delivery_from.vat" class="mb-0">Pta IVA: <span t-field="delivery_from.vat"/></p>
+            </t>
+        </xpath>
+
+        <!--
+            10) Rimuove la riga indirizzi originale dal corpo: ora è
+            nell'intestazione. Ancora strutturale (la div.row che contiene la div
+            con t-esc="delivery_from"), perché le etichette divergono tra le arch
+            en_US e it_IT. Gli spaziatori mt16/mt64 del core restano: nessun CSS
+            in addons definisce quelle classi, quindi hanno altezza 0.
+        -->
+        <xpath expr="//div[div/div[@t-esc='delivery_from']]" position="replace"/>
+
     </template>
 </odoo>

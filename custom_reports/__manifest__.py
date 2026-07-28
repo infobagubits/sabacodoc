@@ -1,6 +1,6 @@
 {
     "name": "Sabaco Custom Reports",
-    'version': '18.0.1.5.1',
+    'version': '18.0.1.6.0',
     "summary": "Customize reports",
     "category": "Reporting",
     'author': 'Bagubits SRLS',
