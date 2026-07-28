@@ -138,10 +138,18 @@
                      t-options='{"widget": "contact", "fields": ["address", "name", "phone", "vat"], "no_marker": True, "phone_icons": True}'/>
             </t>
             <t t-set="information_block">
-                <span><strong>Indirizzo Magazzino:</strong></span>
-                <div t-esc="delivery_from"
-                     t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
-                <p t-if="delivery_from.vat" class="mb-0">Pta IVA: <span t-field="delivery_from.vat"/></p>
+                <!--
+                    Lo stacco tra indirizzo cliente e indirizzo magazzino sta qui,
+                    e non nel mt-2 di address_layout_custom, perché quel blocco è
+                    condiviso con fattura e ordini: così lo spazio extra resta
+                    solo nel DDT.
+                -->
+                <div style="margin-top: 12px">
+                    <span><strong>Indirizzo Magazzino:</strong></span>
+                    <div t-esc="delivery_from"
+                         t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                    <p t-if="delivery_from.vat" class="mb-0">Pta IVA: <span t-field="delivery_from.vat"/></p>
+                </div>
             </t>
         </xpath>
 
@@ -155,4 +163,39 @@
         <xpath expr="//div[div/div[@t-esc='delivery_from']]" position="replace"/>
 
     </template>
+
+    <!--
+        MELHORIA-011 — Formato carta dedicato al DDT.
+        Con i due indirizzi impilati nell'intestazione, il blocco occupa più dei
+        52 mm di header_spacing del formato A4 aziendale e il corpo partiva
+        troppo in alto, appiccicato all'indirizzo del magazzino.
+        Il formato A4 (report_paperformat_a4) è quello di DEFAULT dell'azienda:
+        toccarlo sposterebbe il corpo di TUTTI i report (fattura, ordini,
+        delivery slip, ricevute). Si crea quindi un formato dedicato, identico
+        all'A4 tranne margin_top/header_spacing, e lo si assegna alla sola
+        azione di stampa del DDT.
+    -->
+    <record id="paperformat_ddt_sabaco" model="report.paperformat">
+        <field name="name">A4 — DDT Sabaco</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">66</field>
+        <field name="margin_bottom">32</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">66</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <!--
+        Assegnazione via <function> e non via <record id="l10n_it_stock_ddt.action_report_ddt">:
+        quel dato del core ha noupdate=True, quindi un <record> verrebbe scartato
+        senza errore a ogni -u custom_reports (passerebbe solo alla prima
+        installazione). La write esplicita è invece sempre applicata.
+    -->
+    <function model="ir.actions.report" name="write"
+              eval="[[ref('l10n_it_stock_ddt.action_report_ddt')], {'paperformat_id': ref('custom_reports.paperformat_ddt_sabaco')}]"/>
+
 </odoo>
