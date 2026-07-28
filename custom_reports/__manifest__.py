@@ -1,6 +1,6 @@
 {
     "name": "Sabaco Custom Reports",
-    'version': '18.0.1.3.0',
+    'version': '18.0.1.4.0',
     "summary": "Customize reports",
     "category": "Reporting",
     'author': 'Bagubits SRLS',
@@ -14,6 +14,7 @@
         "views/report_saleorder_document.xml",
         "views/address_layout.xml",
         "views/report_invoice_document.xml",
+        "views/report_ddt_document.xml",
     ],
     "installable": True,
     "application": False

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        MELHORIA-009 — DDT PDF: lotti, prezzo unitario e IVA per riga.
+        Aggiunge due colonne (Prezzo unit., IVA) alla tabella delle righe e
+        mostra i lotti/seriali inline sotto il nome del prodotto, con la stessa
+        forma visiva usata nella fattura (MELHORIA-004).
+        Nessun campo nuovo: tutti i dati esistono già nell'ORM.
+    -->
+    <template id="report_ddt_view_sabaco_lots_price_tax"
+              inherit_id="l10n_it_stock_ddt.report_ddt_view">
+
+        <!-- 1) Intestazione — colonna "Prezzo unit.", subito dopo "Quantity". -->
+        <xpath expr="//table[@name='document_details']/thead/tr/th[2]" position="after">
+            <th class="text-end"><strong>Prezzo unit.</strong></th>
+        </xpath>
+
+        <!--
+            2) Intestazione — colonna "IVA", prima di "Total Value".
+            Si usa last() e non th[4]: ogni xpath viene rivalutato sull'albero
+            già modificato dal punto 1. Il th di "Disc.%" sta dentro un <t t-if>,
+            quindi non è figlio diretto del tr e non entra nel conteggio.
+        -->
+        <xpath expr="//table[@name='document_details']/thead/tr/th[last()]" position="before">
+            <th class="text-end"><strong>IVA</strong></th>
+        </xpath>
+
+        <!-- 3) Corpo — lotti/seriali inline sotto il nome del prodotto. -->
+        <xpath expr="//span[@t-field='move.product_id']" position="after">
+            <t t-set="sabaco_move_lots" t-value="', '.join(move.lot_ids.mapped('name'))"/>
+            <div t-if="sabaco_move_lots" class="text-muted small">
+                Lotti: <span t-esc="sabaco_move_lots"/>
+            </div>
+        </xpath>
+
+        <!--
+            4) Corpo — cella "Prezzo unit.".
+            Fallback su lst_price per i picking senza ordine di vendita
+            (trasferimenti interni, ingressi, DDT manuali), come già fa il core
+            nella colonna "Total Value". La valuta è quella dell'azienda, la
+            stessa usata dal core nella medesima tabella.
+        -->
+        <xpath expr="//td[@class='o_td_quantity']" position="after">
+            <td class="text-end">
+                <t t-set="sabaco_price_unit"
+                   t-value="move.sale_line_id.price_unit if move.sale_line_id else move.product_id.lst_price"/>
+                <span t-esc="sabaco_price_unit"
+                      t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+            </td>
+        </xpath>
+
+        <!--
+            5) Corpo — cella "IVA" (aliquota).
+            L'ancora è l'unica td che contiene il <t t-if="move.sale_line_id">
+            del blocco lst_price: evita td[last()], che prenderebbe anche la
+            riga del totale. Senza ordine di vendita il t-foreach gira a vuoto
+            e la cella resta vuota.
+        -->
+        <xpath expr="//td[t[@t-if='move.sale_line_id']]" position="before">
+            <td class="text-end">
+                <t t-foreach="move.sale_line_id.tax_id" t-as="sabaco_tax">
+                    <span t-if="not sabaco_tax_first">, </span>
+                    <span t-esc="sabaco_tax.invoice_label or sabaco_tax.name"/>
+                </t>
+            </td>
+        </xpath>
+
+        <!-- 6) Riga del totale — due celle vuote per mantenere l'allineamento. -->
+        <xpath expr="//td[@style='text-align:right']" position="before">
+            <td/>
+            <td/>
+        </xpath>
+
+    </template>
+</odoo>
