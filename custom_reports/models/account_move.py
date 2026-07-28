@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-from odoo import models
+from datetime import date
+
+from odoo import fields, models
+from odoo.tools.misc import format_date
 
 
 class AccountMove(models.Model):
@@ -53,3 +56,55 @@ class AccountMove(models.Model):
         except Exception:
             # Difesa: la stampa non deve mai fallire per via dei lotti.
             return {}
+
+    def _sabaco_get_invoice_ddt_values(self):
+        """Restituisce ``[{'number': str, 'date': str}]`` dei DDT della fattura.
+
+        Riusa il campo core ``l10n_it_ddt_ids`` (fornito da ``l10n_it_stock_ddt``),
+        lo stesso che alimenta lo smart button "DDT" e i ``DatiDDT`` dell'XML EDI:
+        e' un compute non memorizzato che risale dalle righe fattura agli ordini di
+        vendita e da questi ai picking con ``l10n_it_ddt_number`` valorizzato.
+        Nessuna logica duplicata.
+
+        La data del DDT e' quella del picking: ``date_done`` (validazione della
+        consegna, la stessa usata dall'EDI) con ripiego su ``scheduled_date`` se il
+        picking non e' ancora ``done``. La formattazione avviene qui in Python
+        perche' il template riceve dei ``dict`` e non un recordset, quindi
+        ``t-field`` non e' disponibile.
+
+        La lettura avviene in ``sudo`` perche' l'utente che stampa puo' non avere
+        accesso a ``stock.picking``/``sale.order`` (stessa motivazione di
+        ``_sabaco_get_invoice_lot_map``).
+
+        Ritorna ``[]`` per le fatture fornitore, per quelle senza DDT o in caso di
+        qualsiasi errore, cosi' da non rompere mai la stampa.
+        """
+        self.ensure_one()
+        try:
+            if self.move_type not in ("out_invoice", "out_refund"):
+                return []
+
+            seen = set()
+            rows = []
+            for picking in self.sudo().l10n_it_ddt_ids:
+                number = picking.l10n_it_ddt_number
+                if not number or number in seen:
+                    continue
+                seen.add(number)
+                moment = picking.date_done or picking.scheduled_date
+                raw = fields.Date.to_date(moment) if moment else False
+                rows.append((
+                    # I DDT senza data finiscono in testa, l'ordine resta stabile.
+                    raw or date.min,
+                    number,
+                    {
+                        "number": number,
+                        "date": format_date(self.env, raw) if raw else "",
+                    },
+                ))
+
+            rows.sort(key=lambda row: (row[0], row[1]))
+            return [row[2] for row in rows]
+        except Exception:
+            # Difesa: la stampa non deve mai fallire per via dei DDT.
+            return []

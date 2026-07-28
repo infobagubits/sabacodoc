@@ -40,5 +40,25 @@
         <!-- 5) Rimuove l'intera barra dati aggiuntivi (Invoice Date, Due Date, ecc.). -->
         <xpath expr="//div[@id='informations']" position="replace"/>
 
+        <!--
+            MELHORIA-008 — Elenco dei DDT collegati, sopra la tabella delle righe,
+            nello spazio lasciato libero dalla barra rimossa al punto 5.
+        -->
+
+        <!-- 6) Riga compatta "Rif. DDT: n. X del gg/mm/aaaa — n. Y del gg/mm/aaaa". -->
+        <xpath expr="//t[@t-set='display_discount']" position="before">
+            <t t-set="sabaco_ddt_values" t-value="o._sabaco_get_invoice_ddt_values()"/>
+            <div t-if="sabaco_ddt_values" id="sabaco_ddt_list" class="mb-3">
+                <strong>Rif. DDT:</strong>
+                <t t-foreach="sabaco_ddt_values" t-as="sabaco_ddt">
+                    <span t-if="not sabaco_ddt_first"> — </span>
+                    <span>n. </span><span t-esc="sabaco_ddt['number']"/>
+                    <t t-if="sabaco_ddt['date']">
+                        <span> del </span><span t-esc="sabaco_ddt['date']"/>
+                    </t>
+                </t>
+            </div>
+        </xpath>
+
     </template>
 </odoo>
