@@ -77,5 +77,15 @@
             <td/>
         </xpath>
 
+        <!--
+            MELHORIA-010 — Uniforma la dimensione del carattere a quella del PDF
+            Ordine di acquisto (12px).
+        -->
+
+        <!-- 7) Corpo del documento a 12px. -->
+        <xpath expr="//div[hasclass('page')]" position="attributes">
+            <attribute name="style">font-size: 12px</attribute>
+        </xpath>
+
     </template>
 </odoo>
