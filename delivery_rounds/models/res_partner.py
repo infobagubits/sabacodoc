@@ -8,7 +8,8 @@ class ResPartner(models.Model):
         'partner_id',
         string='Giri',
         help='Giri dove questo cliente è inserito',
-        readonly=True
+        readonly=True,
+        groups='delivery_rounds.group_delivery_rounds_user',
     )
 
     ordini_aperti_ids = fields.One2many(
@@ -17,7 +18,8 @@ class ResPartner(models.Model):
         string='Ordini Aperti',
         help='Ordini aperti del cliente',
         readonly=True,
-        domain=[('stato_preparazione', '!=', 'stampato')]
+        domain=[('stato_preparazione', '!=', 'stampato')],
+        groups='delivery_rounds.group_delivery_rounds_user',
     )
 
     @api.depends('is_customer')

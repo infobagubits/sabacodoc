@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        MELHORIA-004 — Lotti inline nelle righe fattura.
+        Rimuove la tabella-riepilogo core "invoice_snln_table" (iniettata da
+        stock_account) e mostra i lotti inline sotto il nome di ogni prodotto.
+    -->
+    <template id="report_invoice_document_lots_inline"
+              inherit_id="account.report_invoice_document">
+
+        <!-- 1) Rimuove la tabella-riepilogo dei lotti iniettata dal core. -->
+        <xpath expr="//table[@name='invoice_snln_table']" position="replace"/>
+
+        <!-- 2) Calcola la mappa lotti una sola volta, a monte del t-foreach delle righe. -->
+        <xpath expr="//t[@t-foreach='lines']" position="before">
+            <t t-set="sabaco_lot_map" t-value="o._sabaco_get_invoice_lot_map()"/>
+        </xpath>
+
+        <!-- 3) Inietta i lotti inline sotto il nome del prodotto (solo i numeri). -->
+        <xpath expr="//td[@name='account_invoice_line_name']" position="inside">
+            <t t-set="sabaco_line_lots"
+               t-value="sabaco_lot_map.get(line.product_id.id) if sabaco_lot_map else False"/>
+            <div t-if="sabaco_line_lots" class="text-muted small">
+                Lotti: <span t-esc="sabaco_line_lots"/>
+            </div>
+        </xpath>
+
+        <!--
+            MELHORIA-005 — Mostra la data accanto al numero fattura e rimuove
+            la barra "dati aggiuntivi" (#informations) sotto il titolo.
+        -->
+
+        <!-- 4) Data accanto al numero fattura: "FATT/2026/0001 del 24/07/2026". -->
+        <xpath expr="//span[@t-field='o.name']" position="after">
+            <t t-if="o.invoice_date">
+                <span> del </span><span t-field="o.invoice_date">2023-09-12</span>
+            </t>
+        </xpath>
+
+        <!-- 5) Rimuove l'intera barra dati aggiuntivi (Invoice Date, Due Date, ecc.). -->
+        <xpath expr="//div[@id='informations']" position="replace"/>
+
+        <!--
+            MELHORIA-008 — Elenco dei DDT collegati, sopra la tabella delle righe,
+            nello spazio lasciato libero dalla barra rimossa al punto 5.
+        -->
+
+        <!-- 6) Riga compatta "Rif. DDT: n. X del gg/mm/aaaa — n. Y del gg/mm/aaaa". -->
+        <xpath expr="//t[@t-set='display_discount']" position="before">
+            <t t-set="sabaco_ddt_values" t-value="o._sabaco_get_invoice_ddt_values()"/>
+            <div t-if="sabaco_ddt_values" id="sabaco_ddt_list" class="mb-3">
+                <strong>Rif. DDT:</strong>
+                <t t-foreach="sabaco_ddt_values" t-as="sabaco_ddt">
+                    <span t-if="not sabaco_ddt_first"> — </span>
+                    <span>n. </span><span t-esc="sabaco_ddt['number']"/>
+                    <t t-if="sabaco_ddt['date']">
+                        <span> del </span><span t-esc="sabaco_ddt['date']"/>
+                    </t>
+                </t>
+            </div>
+        </xpath>
+
+    </template>
+</odoo>

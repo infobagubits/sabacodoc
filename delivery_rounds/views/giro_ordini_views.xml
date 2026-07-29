@@ -95,7 +95,8 @@
     </record>
 
     <!-- MENUS -->
-    <menuitem id="menu_giri_root" name="Giri Ordini" sequence="10"/>
+    <menuitem id="menu_giri_root" name="Giri Ordini" sequence="10"
+              groups="delivery_rounds.group_delivery_rounds_user"/>
     <menuitem id="menu_giri_ordine_consulta" name="Consulta Giri" parent="menu_giri_root" action="action_giri_ordine_list" sequence="10"/>
 
     <!-- Herdar a view do pedido de venda -->
@@ -105,7 +106,7 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='validity_date']" position="before">
-                <field name="stato_preparazione"/>
+                <field name="stato_preparazione" groups="delivery_rounds.group_delivery_rounds_user"/>
             </xpath>
             
             <!-- Remove o campo commitment_date da posição original -->
@@ -126,14 +127,14 @@
         <field name="inherit_id" ref="sale.view_sales_order_filter"/>
         <field name="arch" type="xml">
             <filter name="my_sale_orders_filter" position="after">
-                <separator/>
-                <filter string="Da preparare" name="da_preparare" domain="[('stato_preparazione', '=', 'da_preparare')]"/>
-                <filter string="Preparato" name="preparato" domain="[('stato_preparazione', '=', 'preparato')]"/>
-                <filter string="Stampato" name="stampato" domain="[('stato_preparazione', '=', 'stampato')]"/>
-                <separator/>
+                <separator groups="delivery_rounds.group_delivery_rounds_user"/>
+                <filter string="Da preparare" name="da_preparare" domain="[('stato_preparazione', '=', 'da_preparare')]" groups="delivery_rounds.group_delivery_rounds_user"/>
+                <filter string="Preparato" name="preparato" domain="[('stato_preparazione', '=', 'preparato')]" groups="delivery_rounds.group_delivery_rounds_user"/>
+                <filter string="Stampato" name="stampato" domain="[('stato_preparazione', '=', 'stampato')]" groups="delivery_rounds.group_delivery_rounds_user"/>
+                <separator groups="delivery_rounds.group_delivery_rounds_user"/>
             </filter>
             <filter name="customer" position="after">
-                <filter string="Stato preparazione" name="stato_preparazione" context="{'group_by': 'stato_preparazione'}"/>
+                <filter string="Stato preparazione" name="stato_preparazione" context="{'group_by': 'stato_preparazione'}" groups="delivery_rounds.group_delivery_rounds_user"/>
             </filter>
         </field>
     </record>
@@ -145,7 +146,7 @@
         <field name="inherit_id" ref="sale.view_quotation_tree"/>
         <field name="arch" type="xml">
             <field name="state" position="before">
-                <field name="stato_preparazione"/>
+                <field name="stato_preparazione" groups="delivery_rounds.group_delivery_rounds_user"/>
             </field>
         </field>
     </record>

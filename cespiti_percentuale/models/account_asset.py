@@ -27,6 +27,8 @@ class AccountAsset(models.Model):
             "• Anno 1: 50% della percentuale indicata\n"
             "• Anni successivi: percentuale intera\n"
             "• Anno finale extra: il restante 50% del primo anno\n"
+            "• Eccezione: se il conto cespite inizia per 03, l'anno 1 usa la "
+            "percentuale intera (nessun dimezzamento)\n"
             "Inserire il valore come percentuale (es. 20 per 20%)."
         ),
     )
@@ -65,10 +67,14 @@ class AccountAsset(models.Model):
         """
         Restituisce la lista degli importi annuali secondo la regola fiscale italiana.
 
-        Regola:
+        Regola generale (art. 102 TUIR):
           - Anno 1  : base × (rate / 2)
           - Anno 2..N : base × rate   (finché il residuo è ≥ importo pieno)
           - Anno N+1 : residuo (pari a base × rate / 2)
+
+        Eccezione — conto cespite che inizia per 03:
+          l'anno 1 usa la rata piena (base × rate), senza dimezzamento. Il piano
+          prosegue negli anni successivi fino a esaurire la base.
 
         La base è total_depreciable_value (original_value - salvage_value).
 
@@ -78,6 +84,9 @@ class AccountAsset(models.Model):
           ...
           Anno 6 →    900 € (10% residuo)
           Totale  → 9.000 € in 6 anni
+
+        Stesso esempio con conto cespite 03xxxx:
+          Anno 1..5 → 1.800 € (20%) — totale 9.000 € in 5 anni
         """
         self.ensure_one()
 
@@ -87,7 +96,14 @@ class AccountAsset(models.Model):
 
         # method_percentage è in scala 0-1 (widget percentage di Odoo 18)
         annual_amount = round(base * self.method_percentage, 2)
-        first_year_amount = round(annual_amount / 2.0, 2)
+
+        # Conti cespite che iniziano per 03: rata piena già dal primo anno.
+        conto_cespite = self.account_asset_id.code or ''
+        if conto_cespite.startswith('03'):
+            first_year_amount = annual_amount
+        else:
+            # art. 102 TUIR: 50% nel primo anno
+            first_year_amount = round(annual_amount / 2.0, 2)
 
         schedule = []
         remaining = base

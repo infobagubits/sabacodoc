@@ -10,10 +10,12 @@
             <xpath expr="//field[@name='location_id']" position="after">
                 <field name="giro_id"
                     readonly="1"
+                    groups="delivery_rounds.group_delivery_rounds_user"
                     invisible="not sale_id or not sale_id.giro_id"
                     string="Giro di Consegna" />
                 <field name="sequenza_consegna"
                     readonly="1"
+                    groups="delivery_rounds.group_delivery_rounds_user"
                     invisible="not sale_id or not sale_id.giro_id"
                     string="Sequenza di Consegna" />
             </xpath>
@@ -45,10 +47,12 @@
                 <field name="giro_id"
                     string="Giro di Consegna"
                     optional="show"
+                    groups="delivery_rounds.group_delivery_rounds_user"
                     invisible="not sale_id or not sale_id.giro_id" />
                 <field name="sequenza_consegna"
                     string="Sequenza di Consegna"
                     optional="show"
+                    groups="delivery_rounds.group_delivery_rounds_user"
                     invisible="not sale_id or not sale_id.giro_id" />
             </xpath>
         </field>

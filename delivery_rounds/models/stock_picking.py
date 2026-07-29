@@ -16,16 +16,18 @@ class StockPicking(models.Model):
 
     # Campi correlati al giro di ordini
     giro_id = fields.Many2one(
-        'giri.ordine', 
+        'giri.ordine',
         string="Giro di Consegna",
         related='sale_id.giro_id',
         readonly=True,
-        help="Giro di consegna associato a questo picking"
+        help="Giro di consegna associato a questo picking",
+        groups='delivery_rounds.group_delivery_rounds_user',
     )
-    
+
     sequenza_consegna = fields.Integer(
         string="Sequenza di Consegna",
-        related='sale_id.sequenza_consegna', 
+        related='sale_id.sequenza_consegna',
         readonly=True,
-        help="Sequenza di consegna nel giro"
+        help="Sequenza di consegna nel giro",
+        groups='delivery_rounds.group_delivery_rounds_user',
     )
