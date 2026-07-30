@@ -3,8 +3,22 @@
 
     <template id="address_layout_custom"
         inherit_id="web.address_layout">
+        <!--
+            MELHORIA-011 — Guardia contro il doppio blocco indirizzo nel DDT.
+            web.address_layout viene chiamato DUE volte: nell'intestazione
+            (external_layout_bubble.xml, chiamata aggiunta da noi) e nel corpo del
+            layout bubble del core, che è l'unico dei due a impostare
+            custom_layout_address=True.
+            Il DDT alza sabaco_address_header_only e vuole il blocco solo
+            nell'intestazione: la condizione sopprime la sola copia del corpo e
+            solo quando entrambe le flag sono vere.
+            Fuori dal DDT è inerte — sabaco_address_header_only non è mai
+            definita e QWeb tratta un nome non definito come falsy, quindi
+            fattura e ordini restano identici a prima.
+        -->
         <xpath position="replace" expr="//div[@t-if='address']">
-            <div t-if="address" t-attf-class="address row mb-4" style="font-size: 12px"
+            <div t-if="address and not (custom_layout_address and sabaco_address_header_only)"
+                t-attf-class="address row mb-4" style="font-size: 12px"
                 title="This block is not always present depending on the printed document.">
                 <div>
                     <strong class="d-block">Spett.le</strong>

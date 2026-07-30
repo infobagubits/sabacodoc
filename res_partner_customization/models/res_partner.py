@@ -42,6 +42,9 @@ class ResPartner(models.Model):
         ('dettaglio', 'DETTAGLIO'),
         ('gdo', 'GDO'),
         ('grossista', 'GROSSISTA'),
+        ('ristoranti', 'RISTORANTI'),
+        ('dipendenti', 'DIPENDENTI'),
+        ('negozio', 'NEGOZIO'),
     ], string='Tipo Cliente', help='Tipologia del cliente')
     
     codice_prodotti_fornitore = fields.Char(
