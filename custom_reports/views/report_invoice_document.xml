@@ -71,5 +71,70 @@
             <attribute name="style">font-size: 12px</attribute>
         </xpath>
 
+        <!--
+            MELHORIA-012 — Indirizzo cliente solo nell'intestazione (colonna destra).
+            Il layout bubble stampava l'indirizzo due volte: nell'intestazione
+            (external_layout_bubble.xml) e nel corpo (web.address_layout con
+            custom_layout_address). Stessa correzione del DDT: si valorizzano
+            address/information_block senza la riga col-* del core e si alza
+            sabaco_address_header_only per sopprimere la copia nel corpo.
+        -->
+        <xpath expr="//div[hasclass('clearfix')][hasclass('invoice_main')]/preceding-sibling::div[1]"
+               position="replace">
+            <t t-set="sabaco_address_header_only" t-value="True"/>
+            <t t-if="o.partner_shipping_id and (o.partner_shipping_id != o.partner_id)">
+                <t t-set="information_block">
+                    <div groups="account.group_delivery_invoice_address" name="shipping_address_block">
+                        <strong class="d-block mt-3">Shipping Address</strong>
+                        <div t-field="o.partner_shipping_id"
+                             t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                    </div>
+                </t>
+                <t t-set="address">
+                    <address class="mb-0" t-field="o.partner_id"
+                             t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                    <div t-if="o.partner_id.vat" id="partner_vat_address_not_same_as_shipping">
+                        <t t-if="o.company_id.account_fiscal_country_id.vat_label"
+                           t-out="o.company_id.account_fiscal_country_id.vat_label"
+                           id="inv_tax_id_label"/>
+                        <t t-else="">Tax ID</t>: <span t-field="o.partner_id.vat"/>
+                    </div>
+                    <div t-if="o.partner_id.country_code == 'MA' and o.partner_id.company_registry">
+                        ICE: <a t-field="o.partner_id.company_registry"/>
+                    </div>
+                </t>
+            </t>
+            <t t-elif="o.partner_shipping_id and (o.partner_shipping_id == o.partner_id)">
+                <t t-set="address">
+                    <address class="mb-0" t-field="o.partner_id"
+                             t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                    <div t-if="o.partner_id.vat" id="partner_vat_address_same_as_shipping">
+                        <t t-if="o.company_id.account_fiscal_country_id.vat_label"
+                           t-out="o.company_id.account_fiscal_country_id.vat_label"
+                           id="inv_tax_id_label"/>
+                        <t t-else="">Tax ID</t>: <span t-field="o.partner_id.vat"/>
+                    </div>
+                    <div t-if="o.partner_id.country_code == 'MA' and o.partner_id.company_registry">
+                        ICE: <a t-field="o.partner_id.company_registry"/>
+                    </div>
+                </t>
+            </t>
+            <t t-else="">
+                <t t-set="address">
+                    <address class="mb-0" t-field="o.partner_id"
+                             t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                    <div t-if="o.partner_id.vat" id="partner_vat_no_shipping">
+                        <t t-if="o.company_id.account_fiscal_country_id.vat_label"
+                           t-out="o.company_id.account_fiscal_country_id.vat_label"
+                           id="inv_tax_id_label"/>
+                        <t t-else="">Tax ID</t>: <span t-field="o.partner_id.vat"/>
+                    </div>
+                    <div t-if="o.partner_id.country_code == 'MA' and o.partner_id.company_registry">
+                        ICE: <a t-field="o.partner_id.company_registry"/>
+                    </div>
+                </t>
+            </t>
+        </xpath>
+
     </template>
 </odoo>
