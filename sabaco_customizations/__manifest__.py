@@ -1,12 +1,13 @@
 {
     'name': 'Sabaco — Personalizzazioni',
-    'version': '18.0.1.0.3',
+    'version': '18.0.1.0.4',
     'category': 'Accounting',
     'summary': 'Personalizzazioni Sabaco (es. avviso totale fattura vs totale XML EDI)',
     'description': """
         Personalizzazioni trasversali per Sabaco:
-        - Avviso su fatture fornitore quando il totale Odoo differisce dal
-          totale indicato nel file XML EDI (soma ImportoPagamento, come nel chatter).
+        - Avviso su fatture fornitore e di vendita quando il totale Odoo
+          differisce dal totale indicato nel file XML EDI (soma ImportoPagamento,
+          come nel chatter).
         - Data fine registrazione differita impostata automaticamente uguale
           alla data inizio sulle righe fattura.
     """,

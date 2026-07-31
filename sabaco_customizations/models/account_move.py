@@ -219,7 +219,9 @@ class AccountMove(models.Model):
             move.l10n_it_xml_amount_total = 0.0
             move.xml_total_mismatch_warning = False
 
-            if move.move_type not in ('in_invoice', 'in_refund'):
+            if move.move_type not in (
+                'in_invoice', 'in_refund', 'out_invoice', 'out_refund',
+            ):
                 continue
 
             xml_total = move._sabaco_get_xml_payment_total()
