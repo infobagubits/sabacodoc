@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <template id="report_purchasequotation_document_custom"
+        inherit_id="purchase.report_purchasequotation_document">
+
+        <!--
+            MELHORIA-013 — Indirizzo fornitore solo nell'intestazione (colonna destra).
+            Stessa correzione dell'ordine di acquisto e della fattura.
+        -->
+        <xpath expr="//div[hasclass('page')]" position="before">
+            <t t-set="sabaco_address_header_only" t-value="True"/>
+        </xpath>
+
+    </template>
+</odoo>
