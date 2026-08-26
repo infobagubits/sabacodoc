@@ -25,12 +25,16 @@
                         <field name="note" placeholder="Scrivi le tue note qui..." nolabel="1"/>
                     </div>
 
+                    <group>
+                        <field name="modifica_abilitata"/>
+                    </group>
+
                     <!-- Tab con lista moderna -->
                     <notebook>
                         <page string="Clienti sul giro">
-                            <field name="riga_ids" mode="list,form" on_change="1">
+                            <field name="riga_ids" mode="list,form" on_change="1" options="{'delete': [('modifica_abilitata', '=', True)]}">
                                 <list string="Clienti" editable="bottom">
-                                    <field name="sequence" widget="handle" on_change="1"/>
+                                    <field name="sequence" widget="handle" on_change="1" column_invisible="not parent.modifica_abilitata"/>
                                     <field name="posizione" readonly="1" string="N."/>
                                     <field name="partner_id" options="{'no_create': True, 'no_create_edit': True}"/>
                                     <field name="telefono"/>
