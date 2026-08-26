@@ -49,12 +49,29 @@ class GiroOrdine(models.Model):
         store=True
     )
 
+    # Spunta di sola interfaccia: governa maniglia di riordino e cestino nella
+    # tabella dei clienti. Non memorizzata -> riparte da False a ogni apertura.
+    modifica_abilitata = fields.Boolean(
+        string='MODIFICA',
+        compute='_compute_modifica_abilitata',
+        store=False,
+        readonly=False,
+        help="Spunta temporanea di sola interfaccia: se attiva mostra la maniglia di "
+             "riordino e il cestino nella tabella dei clienti. Non viene memorizzata: "
+             "riparte sempre da False all'apertura del giro.",
+    )
+
     @api.depends('order_ids.amount_total', 'order_ids.state', 'order_ids.stato_preparazione')
     def _compute_total_ordini(self):
         for record in self:
             total = sum(order.amount_total for order in record.order_ids.filtered(
                 lambda o: o.state != 'cancel' and o.stato_preparazione != 'stampato'))
             record.total_ordini = total
+
+    @api.depends()  # nessuna dipendenza: il valore riparte da False a ogni caricamento
+    def _compute_modifica_abilitata(self):
+        for giro in self:
+            giro.modifica_abilitata = False
 
     # Mappatura weekday Python (0=lunedì, 6=domenica) -> valore giorno_consegna
     _GIORNO_CONSEGNA_BY_WEEKDAY = {
