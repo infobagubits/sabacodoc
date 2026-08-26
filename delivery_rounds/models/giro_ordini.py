@@ -321,11 +321,9 @@ class SaleOrder(models.Model):
             # Calcola la prossima data
             delivery_date = today + timedelta(days=days_ahead)
 
-            # Imposta l'orario desiderato (17:00) nel timezone utente
+            # Imposta l'orario desiderato (17:00) nel timezone utente,
+            # poi converte in UTC naive (fields.Datetime Odoo richiede datetime senza tzinfo)
             delivery_datetime = datetime.combine(delivery_date, datetime.min.time()).replace(hour=17)
-            # Se il campo commitment_date è di tipo datetime aware, converti nel timezone corretto
-            if delivery_datetime.tzinfo is None:
-                # Aggiungi il timezone utente
-                user_tz = pytz.timezone(self.env.user.tz or 'UTC')
-                delivery_datetime = user_tz.localize(delivery_datetime)
+            delivery_datetime = user_tz.localize(delivery_datetime)
+            delivery_datetime = delivery_datetime.astimezone(pytz.UTC).replace(tzinfo=None)
             self.commitment_date = delivery_datetime
