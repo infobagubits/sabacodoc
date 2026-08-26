@@ -137,33 +137,33 @@ class GiroOrdineRiga(models.Model):
                     raise ValidationError('Non è possibile aggiungere lo stesso cliente due volte nello stesso giro!')
 
     def _update_order_sequence(self):
-        """Aggiorna la sequenza degli ordini"""
-        if self.giro_id and self.partner_id:
-            orders = self.env['sale.order'].search([
-                ('giro_id', '=', self.giro_id.id),
-                ('partner_id', '=', self.partner_id.id)
-            ])
-            if orders:
-                orders.write({'sequenza_consegna': self.sequence})
+        """Aggiorna la sequenza degli ordini collegati (stesso giro, stesso cliente).
+
+        Itera su `self`: il metodo viene chiamato anche da `write()`, che può
+        ricevere più righe insieme. Leggere `self.giro_id` su un recordset
+        multiplo solleverebbe "Expected singleton".
+        """
+        for riga in self:
+            if riga.giro_id and riga.partner_id:
+                orders = self.env['sale.order'].search([
+                    ('giro_id', '=', riga.giro_id.id),
+                    ('partner_id', '=', riga.partner_id.id)
+                ])
+                if orders:
+                    orders.write({'sequenza_consegna': riga.sequence})
 
     def write(self, vals):
         result = super().write(vals)
         if 'sequence' in vals:
-            # Riordina tutte le righe del giro
-            all_lines = self.env['giri.ordine.riga'].search([
-                ('giro_id', '=', self.giro_id.id)
-            ], order='sequence')
-            
-            # Aggiorna le sequenze per garantire ordine corretto
-            sequence = 1
-            for line in all_lines:
-                if line.sequence != sequence:
-                    line.sequence = sequence
-                sequence += 1
-                
-            # Aggiorna la sequenza degli ordini
+            # NB (BUG-004): qui NON si rinumerano le righe del giro.
+            # Il riordino con il widget handle arriva come una serie di comandi
+            # UPDATE applicati uno alla volta. Rinumerare a ogni write significa
+            # leggere uno stato a metà, con sequenze temporaneamente duplicate,
+            # e riscriverlo: lo spostamento fatto dall'utente viene annullato e
+            # la lista torna all'ordine precedente. Il client invia già
+            # l'insieme completo e coerente delle sequenze, quindi basta
+            # propagarle agli ordini collegati.
             self._update_order_sequence()
-            self.env.cr.commit()
         return result
 
     @api.model

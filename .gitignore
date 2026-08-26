@@ -52,3 +52,8 @@ __pycache__/
 .env.*
 *.log
 *.pdf
+AGENTS.md
+.cursor/commands/
+.opencode/
+.cursor/skills/
+.agent/
