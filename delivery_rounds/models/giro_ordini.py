@@ -123,6 +123,13 @@ class GiroOrdineRiga(models.Model):
     note = fields.Text(string='Note')
 
     ordini_aperti = fields.Integer(string='Ordini aperti', compute='_compute_ordini_aperti', store=False)
+    posizione = fields.Integer(
+        string='N.',
+        compute='_compute_posizione',
+        store=False,
+        help="Posizione progressiva del cliente nel giro (1..N), calcolata "
+             "dall'ordinamento delle righe. Campo di sola lettura.",
+    )
 
     @api.constrains('giro_id', 'partner_id')
     def _check_partner_unique(self):
@@ -191,6 +198,32 @@ class GiroOrdineRiga(models.Model):
                 ('stato_preparazione', '!=', 'stampato')
             ])
             riga.ordini_aperti = count
+
+    @api.depends('sequence', 'giro_id', 'giro_id.riga_ids', 'giro_id.riga_ids.sequence')
+    def _compute_posizione(self):
+        """Numera le righe di ogni giro da 1 a N secondo l'ordine visualizzato.
+
+        Non fa `search`: legge solo `giro_id.riga_ids`, raggruppando per giro
+        (nessun N+1). L'ordinamento usa esclusivamente `sequence` come chiave:
+        `sorted()` e' stabile, quindi le sequenze duplicate — situazione reale
+        durante il salvataggio del riordino, cfr. BUG-004 — mantengono l'ordine
+        naturale del recordset. Confrontare anche `id` solleverebbe TypeError sui
+        record `NewId`, non comparabili con `int`.
+
+        Il campo NON e' memorizzato: il valore deriva al 100% da `sequence` e
+        memorizzarlo obbligherebbe a riscrivere tutte le righe sorelle a ogni
+        write — proprio la scrittura di massa che ha causato BUG-004.
+        """
+        posizioni = {}
+        for giro in self.mapped('giro_id'):
+            righe_ordinate = sorted(giro.riga_ids, key=lambda r: r.sequence or 0)
+            for indice, riga in enumerate(righe_ordinate, start=1):
+                posizioni[riga.id] = indice
+        # `get(..., 0)` copre le righe senza `giro_id` e quelle non presenti in
+        # `riga_ids`: ogni record di `self` riceve un valore, mai
+        # "compute did not assign".
+        for riga in self:
+            riga.posizione = posizioni.get(riga.id, 0)
 
     def action_apri_ordini(self):
         return {
