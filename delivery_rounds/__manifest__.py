@@ -1,6 +1,6 @@
 {
     'name': 'Modulo Giri Ordini',
-    'version': '18.0.1.1.3',
+    'version': '18.0.1.1.4',
     'category': 'Uncategorized',
     'summary': "Avrai una schermata esattamente uguale a quella di Odoo, ma con l'opzione di scegliere il giorno della settimana in cui l'ordine verrà consegnato.",
     'sequence': '0',
@@ -8,7 +8,8 @@
     'maintainer': 'Bagubits SRLS',
     'website': 'https://bagubits.it',
     'license': 'LGPL-3',
-    'depends': ['base', 'sale', 'mail', 'stock', 'partner_customer_supplier_extension', 'l10n_it_stock_ddt'],
+    'depends': ['base', 'sale', 'mail', 'stock', 'partner_customer_supplier_extension',
+                'l10n_it_stock_ddt', 'res_partner_customization'],
     'data': [
         # La sicurezza va caricata per prima: la ACL e le view fanno riferimento ai gruppi
         'security/delivery_rounds_groups.xml',
