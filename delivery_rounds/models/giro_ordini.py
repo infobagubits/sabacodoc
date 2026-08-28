@@ -130,6 +130,15 @@ class GiroOrdineRiga(models.Model):
     sequence = fields.Integer(string='Sequence', default=10)
     giro_id = fields.Many2one('giri.ordine', string='Giro Ordine', required=True, ondelete='cascade')
     partner_id = fields.Many2one('res.partner', string='Cliente', required=True)
+    etichetta_telefono = fields.Char(
+        string='Etichetta Tel. Fisso',
+        related='partner_id.etichetta_telefono',
+        store=False,
+        readonly=True,
+        groups='base.group_user',
+        help="Etichetta del telefono fisso del cliente, letta dal contatto "
+             "(res.partner.etichetta_telefono, modulo res_partner_customization).",
+    )
     telefono = fields.Char(string='Telefona', related='partner_id.phone', store=True)
     stato = fields.Selection([
         ('da_chiamare', 'Da chiamare'),
