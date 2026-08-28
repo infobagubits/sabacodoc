@@ -37,7 +37,7 @@
                                     <field name="sequence" widget="handle" on_change="1" column_invisible="not parent.modifica_abilitata"/>
                                     <field name="posizione" readonly="1" string="N."/>
                                     <field name="partner_id" options="{'no_create': True, 'no_create_edit': True}"/>
-                                    <field name="etichetta_telefono" readonly="1"/>
+                                    <field name="etichetta_telefono" widget="phone" readonly="1"/>
                                     <field name="telefono"/>
                                     <field name="stato"/>
                                     <field name="note"/>
