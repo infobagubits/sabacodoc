@@ -9,14 +9,18 @@ import lxml.etree as ET
 from odoo import models, api, fields, _
 from odoo.exceptions import UserError
 
+_logger = logging.getLogger(__name__)
+
 try:
     # Estrazione XML dall'involucro PKCS#7/CAdES dei file .p7m firmati,
     # riusando la stessa logica del modulo ufficiale l10n_it_edi.
     from odoo.addons.l10n_it_edi.tools.remove_signature import remove_signature
-except Exception:  # pragma: no cover - modulo non disponibile
+except Exception as e:  # pragma: no cover - modulo/dipendenza non disponibile (es. pyOpenSSL mancante)
     remove_signature = None
-
-_logger = logging.getLogger(__name__)
+    _logger.warning(
+        "Impossibile importare remove_signature da l10n_it_edi: %s. "
+        "I file .p7m firmati non potranno essere decodificati.", e,
+    )
 
 
 class AccountMove(models.Model):
@@ -68,6 +72,23 @@ class AccountMove(models.Model):
                         "Generazione automatica PDF EDI fallita per account.move id=%s: %s",
                         move.id, e,
                     )
+        return res
+
+    def _extend_with_attachments(self, files_data, new=False):
+        # Le fatture passive importate da XML/.p7m (upload manuale o cron) non
+        # passano mai da l10n_it_edi_attachment_file (valorizzato solo per le
+        # fatture attive inviate allo SdI): il trigger su create()/write() non
+        # scatterebbe mai. Generiamo qui il PDF subito dopo che l'allegato è
+        # stato collegato e decodificato dall'importer.
+        res = super()._extend_with_attachments(files_data, new=new)
+        if res and self.move_type in ('in_invoice', 'in_refund'):
+            try:
+                self._auto_generate_edi_pdf()
+            except Exception as e:
+                _logger.warning(
+                    "Generazione automatica PDF EDI fallita dopo import per account.move id=%s: %s",
+                    self.id, e,
+                )
         return res
 
     @api.model
@@ -174,20 +195,52 @@ class AccountMove(models.Model):
         """
         if not raw:
             return None
-        if raw.strip().startswith(b'<'):
-            return raw
-        # Contenuto firmato (.p7m): estrai l'XML dall'involucro PKCS#7
-        if remove_signature is not None:
+
+        # Rimuovi eventuale BOM (UTF-8/UTF-16/UTF-32) che non viene tolto da strip()
+        # e che altrimenti farebbe erroneamente ritenere il contenuto un involucro .p7m.
+        for bom in (b'\xef\xbb\xbf', b'\xff\xfe\x00\x00', b'\x00\x00\xfe\xff',
+                    b'\xff\xfe', b'\xfe\xff'):
+            if raw.startswith(bom):
+                raw = raw[len(bom):]
+                break
+
+        stripped = raw.strip()
+        if stripped.startswith(b'<'):
+            return stripped
+        # File UTF-16 (senza BOM riconosciuto sopra o con whitespace intercalato):
+        # prova a decodificare e verificare se il risultato è XML valido.
+        for encoding in ('utf-16', 'utf-16-le', 'utf-16-be'):
             try:
-                unwrapped = remove_signature(raw)
-            except Exception as e:
-                _logger.warning(
-                    "Rimozione firma .p7m fallita (account.move id=%s): %s", self.id, e,
-                )
-                unwrapped = None
-            if unwrapped and unwrapped.strip().startswith(b'<'):
-                _logger.info("XML estratto dall'involucro firmato .p7m (id=%s)", self.id)
-                return unwrapped
+                decoded = raw.decode(encoding).strip()
+            except (UnicodeDecodeError, UnicodeError):
+                continue
+            if decoded.startswith('<'):
+                return decoded.encode('utf-8')
+
+        # Contenuto firmato (.p7m): estrai l'XML dall'involucro PKCS#7
+        if remove_signature is None:
+            _logger.warning(
+                "Contenuto non XML e remove_signature non disponibile "
+                "(dipendenza mancante, es. pyOpenSSL): impossibile decodificare "
+                "il file .p7m (account.move id=%s).", self.id,
+            )
+            return None
+        try:
+            unwrapped = remove_signature(raw)
+        except Exception as e:
+            _logger.warning(
+                "Rimozione firma .p7m fallita (account.move id=%s): %s", self.id, e,
+            )
+            unwrapped = None
+        if unwrapped and unwrapped.strip().startswith(b'<'):
+            _logger.info("XML estratto dall'involucro firmato .p7m (id=%s)", self.id)
+            return unwrapped
+        _logger.warning(
+            "remove_signature non ha prodotto un XML valido per il file .p7m "
+            "(account.move id=%s). Contenuto probabilmente non e' un PKCS#7 valido "
+            "oppure OpenSSL e il parser ASN1 di fallback hanno entrambi fallito.",
+            self.id,
+        )
         return None
 
     def _get_edi_xml_bytes(self):
@@ -204,9 +257,12 @@ class AccountMove(models.Model):
         anche i file firmati (.xml.p7m).
         """
         self.ensure_one()
+        Attachment = self.env['ir.attachment'].sudo()
 
         # 1. Tentativo diretto tramite Many2one l10n_it_edi_attachment_id
         att = getattr(self, 'l10n_it_edi_attachment_id', None)
+        if att:
+            att = att.sudo()
         if att and att.datas:
             xml = self._normalize_edi_xml(base64.b64decode(att.datas))
             if xml:
@@ -232,13 +288,13 @@ class AccountMove(models.Model):
         if self.move_type in ('out_invoice', 'out_refund'):
             xml_name = getattr(self, 'l10n_it_edi_attachment_name', None)
             if xml_name:
-                att = self.env['ir.attachment'].search([
+                att = Attachment.search([
                     ('name', '=', xml_name),
                     ('res_model', '=', 'account.move'),
                     ('res_id', '=', self.id),
                 ], limit=1)
                 if not att:
-                    att = self.env['ir.attachment'].search([
+                    att = Attachment.search([
                         ('name', '=', xml_name),
                     ], limit=1, order='id desc')
                 if att and att.datas:
@@ -253,13 +309,16 @@ class AccountMove(models.Model):
         base_domain = [
             ('res_model', '=', 'account.move'),
             ('res_id', '=', self.id),
-            '|', ('name', 'ilike', '.xml'), ('name', 'ilike', '.p7m'),
+            '|', '|', '|',
+            ('name', 'ilike', '.xml'), ('name', 'ilike', '.p7m'),
+            ('mimetype', 'in', ['text/xml', 'application/xml', 'application/pkcs7-mime']),
+            ('mimetype', 'ilike', 'xml'),
         ]
-        atts = self.env['ir.attachment'].search(
+        atts = Attachment.search(
             base_domain, order='id desc',
         )
         # Allegati legati a un campo (res_field), esclusi dalla search standard
-        atts |= self.env['ir.attachment'].search(
+        atts |= Attachment.search(
             base_domain + [('res_field', '!=', False)], order='id desc',
         )
         for att in atts:
@@ -274,7 +333,7 @@ class AccountMove(models.Model):
             "Nessun XML EDI trovato per account.move id=%s (move_type=%s). "
             "Allegati presenti: %s",
             self.id, self.move_type,
-            self.env['ir.attachment'].search([
+            Attachment.search([
                 ('res_model', '=', 'account.move'),
                 ('res_id', '=', self.id),
             ]).mapped('name'),
