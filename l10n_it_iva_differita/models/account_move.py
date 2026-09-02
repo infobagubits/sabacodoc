@@ -62,19 +62,19 @@ class AccountMove(models.Model):
         return account, journal
 
     @staticmethod
-    def _last_day_of_month(ref_date):
-        """Restituisce l'ultimo giorno del mese di ref_date."""
-        next_month = ref_date.replace(day=1) + datetime.timedelta(days=32)
-        return next_month.replace(day=1) - datetime.timedelta(days=1)
+    def _last_day_of_previous_month(ref_date):
+        """Restituisce l'ultimo giorno del mese precedente a quello di ref_date."""
+        return ref_date.replace(day=1) - datetime.timedelta(days=1)
 
     # ── Override action_post ──────────────────────────────────────────────────
 
     def action_post(self):
         """Intercetta la conferma: se iva_differita, sostituisce i conti IVA
         e crea la registrazione automatica di storno."""
+        differita_data_by_move = {}
         for move in self:
             if move.iva_differita and move.move_type in ('in_invoice', 'in_refund'):
-                move._apply_iva_differita_accounts()
+                differita_data_by_move[move.id] = move._apply_iva_differita_accounts()
 
         res = super().action_post()
 
@@ -85,7 +85,9 @@ class AccountMove(models.Model):
                 and move.state == 'posted'
                 and not move.iva_differita_move_id
             ):
-                storno = move._create_iva_differita_storno()
+                storno = move._create_iva_differita_storno(
+                    differita_data_by_move.get(move.id, {})
+                )
                 move.iva_differita_move_id = storno.id
 
         return res
@@ -93,84 +95,143 @@ class AccountMove(models.Model):
     # ── Sostituzione conti IVA sulle righe ───────────────────────────────────
 
     def _apply_iva_differita_accounts(self):
-        """Sostituisce il conto Credito IVA con il conto IVA differita
-        su tutte le righe di tipo 'tax' della fattura."""
+        """Sostituisce il conto Credito IVA con il conto IVA differita sulle
+        righe imposta della fattura e rimuove i tag di griglia IVA sia dalla
+        riga imposta sia dalle righe base (imponibile) collegate alla stessa
+        tassa.
+
+        Né l'importo IVA né l'imponibile devono comparire nel registro/nella
+        liquidazione del mese della fattura: entrambi vengono riportati nel
+        mese precedente tramite la registrazione di storno (vedi
+        _create_iva_differita_storno). I dati originali (conto, importo, tag)
+        vengono restituiti per essere usati nello storno.
+        """
         self.ensure_one()
         account_differita, _journal = self._get_iva_differita_config()
 
-        # I conti IVA acquisti tipici: cerchiamo le righe con tax_line_id
-        # (righe generate automaticamente dalla tassa) che abbiano un conto
-        # di tipo credito IVA (account.account con tag IVA in Dare/Avere).
-        # Sostituiamo il conto con quello IVA differita.
+        # Righe imposta generate dalla tassa
         iva_lines = self.line_ids.filtered(
             lambda l: l.tax_line_id and l.display_type == 'tax'
         )
         if not iva_lines:
-            return
+            return {}
+
+        # Righe base (imponibile) collegate alla/e stessa/e tassa/e
+        taxes = iva_lines.tax_line_id
+        base_lines = self.line_ids.filtered(
+            lambda l: l.display_type == 'product' and (l.tax_ids & taxes)
+        )
+
+        differita_data = {}
+
+        for line in base_lines:
+            differita_data[line.id] = {
+                'kind': 'base',
+                'account_id': line.account_id.id,
+                'amount': line.balance,
+                'tags': line.tax_tag_ids.ids,
+                'invert': line.tax_tag_invert,
+                'tax_ids': line.tax_ids.ids,
+            }
+            line.tax_tag_ids = [(5, 0, 0)]
+            line.tax_tag_invert = False
 
         for line in iva_lines:
+            differita_data[line.id] = {
+                'kind': 'tax',
+                'account_id': line.account_id.id,
+                'amount': line.balance,
+                'tags': line.tax_tag_ids.ids,
+                'invert': line.tax_tag_invert,
+                'tax_id': line.tax_line_id.id,
+            }
             line.account_id = account_differita
+            line.tax_tag_ids = [(5, 0, 0)]
+            line.tax_tag_invert = False
+
+        return differita_data
 
     # ── Creazione registrazione di storno ─────────────────────────────────────
 
-    def _create_iva_differita_storno(self):
-        """Crea la registrazione di storno nel giornale Operazioni varie:
-        - Data: ultimo giorno del mese precedente alla data contabile
-        - Dare:  Credito IVA  (il conto originale della tassa)
-        - Avere: IVA differita (il conto usato sulla fattura)
+    def _create_iva_differita_storno(self, differita_data=None):
+        """Crea la registrazione di storno nel giornale Operazioni varie,
+        datata all'ultimo giorno del mese precedente alla fattura:
+
+        - Riga imposta: Dare Credito IVA (conto originale) / Avere IVA
+          differita, con tax_line_id impostato sulla tassa originale in modo
+          che l'importo compaia nella tabella "Imposta applicata/Deducibile"
+          del mese dello storno.
+        - Riga base: coppia di righe sullo stesso conto imponibile originale
+          (una a debito, una a credito, a saldo zero) dove solo la prima
+          porta i tag di griglia IVA, così che l'imponibile risulti nella
+          griglia del mese dello storno senza spostare l'effetto economico
+          dal conto di costo/ricavo originale.
         """
+        differita_data = differita_data or {}
         self.ensure_one()
         account_differita, journal = self._get_iva_differita_config()
 
-        # Data della registrazione = ultimo giorno del mese della data fattura
-        ref_date = self.invoice_date or self.date or fields.Date.context_today(self)
-        storno_date = self._last_day_of_month(ref_date)
-
-        # Raccogliamo le righe di tipo tax sulla fattura confermata
-        iva_lines = self.line_ids.filtered(
-            lambda l: l.tax_line_id and l.display_type == 'tax'
-        )
-        if not iva_lines:
+        if not differita_data:
             return self.env['account.move']
 
-        # Recuperiamo il conto IVA "originale" dalla tassa stessa.
-        # Se la tassa ha un conto di repartizione specifico lo usiamo,
-        # altrimenti fallback al primo account_id trovato nella tassa.
+        # Data della registrazione = ultimo giorno del mese precedente alla
+        # data contabile della fattura (non alla data fattura/documento)
+        ref_date = self.date or self.invoice_date or fields.Date.context_today(self)
+        storno_date = self._last_day_of_previous_month(ref_date)
+
         # Distribuzione analitica: aggregata dalle righe prodotto della fattura
         analytic_distribution = self._get_aggregated_analytic_distribution()
+        name = _('Storno IVA differita – %s') % (self.name or '')
 
         storno_line_vals = []
-        for line in iva_lines:
-            tax = line.tax_line_id
-            # Conto Credito IVA: lo prendiamo dalle repartition line della tassa
-            # (tipo 'tax', use_in_tax_closing=True o il primo disponibile).
-            credito_iva_account = self._get_credito_iva_account(tax)
-            if not credito_iva_account:
-                raise UserError(
-                    _("Impossibile determinare il conto Credito IVA per la tassa '%s'. "
-                      "Verifica le righe di ripartizione della tassa.") % tax.name
-                )
+        for data in differita_data.values():
+            amount = abs(data['amount'])
+            analytic = analytic_distribution or False
+            tag_ids = data['tags']
+            tag_invert = data['invert']
 
-            amount = abs(line.balance)
-            analytic = line.analytic_distribution or analytic_distribution or False
-            # Su fattura fornitore la riga IVA ha balance negativo (avere)
-            # Storno: Dare = Credito IVA, Avere = IVA differita
-            storno_line_vals.append({
-                'account_id': credito_iva_account.id,
-                'name': _('Storno IVA differita – %s') % (self.name or ''),
-                'debit': amount,
-                'credit': 0.0,
-                'tax_line_id': False,
-                'analytic_distribution': analytic,
-            })
-            storno_line_vals.append({
-                'account_id': account_differita.id,
-                'name': _('Storno IVA differita – %s') % (self.name or ''),
-                'debit': 0.0,
-                'credit': amount,
-                'tax_line_id': False,
-                'analytic_distribution': analytic,
-            })
+            if data['kind'] == 'tax':
+                # Storno: Dare = Credito IVA, Avere = IVA differita
+                storno_line_vals.append({
+                    'account_id': data['account_id'],
+                    'name': name,
+                    'debit': amount,
+                    'credit': 0.0,
+                    'tax_line_id': data['tax_id'],
+                    'analytic_distribution': analytic,
+                    'tax_tag_ids': [(6, 0, tag_ids)],
+                    'tax_tag_invert': tag_invert,
+                })
+                storno_line_vals.append({
+                    'account_id': account_differita.id,
+                    'name': name,
+                    'debit': 0.0,
+                    'credit': amount,
+                    'tax_line_id': False,
+                    'analytic_distribution': analytic,
+                })
+            else:
+                # Coppia a saldo zero sullo stesso conto imponibile: sposta
+                # solo il tag di griglia IVA nel mese dello storno, senza
+                # alterare il conto di costo/ricavo della fattura originale.
+                positive = data['amount'] >= 0
+                storno_line_vals.append({
+                    'account_id': data['account_id'],
+                    'name': name,
+                    'debit': amount if positive else 0.0,
+                    'credit': 0.0 if positive else amount,
+                    'tax_ids': [(6, 0, data['tax_ids'])],
+                    'analytic_distribution': analytic,
+                    'tax_tag_ids': [(6, 0, tag_ids)],
+                    'tax_tag_invert': tag_invert,
+                })
+                storno_line_vals.append({
+                    'account_id': data['account_id'],
+                    'name': name,
+                    'debit': 0.0 if positive else amount,
+                    'credit': amount if positive else 0.0,
+                    'analytic_distribution': analytic,
+                })
 
         move_vals = {
             'move_type': 'entry',
@@ -201,17 +262,6 @@ class AccountMove(models.Model):
             return distributions[0]
         # Altrimenti usiamo la distribuzione della prima riga come fallback
         return distributions[0]
-
-    def _get_credito_iva_account(self, tax):
-        """Restituisce il conto Credito IVA associato alla tassa,
-        cercando nelle repartition lines di tipo 'tax'."""
-        # Repartition lines per acquisti (invoice)
-        rep_lines = tax.invoice_repartition_line_ids.filtered(
-            lambda r: r.repartition_type == 'tax' and r.account_id
-        )
-        if rep_lines:
-            return rep_lines[0].account_id
-        return False
 
     # ── Azione smart button ───────────────────────────────────────────────────
 
