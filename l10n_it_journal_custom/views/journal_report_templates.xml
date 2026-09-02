@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ✅ SOLUÇÃO: Remove page-break do último journal quando não há global_tax_summary -->
+    <!-- Usa journal_vals_last (variável automática do foreach QWeb) -->
+    <template id="journal_report_pdf_conditional_pagebreak" inherit_id="account_reports.journal_report_pdf_export_main" priority="20">
+        <xpath expr="//t[@t-foreach=&quot;document_data['journals_vals']&quot;]/section" position="attributes">
+            <!-- Se é último journal E não tem global_tax_summary: page-break auto (sem quebra) -->
+            <!-- Senão: page-break always (comportamento padrão) -->
+            <attribute name="t-attf-style">page-break-after: {{ 'auto' if (journal_vals_last and not document_data.get('global_tax_summary')) else 'always' }};</attribute>
+        </xpath>
+    </template>
+
+
+    <!-- Template per header personalizzato dei Registri IVA -->
+    <template id="custom_header_layout">
+        <div class="header"
+            style="padding: 50px 15px 10px 15px; background-color: #ffffff; margin-top: 0;">
+            <div class="row align-items-center">
+                <div class="col-4" style="font-size: 12px; line-height: 1.3;">
+                    <div style="font-weight: bold; color: #000;">
+                        <t t-out="company.name or 'Nome Azienda'" />
+                    </div>
+                    <div style="color: #666;">
+                        <t t-out="company.street or ''" />
+                    </div>
+                    <div style="color: #666;">
+                        <t t-out="company.zip or ''" /> - <t t-out="company.city or ''" /> - <t
+                            t-out="company.state_id.code or ''" />
+                    </div>
+                    <div style="color: #666;">Italia</div>
+                    <div style="margin-top: 0px;">
+                        <div style="color: #000;">Partita IVA: <t t-out="company.vat or ''" /></div>
+                        <div style="color: #000;">Codice Fiscale: <t
+                                t-out="company.l10n_it_codice_fiscale or ''" /></div>
+                    </div>
+                </div>
+                <div class="col-4 text-center">
+                    <div style="font-size: 18px; font-weight: bold; margin-bottom: 8px;">
+                        <t t-out="report.name" />
+                    </div>
+                    <div style="font-size: 14px; margin-top: 5px; color: #666;">
+                        <t
+                            t-out="format_date_dd_mm_yyyy(options.get('date', {}).get('date_from', ''))" />
+                        - <t
+                            t-out="format_date_dd_mm_yyyy(options.get('date', {}).get('date_to', ''))" />
+                    </div>
+                </div>
+                <div class="col-4"></div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Template per footer personalizzato con numerazione avanzata -->
+    <template id="registri_iva_internal_layout">
+        <div class="header" style="font-size: 12px; height: 80px; margin: 0 15px 35px;">
+            <div class="row">
+                <!-- COLONNA VUOTA - Data rimossa come richiesto -->
+                <div class="col-3">
+                    <!-- Data rimossa per personalizzazione layout -->
+                </div>
+                <div class="col-4 text-center"></div>
+
+                <!-- NUMERAZIONE CON OFFSET PERSONALIZZATO -->
+                <div class="col-2 offset-3 text-end">
+                    <t t-set="page_offset"
+                        t-value="int(env['ir.config_parameter'].sudo().get_param('l10n_it_custom.page_offset', '1'))" />
+                    <t t-set="offset_enabled"
+                        t-value="env['ir.config_parameter'].sudo().get_param('l10n_it_custom.page_offset_enabled', 'False') == 'True'" />
+
+                    <ul class="list-inline">
+                        <li class="list-inline-item">
+                            <span class="page" />
+                        </li>
+                        <li class="list-inline-item" style="display: none;">
+                            <span class="topage" />
+                        </li>
+                    </ul>
+
+                    <!-- JavaScript per offset SOLO quando abilitato -->
+                    <t t-if="offset_enabled">
+                        <script> setTimeout(function() { var startPage = <t t-esc="page_offset" />;
+                            var pageEl = document.querySelector('span.page'); var topageEl =
+                            document.querySelector('span.topage'); if (pageEl &amp;&amp; topageEl) {
+                            var currentPage = parseInt(pageEl.textContent) || 1; var totalPages =
+                            parseInt(topageEl.textContent) || 1; pageEl.textContent = startPage +
+                            currentPage - 1; topageEl.textContent = startPage + totalPages - 1; } },
+                            100); </script>
+                    </t>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Template personalizzato per sezione imposte con totali per Fatture Fornitore -->
+    <template id="pdf_journal_report_taxes_summary_with_totals"
+        inherit_id="account_reports.pdf_journal_report_taxes_summary">
+        <xpath expr="//tbody" position="after">
+            <!-- Riga TOTALI per Fatture Fornitore -->
+            <t t-if="tax_summary.get('totals')">
+                <tfoot>
+                    <tr
+                        style="border-top: 2px solid #000; font-weight: bold; background-color: #f8f9fa;">
+                        <td t-if="len(taxes) > 1" style="font-weight: bold;">TOTALE</td>
+                        <td style="font-weight: bold;">TOTALE</td>
+                        <td class="o_right_alignment" style="font-weight: bold;"
+                            t-out="tax_summary['totals']['total_base_amount']" />
+                        <td class="o_right_alignment" style="font-weight: bold;"
+                            t-out="tax_summary['totals']['total_tax_amount']" />
+                        <td t-if="tax_summary.get('tax_non_deductible_column')"
+                            class="o_right_alignment" style="font-weight: bold;"
+                            t-out="tax_summary['totals']['total_non_deductible']" />
+                        <td t-if="tax_summary.get('tax_deductible_column')"
+                            class="o_right_alignment" style="font-weight: bold;"
+                            t-out="tax_summary['totals']['total_deductible']" />
+                        <td t-if="tax_summary.get('tax_due_column')" class="o_right_alignment"
+                            style="font-weight: bold;" t-out="tax_summary['totals']['total_due']" />
+                    </tr>
+                </tfoot>
+            </t>
+        </xpath>
+
+        <!-- Modifica condizione per renderizzare sezione tax grids solo quando ci sono dati -->
+        <xpath expr="//t[@t-if='grids']" position="replace">
+            <t t-if="grids and grids.keys()">
+                <div class="row o_section_subtitle">
+                    <p>Griglie Imposte Interessate</p>
+                </div>
+                <div class="row tax_grid">
+                    <table class="o_table">
+                        <thead>
+                            <tr>
+                                <th t-if="len(grids) > 1">Paese</th>
+                                <th>Griglia</th>
+                                <th class="o_right_alignment">+</th>
+                                <th class="o_right_alignment">-</th>
+                                <th class="o_right_alignment">Impatto su Griglia</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="grids" t-as="country_name">
+                                <tr t-foreach="grids[country_name]" t-as="grid_name">
+                                    <t t-if="country_name_size > 1">
+                                        <td>
+                                            <t t-if="grid_name_index == 0" t-out="country_name" />
+                                        </td>
+                                    </t>
+                                    <td t-out="grid_name" />
+                                    <td class="o_right_alignment"
+                                        t-out="grids[country_name][grid_name].get('+', 0)" />
+                                    <td class="o_right_alignment"
+                                        t-out="grids[country_name][grid_name].get('-', 0)" />
+                                    <td class="o_right_alignment"
+                                        t-out="grids[country_name][grid_name]['impact']" />
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Template specifico per body report senza header standard -->
+    <template id="registri_iva_body_without_header">
+        <html>
+            <head>
+                <base t-att-href="base_url" />
+                <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+                <t t-call-assets="account_reports.assets_pdf_export" t-js="False" />
+                <!-- CSS personalizzato per rimuovere grassetto da tutte le righe -->
+                <style>
+                    /* Rimuovere grassetto dall'ultima riga del report */
+                    .o_table > tbody > tr:last-child {
+                    font-weight: normal !important;
+                    }
+
+                    /* Rimuovere grassetto anche dalla prima riga */
+                    .o_table > tbody > tr:first-child {
+                    font-weight: normal !important;
+                    }
+
+                    /* Garantire che tutte le righe non abbiano grassetto */
+                    .o_table > tbody > tr {
+                    font-weight: normal !important;
+                    }
+
+                    /* Rimuovere la linea chiara dall'ultima riga */
+                    .o_table > tbody > tr:last-child {
+                    border-top: none !important;
+                    }
+
+                    /* Ajustar larguras das colunas */
+                    .o_table th:nth-child(3) {
+                    width: 5% !important; /* Causale - reduzida */
+                    }
+                    .o_table th:nth-child(6) {
+                    width: 22% !important; /* Ragione sociale - aumentada */
+                    }
+                    .o_table th:nth-child(7) {
+                    width: 14% !important; /* P.IVA/CF - aumentada */
+                    }
+                    .o_table th:nth-child(8) {
+                    width: 14% !important; /* Totale fattura - aumentada */
+                    }
+
+                    /* Processare le quebras de linha apenas nas colunas específicas */
+                    .o_table th:nth-child(6),
+                    .o_table th:nth-child(7),
+                    .o_table th:nth-child(8) {
+                    white-space: pre-line !important;
+                    line-height: 0.9 !important;
+                    vertical-align: top !important;
+                    padding-top: 0px !important;
+                    padding-bottom: 0px !important;
+                    margin-top: 0px !important;
+                    margin-bottom: 0px !important;
+                    text-align: left !important;
+                    }
+
+                    /* Garantir que "Totale fattura" não quebre no meio */
+                    .o_table th:nth-child(8) {
+                    white-space: pre-line !important;
+                    word-break: keep-all !important;
+                    }
+                </style>
+            </head>
+            <body
+                t-att-dir="env['res.lang']._get_data(code=lang or env.user.lang).direction or 'ltr'">
+                <div t-att-class="options['css_custom_class']">
+                    <!-- SENZA HEADER STANDARD - sarà sostituito dal nostro header personalizzato -->
+
+                    <!-- Registri contabili (contenuto principale mantenuto) -->
+                    <t t-foreach="document_data['journals_vals']" t-as="journal_vals">
+                        <t t-set="is_last_section"
+                            t-value="journal_vals_index == len(document_data['journals_vals']) - 1" />
+                        <section
+                            t-att-style="'page-break-after: always;' if not is_last_section else ''">
+                            <div class="o_section_title">
+                                <t t-out="journal_vals.get('name')" />
+                            </div>
+                            <div class="d-flex align-items-start">
+                                <t t-call="account_reports.journal_report_pdf_body_default" />
+                            </div>
+
+                            <t t-if="journal_vals.get('tax_summary')">
+                                <!-- Usa template personalizzato con totali -->
+                                <t
+                                    t-call="l10n_it_journal_custom.pdf_journal_report_taxes_summary_with_totals">
+                                    <t t-set="tax_summary" t-value="journal_vals['tax_summary']" />
+                                </t>
+                            </t>
+                        </section>
+                    </t>
+
+                    <!-- ✅ SEZIONE "RIEPILOGO GENERALE IMPOSTE" RIMOSSA -->
+                    <!-- La sezione è stata rimossa come richiesto -->
+                </div>
+            </body>
+        </html>
+    </template>
+
+
+</odoo> 
