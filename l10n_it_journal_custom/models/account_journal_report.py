@@ -643,32 +643,34 @@ class JournalReportCustomHandler(models.AbstractModel):
                         # Questi impostos potrebbero non avere tax_line_id perché Odoo li rimuove se valore = 0
                         if move_record.invoice_line_ids:
                             _logger.info(f"Analizzando {len(move_record.invoice_line_ids)} invoice_lines per impostos 0%")
-                            
+
+                            # Le imposte a 0% non generano tax_line: la base va sommata riga per riga.
+                            # Accumulo in un dizionario separato per non interferire con le voci del
+                            # METODO 1, che portano già la base aggregata da Odoo.
+                            zero_tax_bases = {}
+
                             for inv_line in move_record.invoice_line_ids:
                                 if inv_line.tax_ids:
                                     _logger.info(f"Linea fattura: {inv_line.name}, Impostos applicati: {len(inv_line.tax_ids)}")
-                                    
+
                                     for tax in inv_line.tax_ids:
                                         tax_name = tax.name
-                                        
+
                                         # Se questo imposto NON è già presente nel consolidato
                                         # significa che è un imposto a 0% che non ha generato tax_line
                                         if tax_name not in tax_consolidated:
-                                            _logger.info(f"Trovato imposto 0% non in consolidato: {tax_name}")
-                                            
-                                            # Calcolare base imponibile per questo imposto
-                                            # Base = prezzo_totale della riga (price_subtotal)
-                                            tax_base = abs(inv_line.price_subtotal or 0.0) * sign
-                                            
-                                            # Valor do imposto será sempre 0 se não foi criado tax_line
-                                            tax_amount = 0.0
-                                            
-                                            tax_consolidated[tax_name] = {
-                                                'tax_name': tax_name,
-                                                'tax_amount': tax_amount,
-                                                'tax_base': tax_base
-                                            }
-                                            _logger.info(f"Aggiunto imposto 0%: {tax_name} - Base: {tax_base}, Importo: {tax_amount}")
+                                            # Somma grezza: abs() e segno si applicano una sola volta,
+                                            # alla fine, così le righe negative si compensano.
+                                            zero_tax_bases[tax_name] = zero_tax_bases.get(tax_name, 0.0) + (inv_line.price_subtotal or 0.0)
+                                            _logger.info(f"Accumulata base imposta 0%: {tax_name} - Parziale: {zero_tax_bases[tax_name]}")
+
+                            for tax_name, base_raw in zero_tax_bases.items():
+                                tax_consolidated[tax_name] = {
+                                    'tax_name': tax_name,
+                                    'tax_amount': 0.0,
+                                    'tax_base': abs(base_raw) * sign,
+                                }
+                                _logger.info(f"Aggiunto imposto 0%: {tax_name} - Base: {tax_consolidated[tax_name]['tax_base']}")
                         
                         _logger.info(f"Consolidamento completato: {len(tax_consolidated)} impostos únicos (inclusi 0%)")
                         
