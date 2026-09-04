@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Personalizzazione Registri Contabili Italiani',
-    'version': '18.0.1.4',
+    'version': '18.0.1.5',
     'sequence': '0',
     'category': 'Localizzazione/Italia',
     'summary': 'Personalizzazioni avanzate per "Registri IVA" e "Fatture Fornitore" - Layout dinamico, totali automatici, consolidamento imposte e customizzazioni specifiche',
