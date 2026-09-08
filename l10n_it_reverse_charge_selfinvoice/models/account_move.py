@@ -4,7 +4,8 @@ from odoo.exceptions import UserError
 
 L10N_IT_RC_INTEGRATION_TD = ("TD16", "TD17", "TD18", "TD19")
 L10N_IT_RC_TAX_ACCOUNT_CODE = "350101"
-L10N_IT_RC_TAX_TRANSIT_ACCOUNT_CODE = "350123"
+L10N_IT_RC_TAX_CREDIT_ACCOUNT_CODE = "350121"
+L10N_IT_RC_TAX_TRANSIT_ACCOUNT_CODE = "99999903"
 
 
 class AccountMove(models.Model):
@@ -198,27 +199,32 @@ class AccountMove(models.Model):
         Account = self.env["account.account"]
         account_from = Account.search([
             ("code", "=", L10N_IT_RC_TAX_ACCOUNT_CODE),
-            ("company_id", "=", self.company_id.id),
+            ("company_ids", "in", self.company_id.id),
+        ], limit=1)
+        account_credit = Account.search([
+            ("code", "=", L10N_IT_RC_TAX_CREDIT_ACCOUNT_CODE),
+            ("company_ids", "in", self.company_id.id),
         ], limit=1)
         account_to = Account.search([
             ("code", "=", L10N_IT_RC_TAX_TRANSIT_ACCOUNT_CODE),
-            ("company_id", "=", self.company_id.id),
+            ("company_ids", "in", self.company_id.id),
         ], limit=1)
-        if not account_from or not account_to:
+        if not account_from or not account_credit or not account_to:
             raise UserError(_(
-                "Per gestire il reverse charge servono i conti %(a)s e "
-                "%(b)s nel piano dei conti dell'azienda '%(c)s'."
+                "Per gestire il reverse charge servono i conti %(a)s, "
+                "%(b)s e %(c)s nel piano dei conti dell'azienda '%(d)s'."
             ) % {
                 "a": L10N_IT_RC_TAX_ACCOUNT_CODE,
-                "b": L10N_IT_RC_TAX_TRANSIT_ACCOUNT_CODE,
-                "c": self.company_id.name,
+                "b": L10N_IT_RC_TAX_CREDIT_ACCOUNT_CODE,
+                "c": L10N_IT_RC_TAX_TRANSIT_ACCOUNT_CODE,
+                "d": self.company_id.name,
             })
         if not account_to.reconcile:
             raise UserError(_(
                 "Il conto %(code)s (%(name)s) deve avere l'opzione "
                 "'Riconciliabile' attiva per gestire il reverse charge."
             ) % {"code": account_to.code, "name": account_to.name})
-        return account_from, account_to
+        return account_from, account_credit, account_to
 
     def _l10n_it_rc_split_payable_net_of_tax(self):
         """Sposta le righe IVA della fattura fornitore dal conto %(a)s al
@@ -228,41 +234,53 @@ class AccountMove(models.Model):
         viene poi riconciliata con la riga IVA (vedi
         _l10n_it_rc_reconcile_tax_transit), azzerando il conto."""
         self.ensure_one()
-        account_from, account_to = self._l10n_it_rc_get_tax_transit_accounts()
-        tax_lines = self.line_ids.filtered(
+        move = self.with_context(skip_account_move_synchronization=True)
+        account_from, account_credit, account_to = move._l10n_it_rc_get_tax_transit_accounts()
+        tax_lines = move.line_ids.filtered(
             lambda l: l.display_type == "tax" and l.account_id == account_from
         )
         if not tax_lines:
             return
-        tax_lines.account_id = account_to.id
 
-        term_lines = self.line_ids.filtered(
+        term_lines = move.line_ids.filtered(
             lambda l: l.display_type == "payment_term"
         )
         if not term_lines:
             return
         tax_balance = sum(tax_lines.mapped("balance"))
         tax_amount_currency = sum(tax_lines.mapped("amount_currency"))
-        if self.company_id.currency_id.is_zero(tax_balance):
+        if move.company_id.currency_id.is_zero(tax_balance):
             return
 
         first_term = term_lines[0]
-        first_term.balance = first_term.balance + tax_balance
-        first_term.amount_currency = first_term.amount_currency + tax_amount_currency
-
-        self.line_ids = [(0, 0, {
-            "name": first_term.name,
-            "display_type": "payment_term",
-            "account_id": account_to.id,
-            "partner_id": first_term.partner_id.id,
-            "currency_id": self.currency_id.id,
-            "balance": -tax_balance,
-            "amount_currency": -tax_amount_currency,
-        })]
+        # Tutte le modifiche vanno in un'unica write sul move: account.move.line
+        # verifica il bilancio dell'entry ad ogni write, quindi non si possono
+        # spezzare cambio conto IVA, riduzione riga di debito e riga
+        # transitoria in chiamate separate senza passare per stati intermedi
+        # sbilanciati.
+        move.write({
+            "line_ids": [
+                (1, line.id, {"account_id": account_credit.id})
+                for line in tax_lines
+            ] + [
+                (1, first_term.id, {
+                    "balance": first_term.balance + tax_balance,
+                    "amount_currency": first_term.amount_currency + tax_amount_currency,
+                }),
+                (0, 0, {
+                    "name": first_term.name,
+                    "account_id": account_to.id,
+                    "partner_id": first_term.partner_id.id,
+                    "currency_id": self.currency_id.id,
+                    "balance": -tax_balance,
+                    "amount_currency": -tax_amount_currency,
+                }),
+            ]
+        })
 
     def _l10n_it_rc_reconcile_tax_transit(self):
         self.ensure_one()
-        _account_from, account_to = self._l10n_it_rc_get_tax_transit_accounts()
+        _account_from, _account_credit, account_to = self._l10n_it_rc_get_tax_transit_accounts()
         lines = self.line_ids.filtered(
             lambda l: l.account_id == account_to and not l.reconciled
         )
