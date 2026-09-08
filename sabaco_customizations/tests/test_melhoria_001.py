@@ -159,3 +159,53 @@ class TestMelhoria001(TransactionCase):
         with self.assertRaises(UserError) as cm:
             inv.action_post()
         self.assertIn('(+2 altri)', str(cm.exception))
+
+    # ------------------------------------------------------------------
+    # BUG-007 — righe senza prodotto (caso reale: import XML EDI)
+    # ------------------------------------------------------------------
+    def test_in_invoice_sem_produto_sem_imposta_bloqueia(self):
+        """Riga EDI senza prodotto e senza imposta deve bloccare la conferma."""
+        inv = self._invoice('in_invoice', [self._line(tax=None, product=False)])
+        with self.assertRaises(UserError):
+            inv.action_post()
+        self.assertEqual(inv.state, 'draft', "Fattura non deve essere confermata")
+
+    def test_out_invoice_sem_produto_sem_imposta_bloqueia(self):
+        inv = self._invoice('out_invoice', [self._line(tax=None, product=False)])
+        with self.assertRaises(UserError):
+            inv.action_post()
+        self.assertEqual(inv.state, 'draft')
+
+    def test_in_invoice_sem_produto_com_imposta_confirma(self):
+        """Senza prodotto ma con imposta: la conferma deve passare."""
+        inv = self._invoice('in_invoice', [
+            self._line(tax=self.tax_purchase, product=False),
+        ])
+        inv.action_post()
+        self.assertEqual(inv.state, 'posted')
+
+    def test_mensagem_usa_name_quando_non_ha_prodotto(self):
+        """Senza prodotto, il messaggio identifica la riga con la descrizione."""
+        inv = self._invoice('in_invoice', [(0, 0, {
+            'name': '(#)TIM CARD HALF ECO PMI/TOP 256K Y48H',
+            'quantity': 1,
+            'price_unit': 100.0,
+            'tax_ids': [(5, 0, 0)],
+        })])
+        with self.assertRaises(UserError) as cm:
+            inv.action_post()
+        msg = str(cm.exception)
+        self.assertIn('(#)TIM CARD HALF ECO PMI/TOP 256K Y48H', msg)
+        self.assertIn('senza imposta', msg)
+
+    def test_mensagem_fallback_riga_senza_descrizione(self):
+        """Riga senza prodotto e senza descrizione: fallback testuale."""
+        inv = self._invoice('in_invoice', [(0, 0, {
+            'name': '',
+            'quantity': 1,
+            'price_unit': 100.0,
+            'tax_ids': [(5, 0, 0)],
+        })])
+        with self.assertRaises(UserError) as cm:
+            inv.action_post()
+        self.assertIn('(riga senza descrizione)', str(cm.exception))

@@ -31,28 +31,37 @@ class AccountMove(models.Model):
     )
 
     def action_post(self):
-        """Blocca la conferma di fatture con righe prodotto prive di imposta."""
+        """Blocca la conferma di fatture con righe prive di imposta.
+
+        La regola vale anche per le righe senza prodotto (tipico delle fatture
+        importate dall'XML EDI, dove ``product_id`` è vuoto): l'identificazione
+        della riga usa il prodotto se c'è, altrimenti la descrizione.
+        """
         for move in self:
             if move.move_type not in ('out_invoice', 'in_invoice'):
                 continue
 
             missing = move.invoice_line_ids.filtered(
                 lambda l: l.display_type not in ('line_section', 'line_note')
-                and l.product_id
                 and not l.tax_ids
             )
             if missing:
-                product_names = ', '.join(missing.mapped('product_id.name')[:5])
+                labels = [
+                    line.product_id.display_name or line.name
+                    or _('(riga senza descrizione)')
+                    for line in missing
+                ]
+                line_names = ', '.join(labels[:5])
                 if len(missing) > 5:
-                    product_names += f' (+{len(missing) - 5} altri)'
+                    line_names += f' (+{len(missing) - 5} altri)'
 
                 raise UserError(_(
                     'Impossibile confermare la fattura %(move)s: '
-                    'ci sono %(count)s righe prodotto senza imposta: %(products)s'
+                    'ci sono %(count)s righe senza imposta: %(lines)s'
                 ) % {
                     'move': move.display_name,
                     'count': len(missing),
-                    'products': product_names,
+                    'lines': line_names,
                 })
 
         return super().action_post()
