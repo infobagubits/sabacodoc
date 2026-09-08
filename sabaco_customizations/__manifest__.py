@@ -1,6 +1,6 @@
 {
     'name': 'Sabaco — Personalizzazioni',
-    'version': '18.0.1.0.4',
+    'version': '18.0.1.0.5',
     'category': 'Accounting',
     'summary': 'Personalizzazioni Sabaco (es. avviso totale fattura vs totale XML EDI)',
     'description': """
