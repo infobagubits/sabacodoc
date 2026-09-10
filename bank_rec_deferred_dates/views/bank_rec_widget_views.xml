@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--
+        Eredita la form del widget di riconciliazione bancaria e aggiunge
+        le due colonne alla lista incorporata di line_ids (dove compaiono
+        anche le righe delle "Operazioni manuali").
+
+        ID vista standard (verificare nella tua versione):
+            account_accountant.view_bank_rec_widget_form
+
+        Trova il nome esatto con:
+            Impostazioni > Tecnico > Viste  -> filtra per "bank.rec.widget"
+        oppure nel sorgente:
+            addons/account_accountant/views/bank_rec_widget_views.xml
+    -->
+    <record id="view_bank_rec_widget_form_deferred" model="ir.ui.view">
+        <field name="name">bank.rec.widget.form.deferred.dates</field>
+        <field name="model">bank.rec.widget</field>
+        <field name="inherit_id"
+                ref="account_accountant.view_bank_rec_widget_form"/>
+        <field name="arch" type="xml">
+
+            <!--
+                Inserisce le colonne dopo il campo "name" della lista interna.
+                Se nella tua versione il campo di riferimento è diverso
+                (es. 'date' o 'account_id'), cambia l'xpath di conseguenza.
+                Usa optional="show"/"hide" per non affollare la griglia.
+            -->
+            <xpath expr="//field[@name='line_ids']/list/field[@name='name']"
+                   position="after">
+                <field name="deferred_start_date" optional="show"/>
+                <field name="deferred_end_date" optional="show"/>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
