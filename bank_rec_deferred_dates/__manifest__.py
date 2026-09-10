@@ -2,15 +2,18 @@
 {
     'name': "Bank Reconciliation - Deferred Dates",
     'version': '18.0.1.0.0',
-    'summary': "Aggiunge Data inizio / Data fine (risconto) nelle "
-               "Operazioni manuali della riconciliazione bancaria",
+    'summary': "Data inizio / Data fine (risconto) nelle Operazioni manuali "
+               "della riconciliazione bancaria (widget OWL)",
     'category': 'Accounting/Accounting',
     'author': "Tuo Nome",
     'depends': ['account_accountant'],
-    'data': [
-        'views/bank_rec_widget_views.xml',
-    ],
-    # account_accountant è Enterprise → licenza Enterprise
+    # Nessun file 'data': la riconciliazione v18 non ha viste ir.ui.view,
+    # l'intervento è tutto lato client (patch del template OWL).
+    'assets': {
+        'web.assets_backend': [
+            'bank_rec_deferred_dates/static/src/bank_rec_form.xml',
+        ],
+    },
     'license': 'OEEL-1',
     'installable': True,
     'application': False,
