@@ -16,6 +16,10 @@ except ImportError:
 
 _logger = logging.getLogger(__name__)
 
+# Chiavi ir.config_parameter (valori iniziali in data/ir_config_parameter.xml)
+CORRISPETTIVI_ACCOUNT_PARAM = 'sabaco_customizations.corrispettivi_account_code'
+CORRISPETTIVI_JOURNAL_PREFIX_PARAM = 'sabaco_customizations.corrispettivi_journal_prefix'
+
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
@@ -28,6 +32,10 @@ class AccountMove(models.Model):
     xml_total_mismatch_warning = fields.Char(
         string='Avviso totale XML',
         compute='_compute_xml_total_mismatch_warning',
+    )
+    corrispettivi_mismatch_warning = fields.Char(
+        string='Avviso corrispettivi',
+        compute='_compute_corrispettivi_mismatch_warning',
     )
 
     def action_post(self):
@@ -257,3 +265,60 @@ class AccountMove(models.Model):
                     'invoice_total': invoice_total_fmt,
                     'xml_total': xml_total_fmt,
                 }
+
+    @api.depends(
+        'journal_id',
+        'line_ids.account_id',
+        'line_ids.debit',
+        'line_ids.credit',
+    )
+    def _compute_corrispettivi_mismatch_warning(self):
+        """Avvisa quando, sui giornali dei corrispettivi, il conto configurato
+        non quadra (totale Dare diverso dal totale Avere).
+
+        Solo avviso: non blocca il salvataggio né la conferma. Il conto e il
+        prefisso del giornale sono parametri di sistema, non valori fissi.
+        """
+        # sudo(): lettura di parametri di configurazione. L'utente contabile non ha
+        # diritto di lettura su ir.config_parameter; nessun dato sensibile è esposto.
+        params = self.env['ir.config_parameter'].sudo()
+        account_code = (params.get_param(CORRISPETTIVI_ACCOUNT_PARAM) or '').strip()
+        journal_prefix = (params.get_param(CORRISPETTIVI_JOURNAL_PREFIX_PARAM) or '').strip()
+
+        for move in self:
+            move.corrispettivi_mismatch_warning = False
+
+            # Parametri non configurati: nessun avviso, nessuna eccezione.
+            if not account_code or not journal_prefix:
+                continue
+
+            journal_name = (move.journal_id.name or '').strip()
+            if not journal_name.lower().startswith(journal_prefix.lower()):
+                continue
+
+            lines = move.line_ids.filtered(
+                lambda line: (line.account_id.code or '').strip() == account_code
+            )
+            if not lines:
+                continue
+
+            total_debit = sum(lines.mapped('debit'))
+            total_credit = sum(lines.mapped('credit'))
+            # debit/credit sono sempre nella valuta dell'azienda.
+            currency = move.company_currency_id or move.currency_id
+            if float_compare(
+                total_debit, total_credit, precision_rounding=currency.rounding,
+            ) == 0:
+                continue
+
+            move.corrispettivi_mismatch_warning = _(
+                "Attenzione: sul conto %(account)s i totali non coincidono — "
+                "Dare %(debit)s, Avere %(credit)s, differenza %(diff)s."
+            ) % {
+                'account': account_code,
+                'debit': formatLang(move.env, total_debit, currency_obj=currency),
+                'credit': formatLang(move.env, total_credit, currency_obj=currency),
+                'diff': formatLang(
+                    move.env, abs(total_debit - total_credit), currency_obj=currency,
+                ),
+            }

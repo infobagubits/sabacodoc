@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Conto da controllare sui giornali dei corrispettivi.
+             Modificabile in Impostazioni > Tecnico > Parametri di sistema. -->
+        <record id="param_corrispettivi_account_code" model="ir.config_parameter">
+            <field name="key">sabaco_customizations.corrispettivi_account_code</field>
+            <field name="value">110315</field>
+        </record>
+        <!-- Prefisso del nome dei giornali sui quali il controllo è attivo. -->
+        <record id="param_corrispettivi_journal_prefix" model="ir.config_parameter">
+            <field name="key">sabaco_customizations.corrispettivi_journal_prefix</field>
+            <field name="value">Corrispettivi</field>
+        </record>
+    </data>
+</odoo>
