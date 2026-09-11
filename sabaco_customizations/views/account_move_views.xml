@@ -13,6 +13,13 @@
                     <i class="fa fa-exclamation-triangle me-2"/>
                     <field name="xml_total_mismatch_warning" readonly="1" nolabel="1" class="d-inline"/>
                 </div>
+                <field name="corrispettivi_mismatch_warning" invisible="1"/>
+                <div class="alert alert-danger w-100 d-flex align-items-center gap-1"
+                     invisible="not corrispettivi_mismatch_warning"
+                     role="alert">
+                    <i class="fa fa-exclamation-triangle me-2"/>
+                    <field name="corrispettivi_mismatch_warning" readonly="1" nolabel="1" class="d-inline"/>
+                </div>
             </xpath>
         </field>
     </record>
