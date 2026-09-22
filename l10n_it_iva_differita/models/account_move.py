@@ -122,12 +122,9 @@ class AccountMove(models.Model):
             lambda l: l.display_type == 'product' and (l.tax_ids & taxes)
         )
 
+        # ── Snapshot dei dati originali (prima di qualsiasi modifica), da
+        # usare per la registrazione di storno.
         differita_data = {}
-        ctx_lines = self.line_ids.with_context(
-            skip_account_move_synchronization=True,
-            check_move_validity=False,
-        )
-
         for line in base_lines:
             differita_data[line.id] = {
                 'kind': 'base',
@@ -137,15 +134,6 @@ class AccountMove(models.Model):
                 'invert': line.tax_tag_invert,
                 'tax_ids': line.tax_ids.ids,
             }
-            vals = {
-                'tax_tag_ids': [(5, 0, 0)],
-                'tax_tag_invert': False,
-            }
-            mapped_taxes = line.tax_ids._get_iva_differita_mapped_taxes()
-            if mapped_taxes != line.tax_ids:
-                vals['tax_ids'] = [(6, 0, mapped_taxes.ids)]
-            ctx_lines.browse(line.id).write(vals)
-
         for line in iva_lines:
             differita_data[line.id] = {
                 'kind': 'tax',
@@ -155,15 +143,37 @@ class AccountMove(models.Model):
                 'invert': line.tax_tag_invert,
                 'tax_id': line.tax_line_id.id,
             }
-            vals = {
+
+        # ── Sostituzione delle imposte: si scrive solo `tax_ids` sulle righe
+        # base e si lascia che Odoo rigeneri correttamente le righe imposta
+        # collegate (con il relativo tax_repartition_line_id), così da non
+        # rompere la coerenza interna tra riga imposta e sua ripartizione.
+        for line in base_lines:
+            mapped_taxes = line.tax_ids._get_iva_differita_mapped_taxes()
+            if mapped_taxes != line.tax_ids:
+                line.tax_ids = [(6, 0, mapped_taxes.ids)]
+
+        # Le righe imposta potrebbero essere state rigenerate (nuovi id) a
+        # seguito della sostituzione di tax_ids sulle righe base: le
+        # rileggiamo. Le righe base mantengono invece il loro id originale.
+        iva_lines = self.line_ids.filtered(
+            lambda l: l.tax_line_id and l.display_type == 'tax'
+        )
+
+        # ── Spostamento conto IVA e svuotamento griglie: nessuna ulteriore
+        # rigenerazione delle righe deve scattare qui.
+        ctx_lines = self.line_ids.with_context(skip_account_move_synchronization=True)
+        for line in base_lines:
+            ctx_lines.browse(line.id).write({
+                'tax_tag_ids': [(5, 0, 0)],
+                'tax_tag_invert': False,
+            })
+        for line in iva_lines:
+            ctx_lines.browse(line.id).write({
                 'account_id': account_differita.id,
                 'tax_tag_ids': [(5, 0, 0)],
                 'tax_tag_invert': False,
-            }
-            mapped_tax = line.tax_line_id.iva_differita_tax_id
-            if mapped_tax:
-                vals['tax_line_id'] = mapped_tax.id
-            ctx_lines.browse(line.id).write(vals)
+            })
 
         return differita_data
 
