@@ -123,6 +123,10 @@ class AccountMove(models.Model):
         )
 
         differita_data = {}
+        ctx_lines = self.line_ids.with_context(
+            skip_account_move_synchronization=True,
+            check_move_validity=False,
+        )
 
         for line in base_lines:
             differita_data[line.id] = {
@@ -133,11 +137,14 @@ class AccountMove(models.Model):
                 'invert': line.tax_tag_invert,
                 'tax_ids': line.tax_ids.ids,
             }
-            line.tax_tag_ids = [(5, 0, 0)]
-            line.tax_tag_invert = False
+            vals = {
+                'tax_tag_ids': [(5, 0, 0)],
+                'tax_tag_invert': False,
+            }
             mapped_taxes = line.tax_ids._get_iva_differita_mapped_taxes()
             if mapped_taxes != line.tax_ids:
-                line.tax_ids = [(6, 0, mapped_taxes.ids)]
+                vals['tax_ids'] = [(6, 0, mapped_taxes.ids)]
+            ctx_lines.browse(line.id).write(vals)
 
         for line in iva_lines:
             differita_data[line.id] = {
@@ -148,12 +155,15 @@ class AccountMove(models.Model):
                 'invert': line.tax_tag_invert,
                 'tax_id': line.tax_line_id.id,
             }
-            line.account_id = account_differita
-            line.tax_tag_ids = [(5, 0, 0)]
-            line.tax_tag_invert = False
+            vals = {
+                'account_id': account_differita.id,
+                'tax_tag_ids': [(5, 0, 0)],
+                'tax_tag_invert': False,
+            }
             mapped_tax = line.tax_line_id.iva_differita_tax_id
             if mapped_tax:
-                line.tax_line_id = mapped_tax
+                vals['tax_line_id'] = mapped_tax.id
+            ctx_lines.browse(line.id).write(vals)
 
         return differita_data
 
