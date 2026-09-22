@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         Imposta di acquisto: aggiungiamo il campo "Imposta IVA differita"
+         con cui mappare l'imposta da applicare alle righe fattura quando
+         la fattura è marcata come IVA differita.
+         ═══════════════════════════════════════════════════════════════════ -->
+    <record id="view_tax_form_iva_differita" model="ir.ui.view">
+        <field name="name">account.tax.form.iva.differita</field>
+        <field name="model">account.tax</field>
+        <field name="inherit_id" ref="account.view_tax_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='type_tax_use']" position="after">
+                <field
+                    name="iva_differita_tax_id"
+                    invisible="type_tax_use != 'purchase'"
+                />
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

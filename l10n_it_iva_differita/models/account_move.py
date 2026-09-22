@@ -135,6 +135,9 @@ class AccountMove(models.Model):
             }
             line.tax_tag_ids = [(5, 0, 0)]
             line.tax_tag_invert = False
+            mapped_taxes = line.tax_ids._get_iva_differita_mapped_taxes()
+            if mapped_taxes != line.tax_ids:
+                line.tax_ids = [(6, 0, mapped_taxes.ids)]
 
         for line in iva_lines:
             differita_data[line.id] = {
@@ -148,6 +151,9 @@ class AccountMove(models.Model):
             line.account_id = account_differita
             line.tax_tag_ids = [(5, 0, 0)]
             line.tax_tag_invert = False
+            mapped_tax = line.tax_line_id.iva_differita_tax_id
+            if mapped_tax:
+                line.tax_line_id = mapped_tax
 
         return differita_data
 
