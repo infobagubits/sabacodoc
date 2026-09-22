@@ -22,6 +22,12 @@
                             placeholder="Seleziona il conto..."
                             domain="[('company_ids', 'in', [company_id])]" />
                     </setting>
+                    <setting string="Conto transitorio imponibile IVA differita"
+                        help="Conto usato al posto del conto di costo/ricavo originale per l'imponibile nella registrazione di storno.">
+                        <field name="account_iva_differita_imponibile_id"
+                            placeholder="Seleziona il conto..."
+                            domain="[('company_ids', 'in', [company_id])]" />
+                    </setting>
                     <setting string="Giornale per storno IVA differita"
                         help="Giornale (Operazioni varie) usato per le registrazioni automatiche di storno.">
                         <field name="journal_iva_differita_id"

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!--
+        Estende la scheda "Operazioni manuali" del widget di riconciliazione
+        (template OWL: account_accountant.BankRecRecordNotebookManualOperations,
+        in enterprise/account_accountant/static/src/components/bank_reconciliation/bank_rec_form.xml)
+        aggiungendo Data inizio / Data fine del risconto subito dopo la
+        distribuzione analitica.
+
+        Note tecniche:
+        - Usa DateTimeField, gia' disponibile nel contesto del componente che
+          renderizza questo template (lo stesso usato dal campo 'date' nativo),
+          quindi non serve importare/registrare alcun componente JS.
+        - 'record="line"' e "name" con la stringa del campo replicano il
+          pattern nativo. 'line.data.deferred_start_date' e' disponibile
+          perche' il widget carica i campi via fields_get().
+        - t-if sul flag 'manual'/'new_aml': mostra i campi solo sulle righe di
+          operazione manuale, non su liquidita'/tasse/differenze cambio.
+          Se vuoi mostrarli su piu' tipi di riga, allarga la lista dei flag.
+        - 'reconciled' e' gia' definito nel template padre (riga validata =>
+          sola lettura).
+    -->
+    <t t-name="bank_rec_deferred_dates.BankRecDeferredDates"
+       t-inherit="account_accountant.BankRecRecordNotebookManualOperations"
+       t-inherit-mode="extension">
+
+        <xpath expr="//div[@name='analytic_distribution']" position="after">
+
+            <!-- deferred_start_date -->
+            <div name="deferred_start_date"
+                 t-if="['manual', 'new_aml'].includes(line.data.flag)"
+                 class="o_wrap_field d-flex d-sm-contents flex-column">
+                <div class="o_cell o_wrap_label flex-grow-1 flex-sm-grow-0 w-100 text-break text-900">
+                    <label class="o_form_label"
+                           t-att-class="{'o_form_label_readonly': reconciled}">
+                        Data inizio risconto
+                    </label>
+                </div>
+                <div class="o_cell o_wrap_input flex-grow-1 flex-sm-grow-0 w-100">
+                    <div class="o_field_widget o_field_date">
+                        <DateTimeField
+                            name="'deferred_start_date'"
+                            record="line"
+                            readonly="reconciled"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <!-- deferred_end_date -->
+            <div name="deferred_end_date"
+                 t-if="['manual', 'new_aml'].includes(line.data.flag)"
+                 class="o_wrap_field d-flex d-sm-contents flex-column">
+                <div class="o_cell o_wrap_label flex-grow-1 flex-sm-grow-0 w-100 text-break text-900">
+                    <label class="o_form_label"
+                           t-att-class="{'o_form_label_readonly': reconciled}">
+                        Data fine risconto
+                    </label>
+                </div>
+                <div class="o_cell o_wrap_input flex-grow-1 flex-sm-grow-0 w-100">
+                    <div class="o_field_widget o_field_date">
+                        <DateTimeField
+                            name="'deferred_end_date'"
+                            record="line"
+                            readonly="reconciled"
+                        />
+                    </div>
+                </div>
+            </div>
+
+        </xpath>
+    </t>
+
+</templates>
