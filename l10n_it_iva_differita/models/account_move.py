@@ -218,14 +218,11 @@ class AccountMove(models.Model):
         ref_date = self.date or self.invoice_date or fields.Date.context_today(self)
         storno_date = self._last_day_of_previous_month(ref_date)
 
-        # Distribuzione analitica: aggregata dalle righe prodotto della fattura
-        analytic_distribution = self._get_aggregated_analytic_distribution()
         name = _('Storno IVA differita – %s') % (self.name or '')
 
         storno_line_vals = []
         for data in differita_data.values():
             amount = abs(data['amount'])
-            analytic = analytic_distribution or False
             tag_ids = data['tags']
             tag_invert = data['invert']
 
@@ -237,7 +234,6 @@ class AccountMove(models.Model):
                     'debit': amount,
                     'credit': 0.0,
                     'tax_line_id': data['tax_id'],
-                    'analytic_distribution': analytic,
                     'tax_tag_ids': [(6, 0, tag_ids)],
                     'tax_tag_invert': tag_invert,
                 })
@@ -247,7 +243,6 @@ class AccountMove(models.Model):
                     'debit': 0.0,
                     'credit': amount,
                     'tax_line_id': False,
-                    'analytic_distribution': analytic,
                 })
             else:
                 # Coppia a saldo zero sul conto transitorio imponibile IVA
@@ -260,7 +255,6 @@ class AccountMove(models.Model):
                     'name': name,
                     'debit': amount if positive else 0.0,
                     'credit': 0.0 if positive else amount,
-                    'analytic_distribution': analytic,
                     'tax_tag_ids': [(6, 0, tag_ids)],
                     'tax_tag_invert': tag_invert,
                 })
@@ -269,7 +263,6 @@ class AccountMove(models.Model):
                     'name': name,
                     'debit': 0.0 if positive else amount,
                     'credit': amount if positive else 0.0,
-                    'analytic_distribution': analytic,
                 })
 
         move_vals = {
@@ -285,22 +278,6 @@ class AccountMove(models.Model):
         # Confermiamo automaticamente la registrazione di storno
         storno_move.action_post()
         return storno_move
-
-    def _get_aggregated_analytic_distribution(self):
-        """Restituisce una distribuzione analitica aggregata (media pesata)
-        dalle righe prodotto della fattura, da usare sulle righe dello storno."""
-        self.ensure_one()
-        product_lines = self.line_ids.filtered(
-            lambda l: l.display_type == 'product' and l.analytic_distribution
-        )
-        if not product_lines:
-            return False
-        # Se tutte le righe hanno la stessa distribuzione, la restituiamo direttamente
-        distributions = [l.analytic_distribution for l in product_lines]
-        if all(d == distributions[0] for d in distributions):
-            return distributions[0]
-        # Altrimenti usiamo la distribuzione della prima riga come fallback
-        return distributions[0]
 
     # ── Azione smart button ───────────────────────────────────────────────────
 
