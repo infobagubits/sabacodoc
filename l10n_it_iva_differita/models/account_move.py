@@ -13,6 +13,11 @@ class ResCompany(models.Model):
         string='Conto IVA differita',
         check_company=True,
     )
+    account_iva_differita_imponibile_id = fields.Many2one(
+        comodel_name='account.account',
+        string='Conto transitorio imponibile IVA differita',
+        check_company=True,
+    )
     journal_iva_differita_id = fields.Many2one(
         comodel_name='account.journal',
         string='Giornale IVA differita',
@@ -45,10 +50,12 @@ class AccountMove(models.Model):
     # ── Helpers ───────────────────────────────────────────────────────────────
 
     def _get_iva_differita_config(self):
-        """Restituisce (conto_iva_differita, giornale) per la società corrente."""
+        """Restituisce (conto_iva_differita, giornale, conto_imponibile) per
+        la società corrente."""
         company = self.company_id
         account = company.account_iva_differita_id
         journal = company.journal_iva_differita_id
+        account_imponibile = company.account_iva_differita_imponibile_id
         if not account:
             raise UserError(
                 _("Configura il conto IVA differita nelle impostazioni contabili "
@@ -59,7 +66,13 @@ class AccountMove(models.Model):
                 _("Configura il giornale IVA differita nelle impostazioni contabili "
                   "(Contabilità → Configurazione → Impostazioni).")
             )
-        return account, journal
+        if not account_imponibile:
+            raise UserError(
+                _("Configura il conto transitorio imponibile IVA differita nelle "
+                  "impostazioni contabili (Contabilità → Configurazione → "
+                  "Impostazioni).")
+            )
+        return account, journal, account_imponibile
 
     @staticmethod
     def _last_day_of_previous_month(ref_date):
@@ -107,7 +120,7 @@ class AccountMove(models.Model):
         vengono restituiti per essere usati nello storno.
         """
         self.ensure_one()
-        account_differita, _journal = self._get_iva_differita_config()
+        account_differita, _journal, _account_imponibile = self._get_iva_differita_config()
 
         # Righe imposta generate dalla tassa
         iva_lines = self.line_ids.filtered(
@@ -195,7 +208,7 @@ class AccountMove(models.Model):
         """
         differita_data = differita_data or {}
         self.ensure_one()
-        account_differita, journal = self._get_iva_differita_config()
+        account_differita, journal, account_imponibile = self._get_iva_differita_config()
 
         if not differita_data:
             return self.env['account.move']
@@ -237,12 +250,13 @@ class AccountMove(models.Model):
                     'analytic_distribution': analytic,
                 })
             else:
-                # Coppia a saldo zero sullo stesso conto imponibile: sposta
-                # solo il tag di griglia IVA nel mese dello storno, senza
-                # alterare il conto di costo/ricavo della fattura originale.
+                # Coppia a saldo zero sul conto transitorio imponibile IVA
+                # differita: sposta il tag di griglia IVA nel mese dello
+                # storno, senza toccare il conto di costo/ricavo della
+                # fattura originale.
                 positive = data['amount'] >= 0
                 storno_line_vals.append({
-                    'account_id': data['account_id'],
+                    'account_id': account_imponibile.id,
                     'name': name,
                     'debit': amount if positive else 0.0,
                     'credit': 0.0 if positive else amount,
@@ -251,7 +265,7 @@ class AccountMove(models.Model):
                     'tax_tag_invert': tag_invert,
                 })
                 storno_line_vals.append({
-                    'account_id': data['account_id'],
+                    'account_id': account_imponibile.id,
                     'name': name,
                     'debit': 0.0 if positive else amount,
                     'credit': amount if positive else 0.0,
