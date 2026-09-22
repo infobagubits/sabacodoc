@@ -246,7 +246,6 @@ class AccountMove(models.Model):
                     'name': name,
                     'debit': amount if positive else 0.0,
                     'credit': 0.0 if positive else amount,
-                    'tax_ids': [(6, 0, data['tax_ids'])],
                     'analytic_distribution': analytic,
                     'tax_tag_ids': [(6, 0, tag_ids)],
                     'tax_tag_invert': tag_invert,
