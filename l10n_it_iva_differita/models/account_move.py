@@ -219,51 +219,70 @@ class AccountMove(models.Model):
         storno_date = self._last_day_of_previous_month(ref_date)
 
         name = _('Storno IVA differita – %s') % (self.name or '')
+        imponibile_name = _('Imponibile per IVA differita - %s') % (self.name or '')
 
         storno_line_vals = []
-        for data in differita_data.values():
-            amount = abs(data['amount'])
-            tag_ids = data['tags']
-            tag_invert = data['invert']
 
-            if data['kind'] == 'tax':
-                # Storno: Dare = Credito IVA, Avere = IVA differita
-                storno_line_vals.append({
-                    'account_id': data['account_id'],
-                    'name': name,
-                    'debit': amount,
-                    'credit': 0.0,
-                    'tax_line_id': data['tax_id'],
-                    'tax_tag_ids': [(6, 0, tag_ids)],
-                    'tax_tag_invert': tag_invert,
-                })
-                storno_line_vals.append({
-                    'account_id': account_differita.id,
-                    'name': name,
-                    'debit': 0.0,
-                    'credit': amount,
-                    'tax_line_id': False,
-                })
-            else:
-                # Coppia a saldo zero sul conto transitorio imponibile IVA
-                # differita: sposta il tag di griglia IVA nel mese dello
-                # storno, senza toccare il conto di costo/ricavo della
-                # fattura originale.
-                positive = data['amount'] >= 0
-                storno_line_vals.append({
-                    'account_id': account_imponibile.id,
-                    'name': name,
-                    'debit': amount if positive else 0.0,
-                    'credit': 0.0 if positive else amount,
-                    'tax_tag_ids': [(6, 0, tag_ids)],
-                    'tax_tag_invert': tag_invert,
-                })
-                storno_line_vals.append({
-                    'account_id': account_imponibile.id,
-                    'name': name,
-                    'debit': 0.0 if positive else amount,
-                    'credit': amount if positive else 0.0,
-                })
+        # Le righe base vengono raggruppate per tassa: anche se la fattura ha
+        # più righe di imponibile con la stessa imposta, viene creata una
+        # sola coppia di righe (dare/avere) sul conto transitorio.
+        base_groups = {}
+        for data in differita_data.values():
+            if data['kind'] != 'base':
+                continue
+            key = tuple(sorted(data['tax_ids']))
+            group = base_groups.setdefault(key, {
+                'amount': 0.0,
+                'tags': data['tags'],
+                'invert': data['invert'],
+            })
+            group['amount'] += data['amount']
+
+        for data in differita_data.values():
+            if data['kind'] != 'tax':
+                continue
+            amount = abs(data['amount'])
+            tax_name = self.env['account.tax'].browse(data['tax_id']).name or name
+            # Storno: Dare = Credito IVA, Avere = IVA differita
+            storno_line_vals.append({
+                'account_id': data['account_id'],
+                'name': tax_name,
+                'debit': amount,
+                'credit': 0.0,
+                'tax_line_id': data['tax_id'],
+                'tax_tag_ids': [(6, 0, data['tags'])],
+                'tax_tag_invert': data['invert'],
+            })
+            storno_line_vals.append({
+                'account_id': account_differita.id,
+                'name': tax_name,
+                'debit': 0.0,
+                'credit': amount,
+                'tax_line_id': False,
+            })
+
+        # Coppia a saldo zero sul conto transitorio imponibile IVA differita:
+        # sposta il tag di griglia IVA nel mese dello storno, senza toccare
+        # il conto di costo/ricavo della fattura originale.
+        for group in base_groups.values():
+            if not group['amount']:
+                continue
+            amount = abs(group['amount'])
+            positive = group['amount'] >= 0
+            storno_line_vals.append({
+                'account_id': account_imponibile.id,
+                'name': imponibile_name,
+                'debit': amount if positive else 0.0,
+                'credit': 0.0 if positive else amount,
+                'tax_tag_ids': [(6, 0, group['tags'])],
+                'tax_tag_invert': group['invert'],
+            })
+            storno_line_vals.append({
+                'account_id': account_imponibile.id,
+                'name': imponibile_name,
+                'debit': 0.0 if positive else amount,
+                'credit': amount if positive else 0.0,
+            })
 
         move_vals = {
             'move_type': 'entry',
