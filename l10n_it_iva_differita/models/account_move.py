@@ -155,6 +155,8 @@ class AccountMove(models.Model):
                 'tags': line.tax_tag_ids.ids,
                 'invert': line.tax_tag_invert,
                 'tax_id': line.tax_line_id.id,
+                'tax_base_amount': line.tax_base_amount,
+                'tax_repartition_line_id': line.tax_repartition_line_id.id,
             }
 
         # ── Sostituzione delle imposte: si scrive solo `tax_ids` sulle righe
@@ -235,6 +237,7 @@ class AccountMove(models.Model):
                 'amount': 0.0,
                 'tags': data['tags'],
                 'invert': data['invert'],
+                'tax_ids': data['tax_ids'],
             })
             group['amount'] += data['amount']
 
@@ -250,6 +253,8 @@ class AccountMove(models.Model):
                 'debit': amount,
                 'credit': 0.0,
                 'tax_line_id': data['tax_id'],
+                'tax_base_amount': data['tax_base_amount'],
+                'tax_repartition_line_id': data['tax_repartition_line_id'],
                 'tax_tag_ids': [(6, 0, data['tags'])],
                 'tax_tag_invert': data['invert'],
             })
@@ -264,25 +269,39 @@ class AccountMove(models.Model):
         # Coppia a saldo zero sul conto transitorio imponibile IVA differita:
         # sposta il tag di griglia IVA nel mese dello storno, senza toccare
         # il conto di costo/ricavo della fattura originale.
+        # Posizioni (indice nella lista) delle righe in Dare dell'imponibile,
+        # per poter scrivere `tax_ids` dopo la creazione senza che
+        # `_sync_dynamic_lines` rigeneri/duplichi la riga imposta già creata
+        # esplicitamente qui sopra.
+        debit_line_positions = []
         for group in base_groups.values():
             if not group['amount']:
                 continue
             amount = abs(group['amount'])
             positive = group['amount'] >= 0
-            storno_line_vals.append({
+            debit_vals = {
                 'account_id': account_imponibile.id,
                 'name': imponibile_name,
-                'debit': amount if positive else 0.0,
-                'credit': 0.0 if positive else amount,
+                'debit': amount,
+                'credit': 0.0,
+            }
+            credit_vals = {
+                'account_id': account_imponibile.id,
+                'name': imponibile_name,
+                'debit': 0.0,
+                'credit': amount,
+            }
+            tag_vals = {
                 'tax_tag_ids': [(6, 0, group['tags'])],
                 'tax_tag_invert': group['invert'],
-            })
-            storno_line_vals.append({
-                'account_id': account_imponibile.id,
-                'name': imponibile_name,
-                'debit': 0.0 if positive else amount,
-                'credit': amount if positive else 0.0,
-            })
+            }
+            if positive:
+                debit_vals.update(tag_vals)
+            else:
+                credit_vals.update(tag_vals)
+            debit_line_positions.append((len(storno_line_vals), group['tax_ids']))
+            storno_line_vals.append(debit_vals)
+            storno_line_vals.append(credit_vals)
 
         move_vals = {
             'move_type': 'entry',
@@ -294,6 +313,20 @@ class AccountMove(models.Model):
             'iva_differita_origin_id': self.id,
         }
         storno_move = self.env['account.move'].create(move_vals)
+
+        # `tax_ids` sulla riga in Dare dell'imponibile viene scritto solo ora
+        # (come riferimento informativo, per coerenza con la fattura
+        # originale) e con skip_invoice_sync=True, per non far rigenerare a
+        # `_sync_dynamic_lines` la riga imposta già creata esplicitamente qui
+        # sopra (che genererebbe un duplicato). Fatto prima della conferma,
+        # così il resto della registrazione segue il normale flusso di
+        # creazione (necessario perché il registro IVA riconosca
+        # correttamente l'imposta come applicata/deducibile).
+        for position, tax_ids in debit_line_positions:
+            storno_move.line_ids[position].with_context(
+                skip_invoice_sync=True
+            ).write({'tax_ids': [(6, 0, tax_ids)]})
+
         # Confermiamo automaticamente la registrazione di storno
         storno_move.action_post()
         return storno_move
@@ -357,3 +390,18 @@ class AccountMoveIvaDifferita(models.Model):
         copy=False,
         index=True,
     )
+
+    def action_open_iva_differita_origin(self):
+        """Apre la fattura fornitore di origine collegata a questa
+        registrazione di storno IVA differita."""
+        self.ensure_one()
+        if not self.iva_differita_origin_id:
+            return False
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Fattura origine'),
+            'res_model': 'account.move',
+            'res_id': self.iva_differita_origin_id.id,
+            'view_mode': 'form',
+            'target': 'current',
+        }
