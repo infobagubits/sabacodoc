@@ -230,6 +230,7 @@ class AccountMove(models.Model):
         'l10n_it_edi_attachment_id',
         'invoice_line_ids.price_subtotal',
         'invoice_line_ids.tax_ids',
+        'tax_totals',
     )
     def _compute_xml_total_mismatch_warning(self):
         for move in self:
@@ -241,19 +242,34 @@ class AccountMove(models.Model):
             ):
                 continue
 
-            xml_total = move._sabaco_get_xml_payment_total()
+            # In modifica (onchange) il record ha un NewId: la ricerca di allegati e
+            # del messaggio "Valore totale dal file XML" per res_id va fatta sul
+            # record salvato.
+            origin = move._origin
+            if not origin:
+                continue
+
+            xml_total = origin._sabaco_get_xml_payment_total()
             if xml_total is None:
                 continue
 
             move.l10n_it_xml_amount_total = xml_total
 
+            invoice_total = move.amount_total
+            if not isinstance(move.id, int):
+                # In modifica amount_total (stored) non è ancora ricalcolato
+                # quando questo compute gira: si usa il totale mostrato nel form.
+                invoice_total = (move.tax_totals or {}).get(
+                    'total_amount_currency', invoice_total,
+                )
+
             if float_compare(
-                move.amount_total,
+                invoice_total,
                 xml_total,
                 precision_rounding=move.currency_id.rounding,
             ) != 0:
                 invoice_total_fmt = formatLang(
-                    move.env, move.amount_total, currency_obj=move.currency_id,
+                    move.env, invoice_total, currency_obj=move.currency_id,
                 )
                 xml_total_fmt = formatLang(
                     move.env, xml_total, currency_obj=move.currency_id,
