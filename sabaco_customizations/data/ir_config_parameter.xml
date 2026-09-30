@@ -12,5 +12,12 @@
             <field name="key">sabaco_customizations.corrispettivi_journal_prefix</field>
             <field name="value">Corrispettivi</field>
         </record>
+        <!-- Testo contenuto nell'etichetta dei movimenti di anticipo fatture: per
+             questi la sincronizzazione bancaria online usa made_on come data.
+             Vuoto = regola disattivata. -->
+        <record id="param_anticipo_made_on_label" model="ir.config_parameter">
+            <field name="key">sabaco_customizations.anticipo_made_on_label</field>
+            <field name="value">ANTICIPO S.B.F. CONTO UNICO ANTICIPO FATTURE DISTINTA</field>
+        </record>
     </data>
 </odoo>

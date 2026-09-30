@@ -1,6 +1,6 @@
 {
     'name': 'Sabaco — Personalizzazioni',
-    'version': '18.0.1.1.0',
+    'version': '18.0.1.2.0',
     'category': 'Accounting',
     'summary': 'Personalizzazioni Sabaco (es. avviso totale fattura vs totale XML EDI)',
     'description': """
@@ -12,13 +12,16 @@
           alla data inizio sulle righe fattura.
         - Avviso sulle registrazioni dei giornali dei corrispettivi quando il
           conto configurato non quadra (totale Dare diverso dal totale Avere).
+        - Sincronizzazione bancaria online: per i movimenti di anticipo fatture
+          (etichetta configurabile) la data della riga è il made_on dei
+          dettagli operazione.
     """,
     'author': 'Bagubits SRLS',
     'maintainer': 'Bagubits SRLS',
     'website': 'https://bagubits.it',
     'license': 'LGPL-3',
     'sequence': '0',
-    'depends': ['account', 'account_accountant', 'l10n_it_edi'],
+    'depends': ['account', 'account_accountant', 'account_online_synchronization', 'l10n_it_edi'],
     'data': [
         'data/ir_config_parameter.xml',
         'views/account_move_views.xml',
