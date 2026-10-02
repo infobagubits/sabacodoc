@@ -163,10 +163,17 @@ class AccountMove(models.Model):
         # base e si lascia che Odoo rigeneri correttamente le righe imposta
         # collegate (con il relativo tax_repartition_line_id), così da non
         # rompere la coerenza interna tra riga imposta e sua ripartizione.
+        # Il write passa da `account.move.write` con comandi (1, id, vals) su
+        # `line_ids` (una sola volta per tutte le righe, il mapping può
+        # variare da riga a riga), in modo che la sincronizzazione delle
+        # righe dinamiche di Odoo 18 rigeneri le righe imposta.
+        commands = []
         for line in base_lines:
             mapped_taxes = line.tax_ids._get_iva_differita_mapped_taxes()
             if mapped_taxes != line.tax_ids:
-                line.tax_ids = [(6, 0, mapped_taxes.ids)]
+                commands.append((1, line.id, {'tax_ids': [(6, 0, mapped_taxes.ids)]}))
+        if commands:
+            self.write({'line_ids': commands})
 
         # Le righe imposta potrebbero essere state rigenerate (nuovi id) a
         # seguito della sostituzione di tax_ids sulle righe base: le
@@ -245,7 +252,11 @@ class AccountMove(models.Model):
             if data['kind'] != 'tax':
                 continue
             amount = abs(data['amount'])
-            tax_name = self.env['account.tax'].browse(data['tax_id']).name or name
+            tax = self.env['account.tax'].browse(data['tax_id'])
+            tax_name = tax.name or name
+            differita_tax_name = (
+                tax._get_iva_differita_mapped_taxes(plus=True).name or tax_name
+            )
             # Storno: Dare = Credito IVA, Avere = IVA differita
             storno_line_vals.append({
                 'account_id': data['account_id'],
@@ -260,7 +271,7 @@ class AccountMove(models.Model):
             })
             storno_line_vals.append({
                 'account_id': account_differita.id,
-                'name': tax_name,
+                'name': differita_tax_name,
                 'debit': 0.0,
                 'credit': amount,
                 'tax_line_id': False,
@@ -269,11 +280,14 @@ class AccountMove(models.Model):
         # Coppia a saldo zero sul conto transitorio imponibile IVA differita:
         # sposta il tag di griglia IVA nel mese dello storno, senza toccare
         # il conto di costo/ricavo della fattura originale.
-        # Posizioni (indice nella lista) delle righe in Dare dell'imponibile,
-        # per poter scrivere `tax_ids` dopo la creazione senza che
+        # La riga in Dare porta l'imposta originale, quella in Avere l'imposta
+        # collegata IVA differita.
+        # Posizioni (indice nella lista) delle righe dell'imponibile, per
+        # poter scrivere `tax_ids` dopo la creazione senza che
         # `_sync_dynamic_lines` rigeneri/duplichi la riga imposta già creata
         # esplicitamente qui sopra.
         debit_line_positions = []
+        credit_line_positions = []
         for group in base_groups.values():
             if not group['amount']:
                 continue
@@ -301,6 +315,7 @@ class AccountMove(models.Model):
                 credit_vals.update(tag_vals)
             debit_line_positions.append((len(storno_line_vals), group['tax_ids']))
             storno_line_vals.append(debit_vals)
+            credit_line_positions.append((len(storno_line_vals), group['tax_ids']))
             storno_line_vals.append(credit_vals)
 
         move_vals = {
@@ -314,18 +329,25 @@ class AccountMove(models.Model):
         }
         storno_move = self.env['account.move'].create(move_vals)
 
-        # `tax_ids` sulla riga in Dare dell'imponibile viene scritto solo ora
-        # (come riferimento informativo, per coerenza con la fattura
-        # originale) e con skip_invoice_sync=True, per non far rigenerare a
-        # `_sync_dynamic_lines` la riga imposta già creata esplicitamente qui
-        # sopra (che genererebbe un duplicato). Fatto prima della conferma,
-        # così il resto della registrazione segue il normale flusso di
-        # creazione (necessario perché il registro IVA riconosca
-        # correttamente l'imposta come applicata/deducibile).
+        # `tax_ids` sulle righe dell'imponibile viene scritto solo ora (come
+        # riferimento informativo) e con skip_invoice_sync=True, per non far
+        # rigenerare a `_sync_dynamic_lines` la riga imposta già creata
+        # esplicitamente qui sopra (che genererebbe un duplicato). Fatto
+        # prima della conferma, così il resto della registrazione segue il
+        # normale flusso di creazione (necessario perché il registro IVA
+        # riconosca correttamente l'imposta come applicata/deducibile).
+        # Dare = imposta originale, Avere = imposta collegata IVA differita.
         for position, tax_ids in debit_line_positions:
             storno_move.line_ids[position].with_context(
                 skip_invoice_sync=True
             ).write({'tax_ids': [(6, 0, tax_ids)]})
+        for position, tax_ids in credit_line_positions:
+            mapped_taxes = self.env['account.tax'].browse(
+                tax_ids
+            )._get_iva_differita_mapped_taxes(plus=True)
+            storno_move.line_ids[position].with_context(
+                skip_invoice_sync=True
+            ).write({'tax_ids': [(6, 0, mapped_taxes.ids)]})
 
         # Confermiamo automaticamente la registrazione di storno
         storno_move.action_post()

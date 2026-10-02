@@ -38,7 +38,15 @@
         </xpath>
 
         <!-- 5) Rimuove l'intera barra dati aggiuntivi (Invoice Date, Due Date, ecc.). -->
-        <xpath expr="//div[@id='informations']" position="replace"/>
+        <!--
+            Non si usa position="replace": i moduli che ereditano la stessa vista
+            (es. point_of_sale, che aggancia //div[@name='origin']) si romperebbero
+            perché il blocco e i suoi figli non esisterebbero più. Si disattiva
+            invece il rendering lasciando la struttura nella vista.
+        -->
+        <xpath expr="//div[@id='informations']" position="attributes">
+            <attribute name="t-if">False</attribute>
+        </xpath>
 
         <!--
             MELHORIA-008 — Elenco dei DDT collegati, sopra la tabella delle righe,
