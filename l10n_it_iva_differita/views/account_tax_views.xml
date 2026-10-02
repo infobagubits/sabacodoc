@@ -16,6 +16,10 @@
                     name="iva_differita_tax_id"
                     invisible="type_tax_use != 'purchase'"
                 />
+                <field
+                    name="iva_differita_tax_plus_id"
+                    invisible="type_tax_use != 'purchase'"
+                />
             </xpath>
         </field>
     </record>
