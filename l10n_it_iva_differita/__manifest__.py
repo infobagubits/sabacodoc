@@ -5,11 +5,19 @@
     'summary': 'Gestione IVA differita su fatture fornitore',
     'description': """
         Aggiunge il campo "Iva differita" sulle fatture fornitore.
-        Quando attivo:
-        - Il conto Credito IVA viene sostituito con il conto IVA differita
-        - Al momento della conferma viene creata automaticamente una registrazione
-          nel giornale "Operazioni varie" con data l'ultimo giorno del mese precedente,
-          che storna il conto IVA differita e accredita il Credito IVA.
+
+        La fattura va registrata direttamente dall'utente usando la tassa
+        IVA differita (configurata con il proprio conto IVA differita e
+        collegata, tramite il campo "Imposta originale", alla tassa che
+        sostituisce, es. IVA 22%).
+
+        Quando "Iva differita" è attivo, alla conferma della fattura:
+        - i tag di griglia IVA vengono rimossi dalle righe, così che la
+          fattura non compaia nella liquidazione IVA del mese corrente;
+        - viene creata automaticamente una registrazione nel giornale
+          "Operazioni varie", datata l'ultimo giorno del mese precedente,
+          che gira l'importo dal conto IVA differita al Credito IVA
+          originale (usando la tassa originale collegata).
     """,
     'author': 'Bagubits SRLS',
     'maintainer': 'Bagubits SRLS',
