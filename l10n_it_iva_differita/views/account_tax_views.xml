@@ -2,9 +2,13 @@
 <odoo>
 
     <!-- ═══════════════════════════════════════════════════════════════════
-         Imposta di acquisto: aggiungiamo il campo "Imposta IVA differita"
-         con cui mappare l'imposta da applicare alle righe fattura quando
-         la fattura è marcata come IVA differita.
+         Imposta di acquisto: aggiungiamo i campi "Imposta originale (-)" e
+         "Imposta differita (+)", da configurare sulla tassa IVA DIFFERITA
+         stessa (es. "IVA differita 22%"):
+         - Imposta originale (-): quale tassa originale (es. "IVA 22%")
+           questa sostituisce in fattura (usata per il Dare dello storno).
+         - Imposta differita (+): tassa da usare, al posto di questa, sulla
+           riga Avere dell'imponibile dello storno.
          ═══════════════════════════════════════════════════════════════════ -->
     <record id="view_tax_form_iva_differita" model="ir.ui.view">
         <field name="name">account.tax.form.iva.differita</field>
