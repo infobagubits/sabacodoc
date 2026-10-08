@@ -164,6 +164,10 @@ class AccountMove(models.Model):
             original_rep_line = original_tax._get_matching_tax_repartition_line(
                 self.move_type, line.tax_repartition_line_id,
             )
+            plus_tax = differita_tax._get_iva_differita_plus_taxes()
+            plus_rep_line = plus_tax._get_matching_tax_repartition_line(
+                self.move_type, line.tax_repartition_line_id,
+            )
             differita_data[line.id] = {
                 'kind': 'tax',
                 'amount': line.balance,
@@ -171,6 +175,8 @@ class AccountMove(models.Model):
                 'differita_tax_id': differita_tax.id,
                 'differita_account_id': line.account_id.id,
                 'differita_repartition_line_id': line.tax_repartition_line_id.id,
+                'plus_tax_id': plus_tax.id,
+                'plus_repartition_line_id': plus_rep_line.id,
                 'original_tax_id': original_tax.id,
                 'original_account_id': original_rep_line.account_id.id,
                 'original_repartition_line_id': original_rep_line.id,
@@ -245,8 +251,11 @@ class AccountMove(models.Model):
                 'name': name,
                 'debit': 0.0,
                 'credit': amount,
-                'tax_line_id': data['differita_tax_id'],
-                'tax_repartition_line_id': data['differita_repartition_line_id'],
+                # Tassa differita (+) (o quella della fattura se non
+                # configurata): il registro IVA deve vedere imponibile e
+                # imposta sulla stessa tassa.
+                'tax_line_id': data['plus_tax_id'],
+                'tax_repartition_line_id': data['plus_repartition_line_id'],
             })
 
         # Le righe base vengono raggruppate per tassa (differita, così come
