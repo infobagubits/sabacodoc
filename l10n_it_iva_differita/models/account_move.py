@@ -235,10 +235,12 @@ class AccountMove(models.Model):
             if data['kind'] != 'tax':
                 continue
             amount = abs(data['amount'])
+            original_tax = self.env['account.tax'].browse(data['original_tax_id'])
+            plus_tax = self.env['account.tax'].browse(data['plus_tax_id'])
             # Storno: Dare = Credito IVA (originale), Avere = IVA differita
             storno_line_vals.append({
                 'account_id': data['original_account_id'],
-                'name': name,
+                'name': original_tax.name,
                 'debit': amount,
                 'credit': 0.0,
                 'tax_line_id': data['original_tax_id'],
@@ -248,7 +250,7 @@ class AccountMove(models.Model):
             })
             storno_line_vals.append({
                 'account_id': data['differita_account_id'],
-                'name': name,
+                'name': plus_tax.name,
                 'debit': 0.0,
                 'credit': amount,
                 # Tassa differita (+) (o quella della fattura se non
