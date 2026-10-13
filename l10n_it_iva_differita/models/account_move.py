@@ -117,6 +117,24 @@ class AccountMove(models.Model):
 
     # ── Snapshot fattura originale ────────────────────────────────────────────
 
+    @staticmethod
+    def _get_included_tax_amount(line, product_lines, all_tax_lines):
+        """Importo delle tasse che entrano nella base imponibile dell'IVA
+        (es. cassa previdenziale, `include_base_amount`) di competenza della
+        riga `line`. Se la stessa tassa è su più righe, l'importo della riga
+        imposta viene ripartito in proporzione al saldo delle righe."""
+        extra = 0.0
+        for tax in line.tax_ids.filtered('include_base_amount'):
+            tax_amount = sum(
+                all_tax_lines.filtered(lambda l: l.tax_line_id == tax).mapped('balance')
+            )
+            total_base = sum(
+                product_lines.filtered(lambda l: tax in l.tax_ids).mapped('balance')
+            )
+            if total_base:
+                extra += tax_amount * line.balance / total_base
+        return extra
+
     def _apply_iva_differita_accounts(self):
         """La fattura viene registrata direttamente dall'utente con la tassa
         IVA differita (conto e tassa già corretti in riga): qui non si
@@ -136,33 +154,32 @@ class AccountMove(models.Model):
         self.ensure_one()
 
         # Righe imposta generate dalla tassa differita
-        iva_lines = self.line_ids.filtered(
-            lambda l: l.tax_line_id and l.display_type == 'tax'
-        )
-        if not iva_lines:
+        # Sono "differite" solo le tasse con un'imposta originale collegata:
+        # le altre (ritenuta, cassa previdenziale, ...) restano fuori dallo
+        # storno. Le tasse a importo zero (es. fuori campo) non generano la
+        # riga imposta, ma vengono comunque individuate dalle righe base.
+        product_lines = self.line_ids.filtered(lambda l: l.display_type == 'product')
+        taxes = product_lines.tax_ids.filtered('iva_differita_tax_id')
+        if not taxes:
             return {}
 
-        # Righe base (imponibile) collegate alla/e stessa/e tassa/e
-        taxes = iva_lines.tax_line_id
-        base_lines = self.line_ids.filtered(
-            lambda l: l.display_type == 'product' and (l.tax_ids & taxes)
+        all_tax_lines = self.line_ids.filtered(
+            lambda l: l.tax_line_id and l.display_type == 'tax'
         )
+        iva_lines = all_tax_lines.filtered(lambda l: l.tax_line_id in taxes)
 
-        missing = taxes.filtered(lambda t: not t.iva_differita_tax_id)
-        if missing:
-            raise UserError(_(
-                "Le seguenti tasse non hanno un'imposta originale collegata "
-                "(campo 'Imposta originale' sulla tassa, da configurare "
-                "sulla tassa IVA differita): %s"
-            ) % ', '.join(missing.mapped('display_name')))
+        # Righe base (imponibile) collegate alla/e stessa/e tassa/e
+        base_lines = product_lines.filtered(lambda l: l.tax_ids & taxes)
 
         # ── Snapshot dei dati necessari per la registrazione di storno.
         differita_data = {}
         for line in base_lines:
             differita_data[line.id] = {
                 'kind': 'base',
-                'amount': line.balance,
-                'tax_ids': line.tax_ids.ids,
+                'amount': line.balance + self._get_included_tax_amount(
+                    line, product_lines, all_tax_lines
+                ),
+                'tax_ids': (line.tax_ids & taxes).ids,
             }
         for line in iva_lines:
             differita_tax = line.tax_line_id
