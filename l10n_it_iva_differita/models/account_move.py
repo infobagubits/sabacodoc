@@ -85,27 +85,33 @@ class AccountMove(models.Model):
 
     # ── Override action_post ──────────────────────────────────────────────────
 
-    def action_post(self):
-        """Intercetta la conferma: se iva_differita, sostituisce i conti IVA
-        e crea la registrazione automatica di storno."""
+    def _post(self, soft=True):
+        """Intercetta la registrazione (anche dal wizard di convalida, che
+        chiama direttamente `_post` senza passare da `action_post`): se
+        iva_differita, prepara i dati e crea la registrazione automatica di
+        storno."""
         differita_data_by_move = {}
-        for move in self:
-            if move.iva_differita and move.move_type in ('in_invoice', 'in_refund'):
-                differita_data_by_move[move.id] = move._apply_iva_differita_accounts()
-
-        res = super().action_post()
-
         for move in self:
             if (
                 move.iva_differita
+                and move.state == 'draft'
                 and move.move_type in ('in_invoice', 'in_refund')
+            ):
+                differita_data_by_move[move.id] = move._apply_iva_differita_accounts()
+
+        res = super()._post(soft=soft)
+
+        for move in self:
+            if (
+                move.id in differita_data_by_move
                 and move.state == 'posted'
                 and not move.iva_differita_move_id
             ):
                 storno = move._create_iva_differita_storno(
-                    differita_data_by_move.get(move.id, {})
+                    differita_data_by_move[move.id]
                 )
-                move.iva_differita_move_id = storno.id
+                if storno:
+                    move.iva_differita_move_id = storno.id
 
         return res
 
