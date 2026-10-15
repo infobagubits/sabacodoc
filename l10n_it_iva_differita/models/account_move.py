@@ -338,9 +338,15 @@ class AccountMove(models.Model):
                 credit_vals.update(tag_vals)
             # Dare = imposta originale, Avere = imposta differita (+) se
             # configurata, altrimenti quella differita già in fattura.
-            debit_line_positions.append((len(storno_line_vals), original_taxes.ids))
+            # Con imponibile negativo i tag (e quindi l'imposta originale)
+            # stanno sulla riga in avere, e la differita (+) su quella in dare.
+            debit_taxes, credit_taxes = (
+                (original_taxes, plus_taxes) if positive
+                else (plus_taxes, original_taxes)
+            )
+            debit_line_positions.append((len(storno_line_vals), debit_taxes.ids))
             storno_line_vals.append(debit_vals)
-            credit_line_positions.append((len(storno_line_vals), plus_taxes.ids))
+            credit_line_positions.append((len(storno_line_vals), credit_taxes.ids))
             storno_line_vals.append(credit_vals)
 
         move_vals = {
