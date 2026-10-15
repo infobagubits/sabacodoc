@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_negative_total" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.negative.total.invoice</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='account']" position="inside">
+                <block title="Fatture con totale negativo" name="negative_total_invoice_container">
+                    <setting id="allow_negative_total_invoice"
+                             string="Consenti fatture con totale negativo"
+                             help="Permette di confermare fatture clienti e fornitori con importo totale negativo (es. conguagli). Per stornare una fattura usa comunque la nota di credito.">
+                        <field name="allow_negative_total_invoice"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>
