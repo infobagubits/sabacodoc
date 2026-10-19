@@ -30,18 +30,20 @@ class PlanningSchedulePrintWizard(models.TransientModel):
                     "È possibile stampare al massimo 7 giorni (una settimana)."
                 ))
 
-    def action_print_pdf(self):
+    def action_print_pdf(self, domain=None):
         self.ensure_one()
         return self.env.ref(
             'sabaco_planning_customization.action_report_planning_schedule_by_role'
         ).report_action(self, data={
             'date_from': fields.Date.to_string(self.date_from),
             'date_to': fields.Date.to_string(self.date_to),
+            # Domain della ricerca del Gantt (vuoto dal wizard di menu = tutti i turni).
+            'slot_domain': domain or [],
         })
 
     @api.model
-    def action_print_pdf_from_gantt(self, date_str, date_to_str=None):
+    def action_print_pdf_from_gantt(self, date_str, date_to_str=None, domain=None):
         date_from = fields.Date.from_string(date_str)
         date_to = fields.Date.from_string(date_to_str) if date_to_str else date_from
         wizard = self.create({'date_from': date_from, 'date_to': date_to})
-        return wizard.action_print_pdf()
+        return wizard.action_print_pdf(domain=domain)

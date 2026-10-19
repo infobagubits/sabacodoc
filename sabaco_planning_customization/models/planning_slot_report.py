@@ -7,6 +7,7 @@ import pytz
 from babel.dates import format_date as babel_format_date
 
 from odoo import _, api, fields, models
+from odoo.osv import expression
 from odoo.tools import float_utils
 
 # Palette Odoo Gantt ($o-colors)
@@ -388,15 +389,19 @@ class PlanningSlot(models.Model):
         }
 
     @api.model
-    def _sabaco_get_schedule_by_role_report_values(self, report_date):
+    def _sabaco_get_schedule_by_role_report_values(self, report_date, domain=None):
         day_start, day_end, tz = self._sabaco_day_bounds(report_date)
         start_utc = day_start.astimezone(pytz.UTC).replace(tzinfo=None)
         end_utc = day_end.astimezone(pytz.UTC).replace(tzinfo=None)
 
-        slots = self.search([
+        date_domain = [
             ('start_datetime', '<', end_utc),
             ('end_datetime', '>', start_utc),
-        ], order='role_id, resource_id, start_datetime')
+        ]
+        slots = self.search(
+            expression.AND([date_domain, domain or []]),
+            order='role_id, resource_id, start_datetime',
+        )
 
         work_intervals, flexible_hours = self._sabaco_fetch_gantt_work_context(
             slots, day_start, day_end

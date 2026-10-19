@@ -19,10 +19,13 @@ patch(PlanningGanttController.prototype, {
 
     async sabacoPrintScheduleByRole() {
         const { startDate, stopDate } = this.model.metaData;
+        // Filtri attivi nella ricerca (es. preferito "Orari Bistrò"): il PDF stampa
+        // solo i turni che il Gantt sta mostrando.
+        const domain = this.model.searchParams.domain || [];
         const action = await this.orm.call(
             "planning.schedule.print.wizard",
             "action_print_pdf_from_gantt",
-            [startDate.toISODate(), stopDate.toISODate()],
+            [startDate.toISODate(), stopDate.toISODate(), domain],
         );
         await this.actionService.doAction(action);
     },
