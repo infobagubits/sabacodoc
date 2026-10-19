@@ -30,12 +30,18 @@ class ReportPlanningScheduleByRole(models.AbstractModel):
         if (date_to - date_from).days > 6:
             date_to = date_from + timedelta(days=6)
 
+        # Filtri della ricerca del Gantt (vale anche quando il wizard esiste: il
+        # pulsante PDF crea il wizard e passa il domain in `data`).
+        slot_domain = data.get('slot_domain') or []
+
         slot_model = self.env['planning.slot']
         days = []
         current = date_from
         while current <= date_to:
             days.append(
-                slot_model._sabaco_get_schedule_by_role_report_values(current)
+                slot_model._sabaco_get_schedule_by_role_report_values(
+                    current, domain=slot_domain
+                )
             )
             current += timedelta(days=1)
 
