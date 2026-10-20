@@ -56,6 +56,22 @@ class AccountTax(models.Model):
         """
         self.ensure_one()
         rep_lines = self._get_tax_repartition_lines(move_type, 'tax')
+        # Abbinamento per posizione: con ripartizioni di pari percentuale
+        # (es. 50% detraibile + 50% indetraibile) la sola percentuale non
+        # distingue le righe e tutte finirebbero sulla prima.
+        differita_tax = differita_repartition_line.tax_id
+        if differita_tax:
+            differita_rep_lines = differita_tax._get_tax_repartition_lines(
+                move_type, 'tax'
+            )
+            if (
+                differita_repartition_line in differita_rep_lines
+                and len(differita_rep_lines) == len(rep_lines)
+            ):
+                index = list(differita_rep_lines.ids).index(
+                    differita_repartition_line.id
+                )
+                return rep_lines[index]
         match = rep_lines.filtered(
             lambda r: abs(r.factor_percent - differita_repartition_line.factor_percent) < 0.01
         )

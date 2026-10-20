@@ -187,6 +187,11 @@ class AccountMove(models.Model):
             original_rep_line = original_tax._get_matching_tax_repartition_line(
                 self.move_type, line.tax_repartition_line_id,
             )
+            # Quota indetraibile: ripartizione senza conto proprio (va sul
+            # conto di costo). Non va differita: nello storno compare solo
+            # come coppia a saldo zero sul conto transitorio, per portare i
+            # tag (colonna "non deducibile") nel mese dello storno.
+            non_deductible = not original_rep_line.account_id
             plus_tax = differita_tax._get_iva_differita_plus_taxes()
             plus_rep_line = plus_tax._get_matching_tax_repartition_line(
                 self.move_type, line.tax_repartition_line_id,
@@ -201,7 +206,11 @@ class AccountMove(models.Model):
                 'plus_tax_id': plus_tax.id,
                 'plus_repartition_line_id': plus_rep_line.id,
                 'original_tax_id': original_tax.id,
-                'original_account_id': original_rep_line.account_id.id,
+                'non_deductible': non_deductible,
+                'original_account_id': (
+                    original_rep_line.account_id.id
+                    or self.company_id.account_iva_differita_imponibile_id.id
+                ),
                 'original_repartition_line_id': original_rep_line.id,
                 'original_tag_ids': original_rep_line.tag_ids.ids,
             }
@@ -274,6 +283,20 @@ class AccountMove(models.Model):
                 'tax_repartition_line_id': data['original_repartition_line_id'],
                 'tax_tag_ids': [(6, 0, data['original_tag_ids'])],
             })
+            if data['non_deductible']:
+                # Controparte sul conto transitorio (la quota indetraibile non
+                # è mai passata dal conto IVA differita), con l'imposta
+                # differita (+) e la sua riga di ripartizione indetraibile,
+                # così che anche questa compaia nella colonna "non deducibile".
+                storno_line_vals.append({
+                    'account_id': account_imponibile.id,
+                    'name': plus_tax.name,
+                    'debit': amount if is_credit else 0.0,
+                    'credit': 0.0 if is_credit else amount,
+                    'tax_line_id': data['plus_tax_id'],
+                    'tax_repartition_line_id': data['plus_repartition_line_id'],
+                })
+                continue
             storno_line_vals.append({
                 'account_id': data['differita_account_id'],
                 'name': plus_tax.name,
