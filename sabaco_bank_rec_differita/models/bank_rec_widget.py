@@ -1,12 +1,16 @@
 from odoo import _, models
+from odoo.exceptions import UserError
 
 
 class BankRecWidget(models.Model):
     _inherit = 'bank.rec.widget'
 
     # Il widget chiama _line_value_changed_<campo> per ogni campo modificato nel form.
+    # Con l'intervallo di date arrivano entrambe le date in un solo aggiornamento.
     def _line_value_changed_deferred_start_date(self, line):
         self.ensure_one()
+        if self._sabaco_differita_su_riconciliata(line):
+            return
         self._lines_turn_auto_balance_into_manual_line(line)
         if line.deferred_start_date and (
             not line.deferred_end_date or line.deferred_end_date < line.deferred_start_date
@@ -15,7 +19,40 @@ class BankRecWidget(models.Model):
 
     def _line_value_changed_deferred_end_date(self, line):
         self.ensure_one()
+        if self._sabaco_differita_su_riconciliata(line):
+            return
         self._lines_turn_auto_balance_into_manual_line(line)
+
+    def _sabaco_differita_su_riconciliata(self, line):
+        """Transazione gia' riconciliata: le date vanno sulla registrazione e i differimenti si rifanno subito.
+
+        Nella v19 il popup "Modifica riga" lo fa senza reset; nella v18 la riconciliazione
+        e' in sola lettura, quindi la riga di costo/ricavo viene aggiornata qui.
+        Restituisce True se la modifica e' stata gestita.
+        """
+        if self.state != 'reconciled' or line.flag != 'aml' or not line.sabaco_differita_ammessa:
+            return False
+        st_line = self.st_line_id
+        move = st_line.move_id
+        if st_line.inalterable_hash or move.inalterable_hash:
+            raise UserError(_(
+                "La transazione bancaria è protetta (hash): non è possibile modificare la data differita."
+            ))
+        inizio = line.deferred_start_date
+        fine = line.deferred_end_date if inizio else False
+        if inizio and (not fine or fine < inizio):
+            fine = inizio
+        line.deferred_end_date = fine
+
+        riga = line.source_aml_id
+        if riga.deferred_start_date == inizio and riga.deferred_end_date == fine:
+            return True
+        riga.write({'deferred_start_date': inizio, 'deferred_end_date': fine})
+        annullati = move._sabaco_annulla_differimenti()
+        generati = move._sabaco_genera_differimenti_banca()
+        if annullati or generati:
+            move.message_post(body=_("Registrazioni differite rigenerate dalla riconciliazione bancaria."))
+        return True
 
     def _action_validate(self):
         # Chiamato da "Valida", "Da controllare" e dal cron di riconciliazione automatica.

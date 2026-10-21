@@ -1,6 +1,6 @@
 {
     'name': 'Sabaco — Data differita nella riconciliazione bancaria',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Accounting',
     'summary': 'Data inizio / fine differita sulle operazioni manuali della riconciliazione bancaria',
     'description': """
@@ -9,6 +9,8 @@
         Alla validazione vengono generate le registrazioni differite (risconti)
         come nelle fatture; al reset della riconciliazione vengono annullate e a una
         nuova validazione rigenerate, senza duplicati.
+        Su una transazione già riconciliata la data differita delle righe di costo o
+        ricavo si modifica direttamente (senza reset): i differimenti vengono rifatti subito.
 
         Incompatibile con il modulo bank_rec_deferred_dates: l'installazione viene
         bloccata se quel modulo è installato.

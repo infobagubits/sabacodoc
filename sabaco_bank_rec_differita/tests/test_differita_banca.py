@@ -287,3 +287,84 @@ class TestDifferitaBanca(TransactionCase):
         fattura.action_post()
         self.assertEqual(len(fattura.deferred_move_ids), 13)
         self.assertEqual(fattura._get_deferred_entries_method(), 'on_validation')
+
+    # -------------------------------------------------------------------------
+    # Transazione gia' riconciliata: modifica diretta (caso della Moris, v19)
+    # -------------------------------------------------------------------------
+
+    def _imposta_periodo_riconciliata(self, st_line, conto, inizio, fine):
+        """Simula l'intervallo di date sulla riga di una transazione gia' riconciliata."""
+        wizard = self._wizard(st_line)
+        self.assertEqual(wizard.state, 'reconciled')
+        line = wizard.line_ids.filtered(lambda l: l.flag == 'aml' and l.account_id == conto)
+        wizard._js_action_mount_line_in_edit(line.index)
+        line.deferred_start_date = fields.Date.to_date(inizio) if inizio else False
+        line.deferred_end_date = fields.Date.to_date(fine) if fine else False
+        wizard._js_action_line_changed(line.index, 'deferred_end_date')
+        return wizard
+
+    def test_riconciliata_modifica_diretta(self):
+        """Transazione gia' riconciliata senza date: si imposta il periodo senza reset."""
+        st_line = self._create_st_line(-1200.0, date=DATA_BANCA)
+        self._valida(st_line, self.conto_costo)
+        self.assertFalse(st_line.move_id.deferred_move_ids)
+
+        self._imposta_periodo_riconciliata(st_line, self.conto_costo, '2026-08-01', '2027-01-31')
+
+        self.assertTrue(st_line.is_reconciled)
+        riga = st_line.move_id.line_ids.filtered(lambda l: l.account_id == self.conto_costo)
+        self.assertEqual(riga.deferred_start_date, fields.Date.to_date('2026-08-01'))
+        self.assertEqual(riga.deferred_end_date, fields.Date.to_date('2027-01-31'))
+        self.assertEqual(len(self._attivi(st_line)), 7)
+        self.assertAlmostEqual(self._saldo(st_line, self.conto_costo, '2026-07-31'), 0.0)
+        self.assertAlmostEqual(self._saldo(st_line, self.conto_costo, '2026-08-31'), 200.0)
+        self.assertAlmostEqual(self._saldo(st_line, self.conto_costo), 1200.0)
+
+    def test_riconciliata_cambio_periodo_senza_duplicati(self):
+        st_line = self._create_st_line(-1200.0, date=DATA_BANCA)
+        self._valida(st_line, self.conto_costo, '2026-08-01', '2027-01-31')
+        vecchi = self._attivi(st_line)
+
+        self._imposta_periodo_riconciliata(st_line, self.conto_costo, '2026-07-01', '2027-06-30')
+
+        nuovi = self._attivi(st_line)
+        self.assertFalse(nuovi & vecchi)
+        self.assertEqual(len(nuovi), 13)
+        self.assertAlmostEqual(self._saldo(st_line, self.conto_costo, '2026-07-31'), 100.0)
+        self.assertAlmostEqual(self._saldo(st_line, self.conto_costo), 1200.0)
+
+    def test_riconciliata_togliere_date(self):
+        st_line = self._create_st_line(-1200.0, date=DATA_BANCA)
+        self._valida(st_line, self.conto_costo, '2026-07-01', '2027-06-30')
+
+        self._imposta_periodo_riconciliata(st_line, self.conto_costo, False, False)
+
+        self.assertFalse(st_line.move_id.line_ids.filtered('deferred_start_date'))
+        self.assertFalse(self._attivi(st_line))
+        self.assertAlmostEqual(self._saldo(st_line, self.conto_costo, '2026-07-31'), 1200.0)
+
+    def test_riconciliata_solo_inizio(self):
+        """Solo la data inizio: la fine diventa uguale all'inizio (stesso mese della banca → niente)."""
+        st_line = self._create_st_line(-1200.0, date=DATA_BANCA)
+        self._valida(st_line, self.conto_costo)
+
+        self._imposta_periodo_riconciliata(st_line, self.conto_costo, '2026-07-20', False)
+
+        riga = st_line.move_id.line_ids.filtered(lambda l: l.account_id == self.conto_costo)
+        self.assertEqual(riga.deferred_end_date, fields.Date.to_date('2026-07-20'))
+        self.assertFalse(self._attivi(st_line))
+
+    def test_riconciliata_conto_non_ammesso_sola_lettura(self):
+        """Sulla riga non di costo/ricavo di una transazione riconciliata non si scrive nulla."""
+        st_line = self._create_st_line(-1200.0, date=DATA_BANCA)
+        self._valida(st_line, self.risconto_attivo)
+        wizard = self._wizard(st_line)
+        line = wizard.line_ids.filtered(lambda l: l.flag == 'aml' and l.account_id == self.risconto_attivo)
+        self.assertFalse(line.sabaco_differita_ammessa)
+
+        line.deferred_start_date = fields.Date.to_date('2026-08-01')
+        line.deferred_end_date = fields.Date.to_date('2027-01-31')
+        wizard._js_action_line_changed(line.index, 'deferred_end_date')
+
+        self.assertFalse(st_line.move_id.line_ids.filtered('deferred_start_date'))
+        self.assertFalse(st_line.move_id.deferred_move_ids)

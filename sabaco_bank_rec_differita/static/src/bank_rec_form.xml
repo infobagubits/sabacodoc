@@ -2,31 +2,26 @@
 <templates>
     <t t-inherit="account_accountant.BankRecRecordNotebookManualOperations" t-inherit-mode="extension">
         <xpath expr="//div[@name='analytic_distribution']" position="after">
-            <!-- Sempre visibili sulle righe di contropartita; usate solo su conti di costo/ricavo. -->
+            <!-- Sempre visibili sulle righe di contropartita; usate solo su conti di costo/ricavo.
+                 Su una transazione gia' riconciliata restano modificabili sulle righe di costo/ricavo
+                 (come il popup "Modifica riga" della v19). -->
             <t t-if="['manual', 'auto_balance'].includes(line.data.flag) or (line.data.flag === 'aml' and line.data.sabaco_differita_ammessa)">
-                <!-- deferred_start_date -->
+                <t t-set="differitaReadonly"
+                   t-value="reconciled and !(line.data.flag === 'aml' and line.data.sabaco_differita_ammessa)"/>
                 <div name="deferred_start_date" class="o_wrap_field d-flex d-sm-contents flex-column">
                     <div class="o_cell o_wrap_label flex-grow-1 flex-sm-grow-0 w-100 text-break text-900">
-                        <label class="o_form_label" t-att-class="{'o_form_label_readonly': reconciled}">
-                            Data inizio differita
+                        <label class="o_form_label" t-att-class="{'o_form_label_readonly': differitaReadonly}">
+                            Data differita
                         </label>
                     </div>
                     <div class="o_cell o_wrap_input flex-grow-1 flex-sm-grow-0 w-100">
-                        <div class="o_field_widget o_field_date">
-                            <DateTimeField name="'deferred_start_date'" record="line" readonly="reconciled"/>
-                        </div>
-                    </div>
-                </div>
-                <!-- deferred_end_date -->
-                <div name="deferred_end_date" class="o_wrap_field d-flex d-sm-contents flex-column">
-                    <div class="o_cell o_wrap_label flex-grow-1 flex-sm-grow-0 w-100 text-break text-900">
-                        <label class="o_form_label" t-att-class="{'o_form_label_readonly': reconciled}">
-                            Data fine differita
-                        </label>
-                    </div>
-                    <div class="o_cell o_wrap_input flex-grow-1 flex-sm-grow-0 w-100">
-                        <div class="o_field_widget o_field_date">
-                            <DateTimeField name="'deferred_end_date'" record="line" readonly="reconciled"/>
+                        <div class="o_field_widget o_field_daterange">
+                            <!-- Intervallo: inizio e fine arrivano insieme in un solo aggiornamento della riga -->
+                            <DateTimeField name="'deferred_start_date'"
+                                           endDateField="'deferred_end_date'"
+                                           alwaysRange="true"
+                                           record="line"
+                                           readonly="differitaReadonly"/>
                         </div>
                     </div>
                 </div>
