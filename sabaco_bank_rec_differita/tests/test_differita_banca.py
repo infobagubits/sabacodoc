@@ -256,6 +256,17 @@ class TestDifferitaBanca(TransactionCase):
         self.assertFalse(st_line.move_id.line_ids.filtered('deferred_start_date'))
         self.assertFalse(st_line.move_id.deferred_move_ids)
 
+    def test_date_su_conto_non_ammesso_ignorate(self):
+        """I campi sono visibili su ogni contropartita, ma le date valgono solo per costi/ricavi."""
+        st_line = self._create_st_line(-1200.0, date=DATA_BANCA)
+        self._valida(st_line, self.risconto_attivo, '2026-07-01', '2027-06-30')
+
+        self.assertFalse(st_line.move_id.line_ids.filtered('deferred_start_date'))
+        self.assertFalse(st_line.move_id.deferred_move_ids)
+        self.assertTrue(any(
+            'Date differite ignorate' in (msg.body or '') for msg in st_line.move_id.message_ids
+        ))
+
     def test_regressione_fattura_fornitore(self):
         """Le fatture con data differita continuano a usare il percorso del core."""
         fattura = self.env['account.move'].create({

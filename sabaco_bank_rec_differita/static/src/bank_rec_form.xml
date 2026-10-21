@@ -2,7 +2,8 @@
 <templates>
     <t t-inherit="account_accountant.BankRecRecordNotebookManualOperations" t-inherit-mode="extension">
         <xpath expr="//div[@name='analytic_distribution']" position="after">
-            <t t-if="line.data.sabaco_differita_ammessa">
+            <!-- Sempre visibili sulle righe di contropartita; usate solo su conti di costo/ricavo. -->
+            <t t-if="['manual', 'auto_balance'].includes(line.data.flag) or (line.data.flag === 'aml' and line.data.sabaco_differita_ammessa)">
                 <!-- deferred_start_date -->
                 <div name="deferred_start_date" class="o_wrap_field d-flex d-sm-contents flex-column">
                     <div class="o_cell o_wrap_label flex-grow-1 flex-sm-grow-0 w-100 text-break text-900">
