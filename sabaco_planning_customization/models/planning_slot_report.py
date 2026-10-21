@@ -24,6 +24,8 @@ VISIBLE_TOTAL_MIN = (24 - DISPLAY_START_HOUR) * 60       # 1080
 PILL_HEIGHT_PX = 22
 PILL_LEVEL_STEP_PX = 24
 ROW_PADDING_PX = 4
+# Fuso fixo do relatório: o cliente opera só na Itália (BUG-010).
+REPORT_TZ = 'Europe/Rome'
 
 
 class PlanningSlot(models.Model):
@@ -48,19 +50,40 @@ class PlanningSlot(models.Model):
 
     @api.model
     def _sabaco_report_timezone(self):
-        tz_name = (
-            self.env.user.tz
-            or self.env.company.resource_calendar_id.tz
-            or 'UTC'
-        )
-        return pytz.timezone(tz_name)
+        return pytz.timezone(REPORT_TZ)
 
     @api.model
     def _sabaco_day_bounds(self, report_date):
         tz = self._sabaco_report_timezone()
         day_start = tz.localize(datetime.combine(report_date, time.min))
-        day_end = day_start + timedelta(days=1)
+        # localize do dia seguinte: no dia da troca de hora o dia tem 23h/25h,
+        # `day_start + timedelta(days=1)` manteria o offset errado (BUG-010).
+        day_end = tz.localize(datetime.combine(report_date + timedelta(days=1), time.min))
         return day_start, day_end, tz
+
+    @api.model
+    def _sabaco_wall_minutes(self, dt_local, day_start):
+        """Minutos de relógio (0–1440) de `dt_local` no dia de `day_start`.
+
+        Não usa tempo decorrido desde a meia-noite: no dia da troca de hora
+        isso deslocaria todos os horários em ±1h (BUG-010).
+        """
+        if dt_local.date() < day_start.date():
+            return 0
+        if dt_local.date() > day_start.date():
+            return DAY_MINUTES
+        return dt_local.hour * 60 + dt_local.minute + dt_local.second / 60
+
+    @api.model
+    def _sabaco_hour_interval(self, day_start, hour_index, tz):
+        """Intervalo local [hh:00, hh+1:00) da hora de relógio `hour_index`."""
+        day = day_start.date()
+        hour_start = tz.localize(datetime.combine(day, time(hour_index)))
+        if hour_index + 1 >= 24:
+            hour_end = tz.localize(datetime.combine(day + timedelta(days=1), time.min))
+        else:
+            hour_end = tz.localize(datetime.combine(day, time(hour_index + 1)))
+        return hour_start, hour_end
 
     @api.model
     def _sabaco_format_duration_label(self, hours):
@@ -140,8 +163,8 @@ class PlanningSlot(models.Model):
 
     @api.model
     def _sabaco_visible_hour_bounds(self, visible_start, visible_end, day_start):
-        start_minutes = (visible_start - day_start).total_seconds() / 60
-        end_minutes = (visible_end - day_start).total_seconds() / 60
+        start_minutes = self._sabaco_wall_minutes(visible_start, day_start)
+        end_minutes = self._sabaco_wall_minutes(visible_end, day_start)
         first_hour = max(0, int(start_minutes // 60))
         last_hour_excl = min(24, max(first_hour + 1, math.ceil(end_minutes / 60)))
         return first_hour, last_hour_excl
@@ -200,8 +223,7 @@ class PlanningSlot(models.Model):
             if not allocated_hours:
                 return {}
             for hour_index in range(first_hour, last_hour_excl):
-                hour_start = day_start + timedelta(hours=hour_index)
-                hour_end = hour_start + timedelta(hours=1)
+                hour_start, hour_end = self._sabaco_hour_interval(day_start, hour_index, tz)
                 max_duration_ms = (hour_end - hour_start).total_seconds() * 1000
                 daily_alloc_ms = min(
                     allocated_hours * 3600000 / span,
@@ -229,8 +251,7 @@ class PlanningSlot(models.Model):
 
         loop_start = max(0, first_hour - 1)
         for hour_index in range(loop_start, last_hour_excl):
-            hour_start = day_start + timedelta(hours=hour_index)
-            hour_end = hour_start + timedelta(hours=1)
+            hour_start, hour_end = self._sabaco_hour_interval(day_start, hour_index, tz)
             interval = (hour_start, hour_end + timedelta(seconds=1))
             duration_ms = self._sabaco_intersection_duration_ms(interval, record_intervals)
             if duration_ms > 0:
@@ -250,8 +271,8 @@ class PlanningSlot(models.Model):
         if visible_end <= visible_start:
             return None
 
-        start_minutes = (visible_start - day_start).total_seconds() / 60
-        end_minutes = (visible_end - day_start).total_seconds() / 60
+        start_minutes = self._sabaco_wall_minutes(visible_start, day_start)
+        end_minutes = self._sabaco_wall_minutes(visible_end, day_start)
         # Recorta para a faixa visível (06:00–24:00); turno inteiro na madrugada → não exibe
         start_minutes = max(start_minutes, VISIBLE_START_MIN)
         end_minutes = max(end_minutes, VISIBLE_START_MIN)
