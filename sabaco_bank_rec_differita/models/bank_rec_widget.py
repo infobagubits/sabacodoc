@@ -63,7 +63,7 @@ class BankRecWidget(models.Model):
         if not con_date and not move.deferred_move_ids:
             return super()._action_validate()
 
-        # Le date sono visibili su ogni riga di contropartita, ma valgono solo per costi/ricavi.
+        # Date rimaste su una riga il cui conto non e' piu' di costo/ricavo: valgono solo per costi/ricavi.
         conti_ignorati = self.line_ids.filtered(
             lambda l: l.deferred_start_date and not l.sabaco_differita_ammessa
         ).account_id

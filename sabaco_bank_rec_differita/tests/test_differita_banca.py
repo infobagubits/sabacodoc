@@ -257,7 +257,7 @@ class TestDifferitaBanca(TransactionCase):
         self.assertFalse(st_line.move_id.deferred_move_ids)
 
     def test_date_su_conto_non_ammesso_ignorate(self):
-        """I campi sono visibili su ogni contropartita, ma le date valgono solo per costi/ricavi."""
+        """Date rimaste su una riga diventata non di costo/ricavo: ignorate con nota nel chatter."""
         st_line = self._create_st_line(-1200.0, date=DATA_BANCA)
         self._valida(st_line, self.risconto_attivo, '2026-07-01', '2027-06-30')
 
@@ -368,3 +368,17 @@ class TestDifferitaBanca(TransactionCase):
 
         self.assertFalse(st_line.move_id.line_ids.filtered('deferred_start_date'))
         self.assertFalse(st_line.move_id.deferred_move_ids)
+
+    def test_campo_visibile_solo_dopo_conto_costo(self):
+        """Come nella v19: sul conto transitorio il campo non c'e', compare scelto il conto di costo."""
+        st_line = self._create_st_line(-1200.0, date=DATA_BANCA)
+        wizard = self._wizard(st_line)
+        line = self._riga_in_modifica(wizard)
+        self.assertEqual(line.flag, 'auto_balance')
+        self.assertFalse(line.sabaco_differita_ammessa)
+
+        self._imposta(wizard, line, 'account_id', self.conto_costo)
+        line = wizard.line_ids.filtered(lambda x: x.index == wizard.form_index)
+        self.assertTrue(line.sabaco_differita_ammessa)
+        liquidita = wizard.line_ids.filtered(lambda x: x.flag == 'liquidity')
+        self.assertFalse(liquidita.sabaco_differita_ammessa)
