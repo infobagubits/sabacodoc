@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <t t-inherit="account_accountant.BankRecRecordNotebookManualOperations" t-inherit-mode="extension">
+        <xpath expr="//div[@name='analytic_distribution']" position="after">
+            <!-- Come nella v19 (Moris): solo sulle righe di costo/ricavo, anche su transazione gia'
+                 riconciliata (popup "Modifica riga"). Su cassa, banca, clienti/fornitori, conto
+                 transitorio e imposte il campo non compare. -->
+            <t t-if="line.data.sabaco_differita_ammessa">
+                <t t-set="differitaReadonly" t-value="reconciled and line.data.flag !== 'aml'"/>
+                <div name="deferred_start_date" class="o_wrap_field d-flex d-sm-contents flex-column">
+                    <div class="o_cell o_wrap_label flex-grow-1 flex-sm-grow-0 w-100 text-break text-900">
+                        <label class="o_form_label" t-att-class="{'o_form_label_readonly': differitaReadonly}">
+                            Data differita
+                        </label>
+                    </div>
+                    <div class="o_cell o_wrap_input flex-grow-1 flex-sm-grow-0 w-100">
+                        <div class="o_field_widget o_field_daterange">
+                            <!-- Intervallo: inizio e fine arrivano insieme in un solo aggiornamento della riga -->
+                            <DateTimeField name="'deferred_start_date'"
+                                           endDateField="'deferred_end_date'"
+                                           alwaysRange="true"
+                                           record="line"
+                                           readonly="differitaReadonly"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+    </t>
+</templates>
