@@ -133,3 +133,22 @@ class TestArrotondamentoPresenze(TransactionCase):
             self.dipendente._attendance_action_change()
         self.assertEqual(presenza.check_out, dt(9, 0))
         self.assertAlmostEqual(presenza.worked_hours, 2.5, places=4)
+
+    def test_chiosco_stato_dopo_ingresso_arrotondato(self):
+        """Ingresso arrotondato nel futuro: il dipendente risulta comunque entrato."""
+        with freeze_time(dt(6, 17)):
+            presenza = self.dipendente._attendance_action_change()
+            self.dipendente.invalidate_recordset()
+            self.assertEqual(self.dipendente.last_attendance_id, presenza)
+            self.assertEqual(self.dipendente.attendance_state, 'checked_in')
+
+    def test_chiosco_uscita_prima_della_mezzora(self):
+        """Ingresso 08:17 (-> 08:30) e uscita 08:25: niente errore, presenza di 0 ore."""
+        with freeze_time(dt(6, 17)):
+            presenza = self.dipendente._attendance_action_change()
+        with freeze_time(dt(6, 25)):
+            self.dipendente._attendance_action_change()
+            self.dipendente.invalidate_recordset()
+            self.assertEqual(self.dipendente.attendance_state, 'checked_out')
+        self.assertEqual((presenza.check_in, presenza.check_out), (dt(6, 30), dt(6, 30)))
+        self.assertEqual(presenza.worked_hours, 0)
