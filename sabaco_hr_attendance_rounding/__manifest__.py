@@ -1,6 +1,6 @@
 {
     'name': 'Sabaco — Arrotondamento timbrature presenze',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Human Resources/Attendances',
     'summary': "Arrotonda le timbrature alla mezz'ora: ingresso per eccesso, uscita per difetto",
     'description': """
