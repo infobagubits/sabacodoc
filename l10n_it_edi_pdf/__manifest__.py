@@ -1,6 +1,6 @@
 {
     'name': 'Italian EDI - PDF da XML Fattura Elettronica',
-    'version': '1.0.0',
+    'version': '18.0.1.1.0',
     'category': 'Accounting/Localizations',
     'summary': 'Genera il PDF visivo della fattura elettronica italiana a partire dall\'XML EDI',
     'description': """

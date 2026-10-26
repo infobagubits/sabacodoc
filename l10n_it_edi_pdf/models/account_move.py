@@ -26,6 +26,18 @@ except Exception as e:  # pragma: no cover - modulo/dipendenza non disponibile (
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
+    # Punti di innesco della generazione automatica del PDF:
+    #   * Fatture di VENDITA (out_invoice/out_refund): ir.attachment create/write
+    #     (models/ir_attachment.py) — l'XML arriva come allegato (casella allegati,
+    #     chatter, import, oppure invio SdI con res_field='l10n_it_edi_attachment_file').
+    #     In Odoo 18 non esiste il campo l10n_it_edi_attachment_name e l'XML inviato
+    #     allo SdI viene scritto direttamente su ir.attachment, quindi un trigger su
+    #     account.move.write non scatterebbe mai.
+    #   * Fatture di ACQUISTO (in_invoice/in_refund): _extend_with_attachments (import
+    #     XML/p7m) e, come rete di sicurezza, create/write con
+    #     l10n_it_edi_attachment_file nei vals.
+    #   * Pulsante "PDF Fattura Elettronica": action_generate_edi_pdf (tutti i tipi).
+
     @api.model_create_multi
     def create(self, vals_list):
         moves = super().create(vals_list)
@@ -34,13 +46,9 @@ class AccountMove(models.Model):
         # in quel caso il trigger su write() non scatterebbe mai. Qui generiamo il
         # PDF subito dopo la create, anche se la fattura è ancora in bozza.
         for move, vals in zip(moves, vals_list):
-            trigger_file = 'l10n_it_edi_attachment_file' in vals
-            trigger_name = 'l10n_it_edi_attachment_name' in vals
-            if not (trigger_file or trigger_name):
+            if 'l10n_it_edi_attachment_file' not in vals:
                 continue
-            if move.move_type in ('out_invoice', 'out_refund') and not trigger_name:
-                continue
-            if move.move_type in ('in_invoice', 'in_refund') and not trigger_file:
+            if move.move_type not in ('in_invoice', 'in_refund'):
                 continue
             try:
                 move._auto_generate_edi_pdf()
@@ -53,17 +61,11 @@ class AccountMove(models.Model):
 
     def write(self, vals):
         res = super().write(vals)
-        trigger_file = 'l10n_it_edi_attachment_file' in vals
-        trigger_name = 'l10n_it_edi_attachment_name' in vals
-        if trigger_file or trigger_name:
+        if 'l10n_it_edi_attachment_file' in vals:
             for move in self:
-                # Fatture vendita: reagire solo a l10n_it_edi_attachment_name
-                # Fatture acquisto: reagire solo a l10n_it_edi_attachment_file
-                # Nessun controllo sullo stato: il PDF viene generato anche in bozza,
-                # è sufficiente che l'XML EDI sia disponibile.
-                if move.move_type in ('out_invoice', 'out_refund') and not trigger_name:
-                    continue
-                if move.move_type in ('in_invoice', 'in_refund') and not trigger_file:
+                # Solo fatture acquisto. Nessun controllo sullo stato: il PDF viene
+                # generato anche in bozza, è sufficiente che l'XML EDI sia disponibile.
+                if move.move_type not in ('in_invoice', 'in_refund'):
                     continue
                 try:
                     move._auto_generate_edi_pdf()
