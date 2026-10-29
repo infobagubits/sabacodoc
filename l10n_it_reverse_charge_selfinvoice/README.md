@@ -60,7 +60,9 @@ configurato una volta sola dal commercialista.
    - imposta di **vendita** per l'autofattura (es. 22% autofattura) con `+100%`
      → *IVA a debito* e le relative griglie;
    - sull'imposta di **acquisto**, valorizza il campo *"Imposta autofattura
-     (reverse charge)"* puntando all'imposta di vendita.
+     (reverse charge)"* puntando all'imposta di vendita (usato per fornitori
+     italiani); per i fornitori esteri valorizza *"Imposta integrazione
+     fattura estera"*.
 4. **Posizione fiscale** – per ogni casistica (interno, intra-UE, extra-UE)
    crea/usa una posizione fiscale, spunta *"Reverse charge (autofattura
    separata)"* e imposta sezionale + i due conti. In alternativa i default

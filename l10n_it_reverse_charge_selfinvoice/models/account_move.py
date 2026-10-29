@@ -6,6 +6,10 @@ L10N_IT_RC_INTEGRATION_TD = ("TD16", "TD17", "TD18", "TD19")
 L10N_IT_RC_TAX_ACCOUNT_CODE = "350101"
 L10N_IT_RC_TAX_CREDIT_ACCOUNT_CODE = "350121"
 L10N_IT_RC_TAX_TRANSIT_ACCOUNT_CODE = "99999903"
+# Conti IVA per fornitore italiano: la fattura originale resta su 350101,
+# l'autofattura usa 350103. Per fornitore estero: 350121 / 350123.
+L10N_IT_RC_TAX_SELF_INVOICE_ACCOUNT_CODE_IT = "350103"
+L10N_IT_RC_TAX_SELF_INVOICE_ACCOUNT_CODE_EXTRA = "350123"
 
 
 class AccountMove(models.Model):
@@ -194,17 +198,52 @@ class AccountMove(models.Model):
     # l'imposta viene autoliquidata con l'autofattura e non versata al
     # fornitore.
     # ------------------------------------------------------------------
+    def _l10n_it_rc_is_italian_supplier(self):
+        self.ensure_one()
+        country = (
+            self.partner_id.commercial_partner_id.country_id
+            or self.company_id.country_id
+        )
+        return country.code == "IT"
+
+    def _l10n_it_rc_get_self_invoice_tax_account(self):
+        """Conto IVA delle righe imposta dell'autofattura (self = fattura
+        fornitore di origine): 350103 per fornitore italiano, 350123 estero."""
+        self.ensure_one()
+        code = (
+            L10N_IT_RC_TAX_SELF_INVOICE_ACCOUNT_CODE_IT
+            if self._l10n_it_rc_is_italian_supplier()
+            else L10N_IT_RC_TAX_SELF_INVOICE_ACCOUNT_CODE_EXTRA
+        )
+        account = self.env["account.account"].search([
+            ("code", "=", code),
+            ("company_ids", "in", self.company_id.id),
+        ], limit=1)
+        if not account:
+            raise UserError(_(
+                "Per l'autofattura serve il conto %(code)s nel piano dei "
+                "conti dell'azienda '%(company)s'."
+            ) % {"code": code, "company": self.company_id.name})
+        return account
+
     def _l10n_it_rc_get_tax_transit_accounts(self):
+        """Ritorna (conto IVA originale, conto IVA della fattura originale
+        dopo lo split, conto transitorio). Con fornitore italiano l'IVA
+        della fattura originale resta su 350101, con fornitore estero va
+        su 350121."""
         self.ensure_one()
         Account = self.env["account.account"]
         account_from = Account.search([
             ("code", "=", L10N_IT_RC_TAX_ACCOUNT_CODE),
             ("company_ids", "in", self.company_id.id),
         ], limit=1)
-        account_credit = Account.search([
-            ("code", "=", L10N_IT_RC_TAX_CREDIT_ACCOUNT_CODE),
-            ("company_ids", "in", self.company_id.id),
-        ], limit=1)
+        if self._l10n_it_rc_is_italian_supplier():
+            account_credit = account_from
+        else:
+            account_credit = Account.search([
+                ("code", "=", L10N_IT_RC_TAX_CREDIT_ACCOUNT_CODE),
+                ("company_ids", "in", self.company_id.id),
+            ], limit=1)
         account_to = Account.search([
             ("code", "=", L10N_IT_RC_TAX_TRANSIT_ACCOUNT_CODE),
             ("company_ids", "in", self.company_id.id),
@@ -268,6 +307,10 @@ class AccountMove(models.Model):
                     "amount_currency": first_term.amount_currency + tax_amount_currency,
                 }),
                 (0, 0, {
+                    # Senza display_type Odoo la tratta come riga prodotto e
+                    # la mostra tra le righe fattura: 'cogs' la tiene solo
+                    # nei movimenti contabili.
+                    "display_type": "cogs",
                     "name": first_term.name,
                     "account_id": account_to.id,
                     "partner_id": first_term.partner_id.id,
@@ -317,14 +360,23 @@ class AccountMove(models.Model):
     def _l10n_it_rc_prepare_self_invoice_line(self, line, transitory_account):
         """Mappa una riga della fattura fornitore in una riga dell'autofattura."""
         self.ensure_one()
-        mapped_taxes = line.tax_ids.mapped("l10n_it_rc_self_invoice_tax_id")
+        if self._l10n_it_rc_is_italian_supplier():
+            tax_field = "l10n_it_rc_self_invoice_tax_id"
+            field_label = _("Imposta autofattura (reverse charge)")
+        else:
+            tax_field = "l10n_it_rc_foreign_self_invoice_tax_id"
+            field_label = _("Imposta integrazione fattura estera")
+        mapped_taxes = line.tax_ids.mapped(tax_field)
         if line.tax_ids and not mapped_taxes:
             raise UserError(_(
                 "Impossibile generare l'autofattura: l'imposta '%(taxes)s' non "
                 "ha un'imposta di autofattura mappata.\n"
                 "Configurala in Contabilità > Configurazione > Imposte, campo "
-                "'Imposta autofattura (reverse charge)'."
-            ) % {"taxes": ", ".join(line.tax_ids.mapped("name"))})
+                "'%(field)s'."
+            ) % {
+                "taxes": ", ".join(line.tax_ids.mapped("name")),
+                "field": field_label,
+            })
         return {
             "display_type": "product",
             "product_id": line.product_id.id,
@@ -374,9 +426,25 @@ class AccountMove(models.Model):
                 "Credito."
             ) % receivable_account.display_name)
 
+        # Le righe senza imposta e a importo zero (tipicamente descrittive,
+        # es. riferimenti importati dall'XML) non vanno riportate in
+        # autofattura; quelle senza imposta ma con importo sono un errore.
         product_lines = self.invoice_line_ids.filtered(
             lambda l: l.display_type == "product"
         )
+        untaxed = product_lines.filtered(lambda l: not l.tax_ids)
+        untaxed_with_amount = untaxed.filtered(
+            lambda l: not self.currency_id.is_zero(l.price_subtotal)
+        )
+        if untaxed_with_amount:
+            raise UserError(_(
+                "Impossibile generare l'autofattura: le righe seguenti non "
+                "hanno imposta: %s"
+            ) % ", ".join(
+                l.product_id.display_name or l.name or _("(senza descrizione)")
+                for l in untaxed_with_amount
+            ))
+        product_lines -= untaxed
         line_vals = [
             (0, 0, self._l10n_it_rc_prepare_self_invoice_line(l, transitory_account))
             for l in product_lines
@@ -423,6 +491,13 @@ class AccountMove(models.Model):
         )
         if term_lines:
             term_lines.write({"account_id": receivable_account.id})
+
+        tax_account = self._l10n_it_rc_get_self_invoice_tax_account()
+        tax_lines = self_invoice.line_ids.filtered(
+            lambda l: l.display_type == "tax" and l.account_id != tax_account
+        )
+        if tax_lines:
+            tax_lines.write({"account_id": tax_account.id})
 
         self_invoice.action_post()
         # Alla registrazione, l10n_it_edi_ndd calcola un TipoDocumento di

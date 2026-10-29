@@ -14,3 +14,13 @@ class AccountTax(models.Model):
              "positiva verso il conto IVA a debito (registro vendite).",
         domain="[('type_tax_use', '=', 'sale'), ('company_id', '=', company_id)]",
     )
+    l10n_it_rc_foreign_self_invoice_tax_id = fields.Many2one(
+        comodel_name="account.tax",
+        string="Imposta integrazione fattura estera",
+        help="Imposta di vendita da applicare nella riga dell'integrazione "
+             "generata dal reverse charge, in corrispondenza di questa "
+             "imposta di acquisto, quando il fornitore è estero. Deve essere "
+             "un'imposta con un'unica ripartizione positiva verso il conto "
+             "IVA a debito (registro vendite).",
+        domain="[('type_tax_use', '=', 'sale'), ('company_id', '=', company_id)]",
+    )

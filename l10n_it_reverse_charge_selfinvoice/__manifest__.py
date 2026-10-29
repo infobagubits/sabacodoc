@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Reverse Charge - Autofattura separata (IT)",
-    "version": "18.0.1.5.0",
+    "version": "18.0.1.6.0",
     "category": "Accounting/Localizations/Italy",
     "summary": "Doppia registrazione reverse charge: al post della fattura "
                "fornitore genera un'autofattura separata nel registro vendite "
