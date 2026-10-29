@@ -360,14 +360,23 @@ class AccountMove(models.Model):
     def _l10n_it_rc_prepare_self_invoice_line(self, line, transitory_account):
         """Mappa una riga della fattura fornitore in una riga dell'autofattura."""
         self.ensure_one()
-        mapped_taxes = line.tax_ids.mapped("l10n_it_rc_self_invoice_tax_id")
+        if self._l10n_it_rc_is_italian_supplier():
+            tax_field = "l10n_it_rc_self_invoice_tax_id"
+            field_label = _("Imposta autofattura (reverse charge)")
+        else:
+            tax_field = "l10n_it_rc_foreign_self_invoice_tax_id"
+            field_label = _("Imposta integrazione fattura estera")
+        mapped_taxes = line.tax_ids.mapped(tax_field)
         if line.tax_ids and not mapped_taxes:
             raise UserError(_(
                 "Impossibile generare l'autofattura: l'imposta '%(taxes)s' non "
                 "ha un'imposta di autofattura mappata.\n"
                 "Configurala in Contabilità > Configurazione > Imposte, campo "
-                "'Imposta autofattura (reverse charge)'."
-            ) % {"taxes": ", ".join(line.tax_ids.mapped("name"))})
+                "'%(field)s'."
+            ) % {
+                "taxes": ", ".join(line.tax_ids.mapped("name")),
+                "field": field_label,
+            })
         return {
             "display_type": "product",
             "product_id": line.product_id.id,
