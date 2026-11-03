@@ -275,11 +275,16 @@ class AccountMove(models.Model):
         self.ensure_one()
         move = self.with_context(skip_account_move_synchronization=True)
         account_from, account_credit, account_to = move._l10n_it_rc_get_tax_transit_accounts()
-        tax_lines = move.line_ids.filtered(
-            lambda l: l.display_type == "tax" and l.account_id == account_from
-        )
+        # Tutte le righe imposta, anche la quota indetraibile (ripartizione
+        # su un conto di costo): l'IVA va scorporata dal debito per intero e
+        # girata al transitorio al 100%. Cambiano conto solo le righe sul
+        # conto IVA originale (parte detraibile).
+        tax_lines = move.line_ids.filtered(lambda l: l.display_type == "tax")
         if not tax_lines:
             return
+        credit_tax_lines = tax_lines.filtered(
+            lambda l: l.account_id == account_from
+        )
 
         term_lines = move.line_ids.filtered(
             lambda l: l.display_type == "payment_term"
@@ -300,7 +305,7 @@ class AccountMove(models.Model):
         move.write({
             "line_ids": [
                 (1, line.id, {"account_id": account_credit.id})
-                for line in tax_lines
+                for line in credit_tax_lines
             ] + [
                 (1, first_term.id, {
                     "balance": first_term.balance + tax_balance,
