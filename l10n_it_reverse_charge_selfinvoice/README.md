@@ -32,6 +32,10 @@ Avere Conto transitorio imponibile    B      (riga imponibile)
 Avere IVA a debito                    V
 ```
 
+L'imposta di vendita impostata sull'imposta di acquisto viene poi mappata dalla
+*posizione fiscale* della fattura fornitore (mappatura imposte), così da ottenere
+l'imposta corretta per intra-UE o extra-UE (es. 22% IRC -> 22% IRC Intra-UE).
+
 Vincolo Odoo: su un documento di vendita la riga dei termini di pagamento
 deve stare su un conto di tipo **Credito**, mentre la riga imponibile **non**
 deve esserlo. Per questo servono due conti distinti. Il conto contropartita e
@@ -60,9 +64,7 @@ configurato una volta sola dal commercialista.
    - imposta di **vendita** per l'autofattura (es. 22% autofattura) con `+100%`
      → *IVA a debito* e le relative griglie;
    - sull'imposta di **acquisto**, valorizza il campo *"Imposta autofattura
-     (reverse charge)"* puntando all'imposta di vendita (usato per fornitori
-     italiani); per i fornitori esteri valorizza *"Imposta integrazione
-     fattura estera"*.
+     (reverse charge)"* puntando all'imposta di vendita.
 4. **Posizione fiscale** – per ogni casistica (interno, intra-UE, extra-UE)
    crea/usa una posizione fiscale, spunta *"Reverse charge (autofattura
    separata)"* e imposta sezionale + i due conti. In alternativa i default
