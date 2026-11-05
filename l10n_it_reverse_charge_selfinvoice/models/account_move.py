@@ -580,7 +580,49 @@ class AccountMove(models.Model):
                     "registrata. Storna o annulla prima l'autofattura, poi "
                     "riporta in bozza questa fattura."
                 ) % move.l10n_it_rc_self_invoice_id.name)
-        return super().button_draft()
+        res = super().button_draft()
+        for move in self:
+            if (
+                move.move_type in ("in_invoice", "in_refund")
+                and not move.l10n_it_rc_is_self_invoice
+                and move.state == "draft"
+            ):
+                move._l10n_it_rc_undo_split_payable_net_of_tax()
+        return res
+
+    def _l10n_it_rc_undo_split_payable_net_of_tax(self):
+        """Ripristina le scritture com'erano prima di
+        _l10n_it_rc_split_payable_net_of_tax: elimina la riga sul conto
+        transitorio, riporta la riga di debito all'importo lordo e le righe
+        IVA sul conto originale. Cosi' alla nuova conferma lo split viene
+        rieseguito su scritture pulite."""
+        self.ensure_one()
+        move = self.with_context(skip_account_move_synchronization=True)
+        account_from, account_credit, account_to = \
+            move._l10n_it_rc_get_tax_transit_accounts()
+        transit_lines = move.line_ids.filtered(
+            lambda l: l.display_type == "cogs" and l.account_id == account_to
+        )
+        if not transit_lines:
+            return
+        term_lines = move.line_ids.filtered(
+            lambda l: l.display_type == "payment_term"
+        )
+        commands = [(2, line.id) for line in transit_lines]
+        if term_lines:
+            first_term = term_lines[0]
+            commands.append((1, first_term.id, {
+                "balance": first_term.balance + sum(transit_lines.mapped("balance")),
+                "amount_currency": first_term.amount_currency
+                + sum(transit_lines.mapped("amount_currency")),
+            }))
+        if account_credit != account_from:
+            commands += [
+                (1, line.id, {"account_id": account_from.id})
+                for line in move.line_ids
+                if line.display_type == "tax" and line.account_id == account_credit
+            ]
+        move.write({"line_ids": commands})
 
     def unlink(self):
         linked = self.filtered(lambda m: m.l10n_it_rc_self_invoice_id)
