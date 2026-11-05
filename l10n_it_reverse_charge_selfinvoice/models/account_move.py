@@ -584,24 +584,21 @@ class AccountMove(models.Model):
                     "registrata. Storna o annulla prima l'autofattura, poi "
                     "riporta in bozza questa fattura."
                 ) % move.l10n_it_rc_self_invoice_id.name)
-        res = super().button_draft()
+        # L'undo dello split va fatto PRIMA del super(): il button_draft di
+        # stock_account elimina tutte le righe 'cogs' (compresa la nostra
+        # riga transitoria) lasciando la scrittura sbilanciata.
         for move in self:
             if (
                 move.move_type in ("in_invoice", "in_refund")
                 and not move.l10n_it_rc_is_self_invoice
-                and move.state == "draft"
+                and move.state == "posted"
             ):
-                _logger.warning("RC undo split: start su %s", move.id)
-                try:
-                    move._l10n_it_rc_undo_split_payable_net_of_tax()
-                except Exception:
-                    _logger.exception("RC undo split: errore su %s", move.id)
-                    raise
-                _logger.warning("RC undo split: ok su %s", move.id)
-        return res
+                move._l10n_it_rc_undo_split_payable_net_of_tax()
+        return super().button_draft()
 
     def _l10n_it_rc_undo_split_payable_net_of_tax(self):
-        """Ripristina le scritture com'erano prima di
+        """Da chiamare con la fattura ancora registrata, prima del
+        button_draft standard. Ripristina le scritture com'erano prima di
         _l10n_it_rc_split_payable_net_of_tax: elimina la riga sul conto
         transitorio, riporta la riga di debito all'importo lordo e le righe
         IVA sul conto originale. Cosi' alla nuova conferma lo split viene
@@ -614,6 +611,7 @@ class AccountMove(models.Model):
         move = self.with_context(
             skip_account_move_synchronization=True,
             skip_invoice_sync=True,
+            skip_readonly_check=True,
             # Il controllo di bilancio parte anche sulla singola eliminazione
             # di riga, prima che le altre modifiche siano applicate: lo
             # sospendo e verifico io il bilancio a fine operazione.
@@ -625,6 +623,9 @@ class AccountMove(models.Model):
         )
         if not transit_lines:
             return
+        # Come fa il button_draft standard, prima di toccare le righe
+        # vanno tolte le riconciliazioni.
+        move.line_ids.remove_move_reconcile()
         term_lines = move.line_ids.filtered(
             lambda l: l.display_type == "payment_term"
         )
