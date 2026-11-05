@@ -602,10 +602,14 @@ class AccountMove(models.Model):
         # a meta' della modifica, sbilanciando la scrittura. I valori qui
         # sotto sono gia' bilanciati.
         move = self.with_context(
-            skip_account_move_synchronization=True, skip_invoice_sync=True
+            skip_account_move_synchronization=True,
+            skip_invoice_sync=True,
+            # Il controllo di bilancio parte anche sulla singola eliminazione
+            # di riga, prima che le altre modifiche siano applicate: lo
+            # sospendo e verifico io il bilancio a fine operazione.
+            check_move_validity=False,
         )
-        account_from, account_credit, account_to = \
-            move._l10n_it_rc_get_tax_transit_accounts()
+        account_from, account_credit, account_to =             move._l10n_it_rc_get_tax_transit_accounts()
         transit_lines = move.line_ids.filtered(
             lambda l: l.display_type == "cogs" and l.account_id == account_to
         )
@@ -614,7 +618,7 @@ class AccountMove(models.Model):
         term_lines = move.line_ids.filtered(
             lambda l: l.display_type == "payment_term"
         )
-        commands = [(2, line.id) for line in transit_lines]
+        commands = []
         if term_lines:
             first_term = term_lines[0]
             commands.append((1, first_term.id, {
@@ -628,7 +632,16 @@ class AccountMove(models.Model):
                 for line in move.line_ids
                 if line.display_type == "tax" and line.account_id == account_credit
             ]
+        commands += [(2, line.id) for line in transit_lines]
         move.write({"line_ids": commands})
+        move.invalidate_recordset(["line_ids"])
+        if not move.company_id.currency_id.is_zero(
+            sum(move.line_ids.mapped("balance"))
+        ):
+            raise UserError(_(
+                "Ripristino delle scritture non riuscito: la registrazione "
+                "risulterebbe sbilanciata."
+            ))
 
     def unlink(self):
         linked = self.filtered(lambda m: m.l10n_it_rc_self_invoice_id)
