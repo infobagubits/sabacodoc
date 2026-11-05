@@ -32,6 +32,10 @@ patch(StaticList.prototype, {
     get selection() {
         return this.records.filter((record) => record.selected);
     },
+    set selection(_values) {
+        // Studio (list_editor.js) fa `list.selection = []` in _createRoot.
+        // La selezione deriva da record.selected, quindi qui non c'è nulla da salvare.
+    },
     toggleSelection() {
         return this.model.mutex.exec(() => this._toggleSelection());
     },
