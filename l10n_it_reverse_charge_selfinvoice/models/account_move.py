@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 L10N_IT_RC_INTEGRATION_TD = ("TD16", "TD17", "TD18", "TD19")
+_logger = logging.getLogger(__name__)
+
 L10N_IT_RC_TAX_ACCOUNT_CODE = "350101"
 L10N_IT_RC_TAX_CREDIT_ACCOUNT_CODE = "350121"
 L10N_IT_RC_TAX_TRANSIT_ACCOUNT_CODE = "99999903"
@@ -587,7 +591,13 @@ class AccountMove(models.Model):
                 and not move.l10n_it_rc_is_self_invoice
                 and move.state == "draft"
             ):
-                move._l10n_it_rc_undo_split_payable_net_of_tax()
+                _logger.warning("RC undo split: start su %s", move.id)
+                try:
+                    move._l10n_it_rc_undo_split_payable_net_of_tax()
+                except Exception:
+                    _logger.exception("RC undo split: errore su %s", move.id)
+                    raise
+                _logger.warning("RC undo split: ok su %s", move.id)
         return res
 
     def _l10n_it_rc_undo_split_payable_net_of_tax(self):
