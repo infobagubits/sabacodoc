@@ -597,7 +597,13 @@ class AccountMove(models.Model):
         IVA sul conto originale. Cosi' alla nuova conferma lo split viene
         rieseguito su scritture pulite."""
         self.ensure_one()
-        move = self.with_context(skip_account_move_synchronization=True)
+        # skip_invoice_sync: la sincronizzazione automatica delle righe
+        # dinamiche (termini di pagamento, imposte) ricalcolerebbe le righe
+        # a meta' della modifica, sbilanciando la scrittura. I valori qui
+        # sotto sono gia' bilanciati.
+        move = self.with_context(
+            skip_account_move_synchronization=True, skip_invoice_sync=True
+        )
         account_from, account_credit, account_to = \
             move._l10n_it_rc_get_tax_transit_accounts()
         transit_lines = move.line_ids.filtered(
