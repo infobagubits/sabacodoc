@@ -612,6 +612,9 @@ class AccountMove(models.Model):
             skip_account_move_synchronization=True,
             skip_invoice_sync=True,
             skip_readonly_check=True,
+            # Odoo vieta di eliminare righe di una registrazione confermata:
+            # qui e' voluto, perche' sta per tornare in bozza.
+            force_delete=True,
             # Il controllo di bilancio parte anche sulla singola eliminazione
             # di riga, prima che le altre modifiche siano applicate: lo
             # sospendo e verifico io il bilancio a fine operazione.
