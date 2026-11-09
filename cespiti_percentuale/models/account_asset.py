@@ -17,40 +17,24 @@ class AccountAsset(models.Model):
         ondelete={'percentage': 'set default'},
     )
 
-    # Scala 0-1 (coerente con widget="percentage" di Odoo 18 e con method_progress_factor).
-    # Esempio: 20% → 0.2.
-    method_percentage = fields.Float(
-        string="Percentuale annua (%)",
-        default=0.2,
-        help=(
-            "Percentuale annua di ammortamento (regola art. 102 TUIR):\n"
-            "• Anno 1: 50% della percentuale indicata\n"
-            "• Anni successivi: percentuale intera\n"
-            "• Anno finale extra: il restante 50% del primo anno\n"
-            "• Eccezione: se il conto cespite inizia per 03, l'anno 1 usa la "
-            "percentuale intera (nessun dimezzamento)\n"
-            "Inserire il valore come percentuale (es. 20 per 20%)."
-        ),
-    )
-
     # ------------------------------------------------------------------
     # Validazione
     # ------------------------------------------------------------------
 
-    @api.constrains('method', 'method_percentage')
+    @api.constrains('method', 'method_progress_factor')
     def _check_method_percentage(self):
         for asset in self:
             if asset.method == 'percentage':
-                if not (0.0 < asset.method_percentage <= 1.0):
+                if not (0.0 < asset.method_progress_factor <= 1.0):
                     raise ValidationError(
-                        _("La percentuale annua deve essere compresa tra 0 (escluso) e 100.")
+                        _("Il fattore decrescente deve essere compreso tra 0 (escluso) e 100%.")
                     )
 
     # ------------------------------------------------------------------
     # Onchange — reset del piano quando la percentuale cambia
     # ------------------------------------------------------------------
 
-    @api.onchange('method_percentage')
+    @api.onchange('method_progress_factor')
     def _onchange_method_percentage(self):
         """
         Cancella le righe in bozza quando la percentuale cambia,
@@ -63,6 +47,11 @@ class AccountAsset(models.Model):
     # Calcolo del piano di ammortamento
     # ------------------------------------------------------------------
 
+    def _get_percentage_start_date(self):
+        """Data di partenza del piano: Data pro rata, altrimenti data di acquisto."""
+        self.ensure_one()
+        return self.prorata_date or self.acquisition_date or fields.Date.today()
+
     def _get_percentage_schedule(self):
         """
         Restituisce la lista degli importi annuali secondo la regola fiscale italiana.
@@ -72,11 +61,15 @@ class AccountAsset(models.Model):
           - Anno 2..N : base × rate   (finché il residuo è ≥ importo pieno)
           - Anno N+1 : residuo (pari a base × rate / 2)
 
+        Se la Data pro rata cade in un anno successivo a quello di acquisto,
+        il 50% non si applica: il primo anno del piano è a rata piena.
+
         Eccezione — conto cespite che inizia per 03:
           l'anno 1 usa la rata piena (base × rate), senza dimezzamento. Il piano
           prosegue negli anni successivi fino a esaurire la base.
 
-        La base è total_depreciable_value (original_value - salvage_value).
+        La rata annua è calcolata su total_depreciable_value (original_value - salvage_value);
+        il piano si ferma quando si esaurisce il residuo (base - already_depreciated_amount_import).
 
         Esempio con base 9.000 € e rate 20%:
           Anno 1 →    900 € (10%)
@@ -91,22 +84,28 @@ class AccountAsset(models.Model):
         self.ensure_one()
 
         base = self.total_depreciable_value
-        if not base or not self.method_percentage:
+        if not base or not self.method_progress_factor:
             return []
 
-        # method_percentage è in scala 0-1 (widget percentage di Odoo 18)
-        annual_amount = round(base * self.method_percentage, 2)
+        # La percentuale annua è il campo standard "Fattore decrescente"
+        # (method_progress_factor), in scala 0-1 (widget percentage di Odoo 18).
+        annual_amount = round(base * self.method_progress_factor, 2)
 
         # Conti cespite che iniziano per 03: rata piena già dal primo anno.
         conto_cespite = self.account_asset_id.code or ''
-        if conto_cespite.startswith('03'):
+        # Il 50% (art. 102 TUIR) vale solo per l'anno di acquisto: se la Data pro rata
+        # cade in un anno successivo, il primo anno del piano è a rata piena.
+        start_date = self._get_percentage_start_date()
+        acquisition_year = (self.acquisition_date or start_date).year
+        if conto_cespite.startswith('03') or start_date.year != acquisition_year:
             first_year_amount = annual_amount
         else:
-            # art. 102 TUIR: 50% nel primo anno
             first_year_amount = round(annual_amount / 2.0, 2)
 
+        # Le quote degli anni precedenti alla Data pro rata sono già nell'importo
+        # "già ammortizzato": il piano parte dalla Data pro rata e copre solo il residuo.
         schedule = []
-        remaining = base
+        remaining = round(base - self.already_depreciated_amount_import, 2)
         year_idx = 0
 
         while remaining > 0.005:
@@ -151,8 +150,9 @@ class AccountAsset(models.Model):
         Strategia (allineata a compute_depreciation_board di Odoo 18):
         1. Le mosse già registrate (state='posted') vengono conservate.
         2. Le mosse in bozza (state='draft') con data >= date vengono cancellate e rigenerate.
-        3. Il piano viene calcolato sulla base depreciable totale; le prime N rate
-           (corrispondenti alle N mosse già registrate) vengono saltate.
+        3. Il piano parte dalla Data pro rata e copre il residuo (base depreciable meno
+           already_depreciated_amount_import); si saltano le rate con data
+           <= ultima mossa registrata.
         4. I movimenti con data nel passato (cespite 'open') vengono postati
            automaticamente, coerentemente con il flusso standard di Odoo 18.
         """
@@ -177,12 +177,13 @@ class AccountAsset(models.Model):
             )
             return
 
-        start_date = self.acquisition_date or fields.Date.today()
-        n_posted = len(posted_moves)
+        # Il piano parte dalla "Data pro rata" (nessun pro rata sugli importi).
+        start_date = self._get_percentage_start_date()
+        last_posted_date = posted_moves[-1].date if posted_moves else False
 
         move_vals_list = []
         for i, amount in enumerate(schedule):
-            if i < n_posted:
+            if self.currency_id.is_zero(amount):
                 continue
 
             year = start_date.year + i
@@ -190,7 +191,11 @@ class AccountAsset(models.Model):
             # Data fine anno fiscale (31/12) — regola TUIR
             dep_date = datetime.date(year, 12, 31)
 
-            # Inizio del periodo: primo gennaio dell'anno (o acquisition_date se anno di acquisto)
+            # Rata già coperta da una mossa registrata
+            if last_posted_date and dep_date <= last_posted_date:
+                continue
+
+            # Inizio del periodo: primo gennaio dell'anno (o Data pro rata nel primo anno)
             if i == 0:
                 dep_beginning_date = start_date
             else:

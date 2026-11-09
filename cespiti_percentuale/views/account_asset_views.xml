@@ -8,61 +8,54 @@
         <field name="arch" type="xml">
 
             <!--
-                Inserisce il campo "Percentuale annua" subito dopo il campo "Metodo"
-                in entrambe le sezioni della vista (modello e cespite).
-                Il widget "percentage" in Odoo 18 salva il valore in scala 0-1
-                e lo visualizza come percentuale (es. 0.2 → "20%").
-                È visibile solo quando il metodo selezionato è 'percentage'.
+                Con il metodo 'percentage' la percentuale annua è il campo standard
+                "Fattore decrescente" (method_progress_factor): resta visibile e obbligatorio.
             -->
-            <xpath expr="//field[@name='method']" position="after">
-                <field
-                    name="method_percentage"
-                    widget="percentage"
-                    invisible="method != 'percentage'"
-                    required="method == 'percentage'"
-                    readonly="state not in ['draft', 'model']"
-                />
+            <!-- Form n.1 (modello / cespite): Fattore decrescente visibile; Durata e Calcolo nascosti con metodo 'percentage' -->
+            <xpath expr="(//field[@name='method_progress_factor'])[1]" position="attributes">
+                <attribute name="invisible">method == 'linear'</attribute>
+                <attribute name="required">method in ('degressive', 'degressive_then_linear', 'percentage')</attribute>
             </xpath>
-
-            <!--
-                Nasconde "method_progress_factor" quando il metodo è 'percentage',
-                poiché non viene utilizzato in quel caso.
-            -->
-            <xpath expr="//field[@name='method_progress_factor']" position="attributes">
-                <attribute name="invisible">method in ('linear', 'percentage')</attribute>
-            </xpath>
-
-            <!--
-                Nasconde "Duration" (label + div con method_number e method_period)
-                quando il metodo è 'percentage': la durata non ha significato
-                nel calcolo percentuale TUIR, che genera il piano in automatico.
-            -->
-            <xpath expr="//label[@for='method_number']" position="attributes">
+            <xpath expr="(//label[@for='method_number'])[1]" position="attributes">
                 <attribute name="invisible">method == 'percentage'</attribute>
             </xpath>
-            <xpath expr="//field[@name='method_number']" position="attributes">
+            <xpath expr="(//label[@for='method_number'])[1]/following-sibling::div[1]" position="attributes">
                 <attribute name="invisible">method == 'percentage'</attribute>
+            </xpath>
+            <xpath expr="(//field[@name='method_number'])[1]" position="attributes">
                 <attribute name="required">method != 'percentage'</attribute>
             </xpath>
-            <xpath expr="//field[@name='method_period']" position="attributes">
-                <attribute name="invisible">method == 'percentage'</attribute>
+            <xpath expr="(//field[@name='method_period'])[1]" position="attributes">
                 <attribute name="required">method != 'percentage'</attribute>
             </xpath>
-
-            <!--
-                Nasconde "prorata_computation_type" quando il metodo è 'percentage':
-                il piano fiscale TUIR usa date fisse (31/12) e non considera il prorata.
-            -->
-            <xpath expr="//field[@name='prorata_computation_type']" position="attributes">
+            <xpath expr="(//field[@name='prorata_computation_type'])[1]" position="attributes">
                 <attribute name="invisible">method == 'percentage'</attribute>
             </xpath>
 
-            <!--
-                Nasconde "prorata_date" quando il metodo è 'percentage' o quando
-                prorata_computation_type è 'none' (condizione originale preservata).
-            -->
+            <!-- Form n.2 (modello / cespite): Fattore decrescente visibile; Durata e Calcolo nascosti con metodo 'percentage' -->
+            <xpath expr="(//field[@name='method_progress_factor'])[2]" position="attributes">
+                <attribute name="invisible">method == 'linear'</attribute>
+                <attribute name="required">method in ('degressive', 'degressive_then_linear', 'percentage')</attribute>
+            </xpath>
+            <xpath expr="(//label[@for='method_number'])[2]" position="attributes">
+                <attribute name="invisible">method == 'percentage'</attribute>
+            </xpath>
+            <xpath expr="(//label[@for='method_number'])[2]/following-sibling::div[1]" position="attributes">
+                <attribute name="invisible">method == 'percentage'</attribute>
+            </xpath>
+            <xpath expr="(//field[@name='method_number'])[2]" position="attributes">
+                <attribute name="required">method != 'percentage'</attribute>
+            </xpath>
+            <xpath expr="(//field[@name='method_period'])[2]" position="attributes">
+                <attribute name="required">method != 'percentage'</attribute>
+            </xpath>
+            <xpath expr="(//field[@name='prorata_computation_type'])[2]" position="attributes">
+                <attribute name="invisible">method == 'percentage'</attribute>
+            </xpath>
+
+            <!-- prorata_date: sempre visibile con metodo 'percentage'; altrimenti vale la condizione originale -->
             <xpath expr="//field[@name='prorata_date']" position="attributes">
-                <attribute name="invisible">prorata_computation_type == 'none' or method == 'percentage'</attribute>
+                <attribute name="invisible">method != 'percentage' and prorata_computation_type == 'none'</attribute>
             </xpath>
 
         </field>
