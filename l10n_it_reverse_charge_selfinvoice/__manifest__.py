@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Reverse Charge - Autofattura separata (IT)",
-    "version": "18.0.1.7.0",
+    "version": "18.0.1.8.0",
     "category": "Accounting/Localizations/Italy",
     "summary": "Doppia registrazione reverse charge: al post della fattura "
                "fornitore genera un'autofattura separata nel registro vendite "
@@ -14,6 +14,7 @@
         "l10n_it",
         "l10n_it_edi",
         "l10n_it_edi_ndd",
+        "account_reports",
     ],
     "data": [
         "data/l10n_it_document_type_ensure.xml",
