@@ -43,6 +43,16 @@ class AccountMove(models.Model):
         readonly=True,
         help="Autofattura generata da questa fattura fornitore.",
     )
+    l10n_it_rc_closing_move_id = fields.Many2one(
+        comodel_name="account.move",
+        string="Chiusura autofattura",
+        copy=False,
+        readonly=True,
+        ondelete="set null",
+        help="Scrittura che chiude per riconciliazione il credito "
+             "dell'autofattura. Viene eliminata quando l'autofattura torna "
+             "in bozza e ricreata alla nuova registrazione.",
+    )
     l10n_it_rc_origin_invoice_id = fields.Many2one(
         comodel_name="account.move",
         string="Fattura di origine",
@@ -194,6 +204,12 @@ class AccountMove(models.Model):
                 and not move.l10n_it_rc_self_invoice_id
             ):
                 move._l10n_it_rc_generate_self_invoice()
+            # Autofattura (ri)registrata, anche dopo un ritorno in bozza: la
+            # chiusura del credito va (ri)creata se manca.
+            if move.l10n_it_rc_is_self_invoice and move.move_type in (
+                "out_invoice", "out_refund"
+            ):
+                move._l10n_it_rc_close_self_invoice_receivable()
         return posted
 
     # ------------------------------------------------------------------
@@ -509,6 +525,8 @@ class AccountMove(models.Model):
         # l'inversione delle parti e l'assegnazione delle griglie VJ.
         if "l10n_it_document_type" in self_invoice._fields:
             self_invoice.l10n_it_document_type = False
+        # La chiusura del credito e' creata dal hook _post; qui si garantisce
+        # solo che esista (idempotente).
         self_invoice._l10n_it_rc_close_self_invoice_receivable(transitory_account)
         self.l10n_it_rc_self_invoice_id = self_invoice.id
         self.message_post(body=_(
@@ -523,13 +541,22 @@ class AccountMove(models.Model):
         ) % (self.name or self.ref or ""))
         return self_invoice
 
-    def _l10n_it_rc_close_self_invoice_receivable(self, transitory_account):
+    def _l10n_it_rc_close_self_invoice_receivable(self, transitory_account=None):
         """Chiude per riconciliazione la riga di credito v/cliente
         dell'autofattura: l'autofattura e' un documento fiscale, non deve
         generare un incasso reale ne' risultare da incassare. La
         contropartita di chiusura viene registrata sul conto transitorio
-        imponibile gia' usato dalle righe prodotto dell'autofattura."""
+        imponibile gia' usato dalle righe prodotto dell'autofattura.
+        Idempotente: se la chiusura esiste gia' non fa nulla."""
         self.ensure_one()
+        if self.l10n_it_rc_closing_move_id:
+            return
+        if not transitory_account:
+            origin = self.l10n_it_rc_origin_invoice_id
+            transitory_account = origin._l10n_it_rc_get_transitory_account() \
+                if origin else self._l10n_it_rc_get_transitory_account()
+        if not transitory_account:
+            return
         term_lines = self.line_ids.filtered(
             lambda l: l.display_type == "payment_term"
         )
@@ -571,11 +598,28 @@ class AccountMove(models.Model):
         (term_lines + closing_move.line_ids.filtered(
             lambda l: l.account_id == receivable_account
         )).reconcile()
+        self.l10n_it_rc_closing_move_id = closing_move.id
+
+    def _l10n_it_rc_remove_closing_move(self):
+        """Elimina la scrittura di chiusura dell'autofattura (con relativa
+        riconciliazione). Da chiamare con l'autofattura ancora registrata,
+        prima del button_draft standard."""
+        for move in self:
+            closing = move.l10n_it_rc_closing_move_id
+            if not closing:
+                continue
+            (move.line_ids + closing.line_ids).remove_move_reconcile()
+            if closing.state == "posted":
+                closing.button_draft()
+            closing.unlink()
 
     # ------------------------------------------------------------------
     # Guards
     # ------------------------------------------------------------------
     def button_draft(self):
+        self.filtered(
+            lambda m: m.l10n_it_rc_is_self_invoice and m.l10n_it_rc_closing_move_id
+        )._l10n_it_rc_remove_closing_move()
         for move in self:
             if move.l10n_it_rc_self_invoice_id and \
                     move.l10n_it_rc_self_invoice_id.state == "posted":
