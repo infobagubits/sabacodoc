@@ -181,6 +181,36 @@ class AccountMove(models.Model):
                 ),
                 'tax_ids': (line.tax_ids & taxes).ids,
             }
+        # Riallineamento dell'imponibile a quello calcolato da Odoo sulla riga
+        # imposta (`tax_base_amount`). La ricostruzione sopra non vede le
+        # righe cassa/imposte incluse nella base modificate a mano (es.
+        # cassa previdenziale divisa su più conti con righe manuali senza
+        # `tax_line_id`): la differenza viene aggiunta alla riga base
+        # principale della tassa.
+        currency = self.company_id.currency_id
+        for tax in taxes:
+            tax_lines = iva_lines.filtered(lambda l: l.tax_line_id == tax)
+            if not tax_lines:
+                continue
+            rep_line = tax_lines[0].tax_repartition_line_id
+            same_rep = tax_lines.filtered(
+                lambda l: l.tax_repartition_line_id == rep_line
+            )
+            expected = abs(sum(same_rep.mapped('tax_base_amount')))
+            tax_base_entries = [
+                d for d in differita_data.values()
+                if d['kind'] == 'base' and tax.id in d['tax_ids']
+            ]
+            if not tax_base_entries:
+                continue
+            computed = abs(sum(d['amount'] for d in tax_base_entries))
+            diff = expected - computed
+            if currency.is_zero(diff):
+                continue
+            main = max(tax_base_entries, key=lambda d: abs(d['amount']))
+            sign = 1 if sum(same_rep.mapped('balance')) >= 0 else -1
+            main['amount'] += sign * diff
+
         for line in iva_lines:
             differita_tax = line.tax_line_id
             original_tax = differita_tax.iva_differita_tax_id
